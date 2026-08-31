@@ -156,6 +156,43 @@ test("updates business settings and redirects a slug change to its canonical rou
   ).toBeVisible();
 });
 
+test("enables and disables a module with persistent multi-business isolation", async ({ page }) => {
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/modules`);
+
+  await expect(page.getByRole("heading", { name: "Modules" })).toBeVisible();
+  await expect(page.getByText("Capability state, not a product launch")).toBeVisible();
+  await expect(page.locator('a[href*="/restaurant"]')).toHaveCount(0);
+
+  const primaryRestaurant = page.getByRole("article", { name: "Restaurant" });
+  await expect(primaryRestaurant.getByText("Disabled", { exact: true })).toBeVisible();
+  await primaryRestaurant.getByRole("button", { name: "Enable capability" }).click();
+  await expect(primaryRestaurant.getByText("Restaurant enabled.")).toBeVisible();
+
+  await page.reload();
+  await expect(
+    page.getByRole("article", { name: "Restaurant" }).getByText("Enabled", { exact: true }),
+  ).toBeVisible();
+
+  await page.getByLabel("Current business").selectOption(secondBusinessSlug);
+  await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/modules$`));
+  await expect(
+    page.getByRole("article", { name: "Restaurant" }).getByText("Disabled", { exact: true }),
+  ).toBeVisible();
+
+  await page.getByLabel("Current business").selectOption(updatedBusinessSlug);
+  const restoredPrimaryRestaurant = page.getByRole("article", { name: "Restaurant" });
+  await restoredPrimaryRestaurant.getByRole("button", { name: "Disable capability" }).click();
+  await expect(restoredPrimaryRestaurant.getByText("Disable this capability")).toBeVisible();
+  await restoredPrimaryRestaurant.getByRole("button", { name: "Confirm disable" }).click();
+  await expect(restoredPrimaryRestaurant.getByText("Restaurant disabled.")).toBeVisible();
+
+  await page.reload();
+  await expect(
+    page.getByRole("article", { name: "Restaurant" }).getByText("Disabled", { exact: true }),
+  ).toBeVisible();
+});
+
 test("creates and edits a core location through audited tenant actions", async ({ page }) => {
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}/locations`);
@@ -193,6 +230,12 @@ test("enforces read-only business access and exact location scope in the UI", as
   await page.getByRole("link", { exact: true, name: "Business settings" }).click();
   await expect(page.getByText("The business.manage permission is required")).toBeVisible();
   await expect(page.getByLabel("Display name")).toBeDisabled();
+
+  await page.getByRole("link", { exact: true, name: "Modules" }).click();
+  await expect(page.getByText("Module state is read-only.")).toBeVisible();
+  await expect(page.getByRole("article", { name: "Restaurant" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Enable capability" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Disable capability" })).toHaveCount(0);
 
   await page.getByRole("link", { exact: true, name: "Locations" }).click();
   await expect(page.getByText(`${assignedLocationName} Updated`, { exact: true })).toBeVisible();
@@ -241,6 +284,17 @@ test("keeps mobile navigation and the business switcher keyboard-operable", asyn
   await page.getByLabel("Current business").focus();
   await page.getByLabel("Current business").selectOption(secondBusinessSlug);
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}$`));
+
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  await page.getByRole("link", { exact: true, name: "Modules" }).click();
+  await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/modules$`));
+  const mobileRestaurant = page.getByRole("article", { name: "Restaurant" });
+  await expect(mobileRestaurant.getByRole("button", { name: "Enable capability" })).toBeVisible();
+  await mobileRestaurant.getByRole("button", { name: "Enable capability" }).click();
+  await expect(mobileRestaurant.getByText("Restaurant enabled.")).toBeVisible();
+  await mobileRestaurant.getByRole("button", { name: "Disable capability" }).click();
+  await mobileRestaurant.getByRole("button", { name: "Confirm disable" }).click();
+  await expect(mobileRestaurant.getByText("Restaurant disabled.")).toBeVisible();
 });
 
 test("signs out and re-protects the admin route", async ({ page }) => {
