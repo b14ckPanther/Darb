@@ -1,0 +1,46 @@
+import { defineConfig, devices } from "@playwright/test";
+
+const isContinuousIntegration = Boolean(process.env.CI);
+
+export default defineConfig({
+  testDir: "./tests/e2e",
+  fullyParallel: true,
+  forbidOnly: isContinuousIntegration,
+  retries: isContinuousIntegration ? 2 : 0,
+  reporter: isContinuousIntegration ? [["github"], ["html", { open: "never" }]] : "list",
+  use: {
+    trace: "on-first-retry",
+  },
+  projects: [
+    {
+      name: "main-chromium",
+      testMatch: /main\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "http://127.0.0.1:3000",
+      },
+    },
+    {
+      name: "admin-chromium",
+      testMatch: /admin\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "http://127.0.0.1:3001",
+      },
+    },
+  ],
+  webServer: [
+    {
+      command: "pnpm --filter @darb/main dev",
+      url: "http://127.0.0.1:3000",
+      reuseExistingServer: !isContinuousIntegration,
+      timeout: 120_000,
+    },
+    {
+      command: "pnpm --filter @darb/admin dev",
+      url: "http://127.0.0.1:3001",
+      reuseExistingServer: !isContinuousIntegration,
+      timeout: 120_000,
+    },
+  ],
+});

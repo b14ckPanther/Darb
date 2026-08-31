@@ -1,0 +1,84 @@
+:root {
+  color-scheme: light;
+  --surface: #f2f3f1;
+  --ink: #171a17;
+  --muted: #5c635d;
+  --line: rgba(23, 26, 23, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--surface);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--ink);
+  background: var(--surface);
+  font-family: var(--font-english), system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+[lang="ar"] {
+  font-family: var(--font-arabic), sans-serif;
+}
+
+[lang="he"] {
+  font-family: var(--font-hebrew), sans-serif;
+}
+
+.foundation {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(1.5rem, 5vw, 5rem);
+}
+
+.foundation__content {
+  width: min(100%, 42rem);
+  padding-block: clamp(2rem, 8vw, 5rem);
+  border-block: 1px solid var(--line);
+}
+
+.foundation__brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 2rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.foundation__brand [lang="ar"] {
+  font-size: 1.15em;
+  letter-spacing: 0;
+}
+
+.foundation h1 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(2.4rem, 8vw, 5.6rem);
+  line-height: 0.96;
+  letter-spacing: -0.045em;
+}
+
+.foundation__description {
+  max-width: 34rem;
+  margin: 1.5rem 0 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  line-height: 1.65;
+}
+
+.foundation__host {
+  margin: 2.5rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}

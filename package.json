@@ -23,6 +23,7 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "@playwright/test": "catalog:",
     "prettier": "catalog:",
     "supabase": "catalog:",
     "turbo": "catalog:",
