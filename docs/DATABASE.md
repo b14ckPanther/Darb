@@ -1,7 +1,7 @@
 # Core database
 
-Status: Phase 2 core tenancy foundation implemented locally through deterministic Supabase
-migrations. No remote migration has been performed.
+Status: core tenancy foundation and first-business bootstrap implemented locally through
+deterministic Supabase migrations. No remote migration has been performed.
 
 ## Schema boundaries
 
@@ -54,6 +54,21 @@ These functions contain no dynamic SQL, use explicit schema qualification and an
 `search_path`, and expose execution only to `authenticated`. They read base tables as their owner so
 policies do not recursively query themselves through RLS.
 
+Three authenticated application functions are exposed through `core`:
+
+- `core.current_user_is_super_admin()` returns only the caller's platform-admin decision;
+- `core.current_user_has_permission(business_id, permission_key, location_id)` exposes the existing
+  database permission decision without reproducing SQL logic in TypeScript;
+- `core.bootstrap_first_business(display_name, slug, locale)` atomically creates the caller's first
+  active tenant relationship.
+
+The bootstrap function validates and normalizes its inputs, derives identity from `auth.uid()`, and
+locks the caller's `auth.users` row to serialize concurrent attempts. It inserts one business, one
+active membership, the exact foundation permission bundle, and one `business.created` audit event.
+It enables no business modules. An exact retry is idempotent; a different request is rejected while
+an active membership exists. The function has an empty `search_path`, fully qualified references,
+no dynamic SQL, and execution granted only to `authenticated`.
+
 ## RLS and grants
 
 RLS is enabled on every table listed above. Authenticated reads and mutations require active
@@ -62,9 +77,10 @@ and writes evaluate the requested location ID so business-wide and exact-locatio
 semantics. Anonymous roles have no schema or table grants.
 
 Authenticated permission changes use `can_grant_permission`, preventing a user from delegating an
-authority or scope they do not already possess. The authenticated role cannot create businesses,
-write audit events, edit reference registries, or access super-admin rows. Those operations require
-future reviewed server workflows.
+authority or scope they do not already possess. The authenticated role cannot directly create
+businesses, write audit events, edit reference registries, or access super-admin rows.
+First-business creation is the narrow reviewed RPC exception; general business creation remains
+deferred.
 
 The service role retains its expected technical RLS bypass for trusted server operations, but its
 grant cannot update, delete, or truncate audit events. It is not equivalent to a row in
@@ -103,13 +119,16 @@ pnpm db:types
 Database tests use pgTAP against Postgres roles and JWT subjects, not application mocks. Fixtures are
 created inside transactions and rolled back. They cover schema/RLS presence, authorized tenant
 access, cross-tenant denial, location scope, mutation denial, anonymous denial, module and audit
-isolation, permission escalation denial, and super-admin boundaries.
+isolation, permission escalation denial, and super-admin boundaries. Bootstrap coverage additionally
+proves authentication, caller ownership, the exact permission bundle, signature safety, atomic slug
+conflict handling, audit emission, exact retry behavior, suspended-membership semantics, and
+post-bootstrap tenant isolation.
 
 ## Intentionally deferred
 
-- business onboarding and membership invitations;
+- additional-business workflows and membership invitations;
 - role templates and engine-specific permission catalogues;
-- authentication and administration UI;
+- business/location administration UI and durable current-business selection;
 - engine-owned tables and runtime behavior;
-- audit emission workflows and retention policy;
+- comprehensive audit emission and retention policy;
 - billing, custom domains, storage policy, and remote deployment.

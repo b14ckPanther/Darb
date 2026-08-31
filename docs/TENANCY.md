@@ -1,6 +1,7 @@
 # Tenancy
 
-Status: Phase 2 core model implemented through version-controlled Supabase migrations.
+Status: core tenancy model and first-business bootstrap implemented through version-controlled
+Supabase migrations. Business management interfaces remain deferred.
 
 ## Core model
 
@@ -33,6 +34,10 @@ Memberships currently have `active` and `suspended` states and are unique per bu
 An invitation is not a membership: pending email invitations, acceptance, expiry, and resend flows
 remain a separate future model.
 
+The admin application always resolves the full RLS-visible business list. It does not assume one
+user equals one business. A helper can resolve an explicit business UUID or slug only from that
+authorized list; no durable current-business selection mechanism has been introduced yet.
+
 ## Permission model
 
 The intended authorization vocabulary includes:
@@ -55,6 +60,23 @@ The initial platform permission registry contains only the keys needed to secure
 `permissions.manage` and the permission being delegated at an equal or broader scope. This prevents
 self-escalation and scope escalation. Role templates and richer permission catalogues remain future
 product work.
+
+The trusted first-business function assigns all seven keys above at business scope. The bundle is
+fixed in database code and cannot be chosen by a browser. Future onboarding must not turn that
+bootstrap exception into a general membership or permission management path.
+
+## First-business boundary
+
+`core.bootstrap_first_business(display_name, slug, locale)` is the only normal-user path that can
+create the initial tenant. It derives the owner from `auth.uid()`, serializes concurrent calls for
+that auth user, and atomically creates the business, active membership, reviewed permission bundle,
+and `business.created` audit event. It applies ILS and `Asia/Jerusalem` through the core business
+defaults and enables no modules.
+
+An exact retry returns the existing business. A different request is rejected while the caller has
+an active membership. A suspended membership is not active access, so the user may establish a new
+first active business; this behavior is intentional and tested. General additional-business,
+membership, and invitation workflows remain separate future authorization designs.
 
 ## Platform administration
 
@@ -80,11 +102,12 @@ Strict tenant isolation is mandatory and currently enforced as follows:
 
 ## Deferred work
 
-- business creation and onboarding workflows;
+- creating additional businesses and selecting a persistent current business;
 - invitation lifecycle and acceptance;
 - product role templates and additional permission keys;
 - super-admin operational tooling;
 - engine-owned schemas and tables;
-- authentication and administration interfaces.
+- business, location, permission, and module management interfaces.
 
-See [`DATABASE.md`](./DATABASE.md) for exact table and policy responsibilities.
+See [`AUTH.md`](./AUTH.md) for session and protected-routing behavior and [`DATABASE.md`](./DATABASE.md)
+for exact table and policy responsibilities.

@@ -1,8 +1,9 @@
 # Darb / درب
 
 Darb is the foundation of a multi-tenant, multi-product business platform for the Israeli market.
-The repository provides the engineering baseline and RLS-first core tenancy data model for future
-product development. It does not yet implement business engines or customer workflows.
+The repository provides the engineering baseline, RLS-first core tenancy model, and initial secure
+admin authentication/onboarding flow for future product development. It does not yet implement
+business engines or customer workflows.
 
 The platform is organized as a pnpm/Turborepo monorepo with separate Next.js applications for the
 public root domain and platform administration, shared packages for true platform concerns, and a
@@ -13,7 +14,7 @@ local Supabase workspace prepared for a future approved data model.
 ```text
 apps/
   main/       Minimal Next.js shell for darb.co.il
-  admin/      Minimal Next.js shell for admin.darb.co.il
+  admin/      Supabase-authenticated admin shell for admin.darb.co.il
 packages/
   config/     Shared TypeScript, ESLint, and platform configuration
   i18n/       Supported-locale and text-direction primitives
@@ -23,7 +24,7 @@ packages/
   database/   Generated database types and explicit Supabase client boundaries
 supabase/     Local configuration, versioned core migrations, and database tests
 docs/         Accepted architecture and engineering direction
-tests/e2e/    Playwright smoke specifications for both applications
+tests/e2e/    Playwright public-shell and admin auth/onboarding flows
 ```
 
 There is intentionally no `@darb/utils` package yet. It should be created only when a real,
@@ -35,6 +36,7 @@ than scaffolded speculatively.
 - Node.js 22 or newer
 - pnpm 11.24.0 (pinned in `package.json`)
 - Docker-compatible container runtime only when running the local Supabase stack
+- PostgreSQL `psql` client only when running the local auth E2E fixture cleanup
 
 ## Installation
 
@@ -63,6 +65,7 @@ pnpm supabase:start
 # Rebuild the local database from migrations and run its tests
 pnpm db:reset
 pnpm db:test
+pnpm db:types
 ```
 
 The local applications use ports `3000` (main) and `3001` (admin).
@@ -78,8 +81,9 @@ pnpm build
 pnpm db:lint
 ```
 
-Vitest currently covers the shared locale/direction primitives. Playwright smoke tests are ready for
-both applications and can be run after installing Chromium:
+Vitest covers locale primitives plus auth input and redirect decisions. Playwright exercises the
+public shell and the complete local admin sign-in/onboarding/sign-out flow. The E2E command starts
+local Supabase when needed and provides only its ephemeral configuration to the test processes:
 
 ```bash
 pnpm exec playwright install chromium
@@ -88,10 +92,11 @@ pnpm test:e2e
 
 ## Current status
 
-This repository has completed the monorepo foundation and the first core database foundation. It
-includes workspace orchestration, two minimal deployable application shells, shared package
-boundaries, a migration-driven core tenancy model, RLS authorization helpers and policies, generated
-database types, database isolation tests, and architecture documentation.
+This repository has completed the monorepo, core database, and initial admin authentication
+foundations. It includes workspace orchestration, two deployable application shells, shared package
+boundaries, migration-driven tenancy, RLS authorization, atomic first-business bootstrap, secure
+SSR session handling, protected admin routes, generated database types, database isolation tests,
+and focused auth/onboarding UI.
 
 No tenant records or business-specific restaurant, booking, commerce, billing, page, storefront, or
 theme functionality has been implemented. The checked-in module and permission rows are deterministic
@@ -107,6 +112,7 @@ The permanent engineering rules live in [`AGENTS.md`](./AGENTS.md). Accepted fou
 are documented in:
 
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
+- [`docs/AUTH.md`](./docs/AUTH.md)
 - [`docs/DATABASE.md`](./docs/DATABASE.md)
 - [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md)
 - [`docs/TENANCY.md`](./docs/TENANCY.md)

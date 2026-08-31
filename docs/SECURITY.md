@@ -1,7 +1,8 @@
 # Security principles
 
-Status: foundation policy with Phase 2 database authorization controls implemented. Controls tied
-to future business workflows remain deferred until those workflows exist.
+Status: RLS-first database authorization, server-resolved Supabase sessions, protected admin
+routing, and a narrow first-business trust boundary are implemented. Controls tied to future
+business workflows remain deferred until those workflows exist.
 
 ## Data access
 
@@ -48,6 +49,15 @@ Validate and normalize every external input at a trusted boundary. Encode output
 use parameterized data access, and avoid exposing internal errors. Authentication establishes user
 identity; authorization must separately prove tenant, location, resource, and action access.
 
+The admin app creates a new Supabase SSR client for each Server Component request or Server Action.
+Next.js Proxy refreshes auth cookies through `getClaims()` but performs no tenant authorization;
+protected pages repeat authenticated identity and RLS-visible business resolution close to the
+route. Server Actions write response cookies and database RLS remains authoritative.
+
+Return paths are accepted only as same-origin relative paths. Sign-in errors remain generic to avoid
+account enumeration. Sign-out is local to the current session. The app never uses the privileged
+client for ordinary auth, tenant reads, permission checks, or onboarding.
+
 Dependency updates, framework configuration, redirects, uploads, webhooks, and future integrations
 require security review proportional to their risk.
 
@@ -60,21 +70,35 @@ events. Trusted service paths can append but cannot update, delete, or truncate 
 service-role grant. Application workflows must define redaction and metadata allowlists before
 emitting sensitive values.
 
+The first concrete event is `business.created`, emitted atomically by the database bootstrap
+function with the authenticated caller and new tenant identity. Its fixed metadata contains only
+the bootstrap source marker.
+
+## Bootstrap security
+
+`core.bootstrap_first_business` is a narrowly granted `security definer` function. It uses an empty
+`search_path`, schema-qualified objects, no dynamic SQL, and `auth.uid()` rather than caller-supplied
+identity. It validates display name, slug, and locale in Postgres; accepts no permission list or
+target user; assigns a fixed seven-permission bundle; and executes only for `authenticated`.
+Unauthenticated, cross-user, arbitrary-permission, duplicate-slug, concurrency, and tenant-isolation
+behavior is covered at the database layer.
+
 ## Controls added with future workflows
 
 Sensitive public flows will be rate-limited and abuse-aware when those endpoints exist. Sensitive
 administrative operations will use the audit-event foundation when their server workflows are
-implemented. Future work should also define session policy, content-security policy, upload
-validation, audit retention, recovery, monitoring, and incident response as concrete surfaces
-require them.
+implemented. Password reset, sign-up, invitations, OAuth, magic links, MFA, session-duration policy,
+content-security policy, upload validation, audit retention, recovery, monitoring, and incident
+response remain deferred until their concrete surfaces exist.
 
 ## Verification
 
 Security-relevant changes must include tests for denied access, not only successful paths. Current
-pgTAP coverage changes session roles and JWT subjects to exercise RLS for two tenant users, a super
+pgTAP coverage changes session roles and JWT subjects to exercise RLS for tenant users, a super
 admin, and anonymous access. It verifies cross-business denial, location scope, mutation denial,
-permission self-escalation denial, super-admin self-promotion denial, audit isolation, and module
-isolation. Fixtures are transaction-scoped and rolled back.
+permission self-escalation denial, super-admin self-promotion denial, audit and module isolation,
+plus unauthenticated and adversarial first-business bootstrap cases. Fixtures are
+transaction-scoped and rolled back.
 
 Schema changes must review RLS, grants, indexes used by policies, migration behavior, and recovery
 expectations as one unit. Rate limiting, billing controls, and workflow-specific audit emission do

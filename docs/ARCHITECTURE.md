@@ -49,6 +49,11 @@ scope-aware authorization helpers. Applications must repeat authorization server
 in depth; application filtering is never the data boundary. The migration includes only stable
 platform module and permission definitions—no tenant seed data—and has not been applied remotely.
 
+The admin application uses request-scoped Supabase SSR clients. Next.js Proxy refreshes auth
+cookies, while Server Components and Server Actions resolve identity and RLS-visible tenants at the
+route or mutation boundary. A narrow database RPC owns the atomic first-business bootstrap. No
+privileged client is used in normal admin application flows.
+
 Splitting data services or introducing microservices requires demonstrated scale, security,
 ownership, or operational needs; it is not a foundation goal.
 
@@ -64,7 +69,7 @@ Preview and production secrets belong in deployment environment configuration, n
 
 - engine application names and subdomains;
 - remote migration deployment and operational rollout;
-- authentication UI, invitations, and session policy;
+- registration, invitations, password recovery, MFA, and detailed session policy;
 - locale routing and fallback policy;
 - storefront/template runtime architecture;
 - observability, queues, and background processing needs.
