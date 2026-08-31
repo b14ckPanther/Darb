@@ -356,6 +356,29 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      archive_location: {
+        Args: { target_business_id: string; target_location_id: string };
+        Returns: {
+          address_line: string | null;
+          business_id: string;
+          country_code: string;
+          created_at: string;
+          created_by: string | null;
+          display_name: string;
+          id: string;
+          locality: string | null;
+          postal_code: string | null;
+          status: Database["core"]["Enums"]["location_status"];
+          timezone: string | null;
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "locations";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       bootstrap_first_business: {
         Args: {
           requested_default_locale: string;
@@ -370,6 +393,47 @@ export type Database = {
           was_created: boolean;
         }[];
       };
+      create_location: {
+        Args: {
+          requested_address_line: string;
+          requested_country_code: string;
+          requested_display_name: string;
+          requested_locality: string;
+          requested_postal_code: string;
+          requested_timezone: string;
+          target_business_id: string;
+        };
+        Returns: {
+          address_line: string | null;
+          business_id: string;
+          country_code: string;
+          created_at: string;
+          created_by: string | null;
+          display_name: string;
+          id: string;
+          locality: string | null;
+          postal_code: string | null;
+          status: Database["core"]["Enums"]["location_status"];
+          timezone: string | null;
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "locations";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      current_user_business_access: {
+        Args: { target_business_id: string };
+        Returns: {
+          can_manage_all_locations: boolean;
+          can_manage_business: boolean;
+          can_read_all_locations: boolean;
+          can_view_audit: boolean;
+          is_super_admin: boolean;
+        }[];
+      };
       current_user_has_permission: {
         Args: {
           target_business_id: string;
@@ -379,6 +443,67 @@ export type Database = {
         Returns: boolean;
       };
       current_user_is_super_admin: { Args: never; Returns: boolean };
+      update_business_settings: {
+        Args: {
+          requested_default_locale: string;
+          requested_display_name: string;
+          requested_slug: string;
+          requested_status: string;
+          requested_timezone: string;
+          target_business_id: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string | null;
+          currency_code: string;
+          default_locale: Database["core"]["Enums"]["locale_code"];
+          display_name: string;
+          id: string;
+          slug: string;
+          status: Database["core"]["Enums"]["business_status"];
+          timezone: string;
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "businesses";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      update_location: {
+        Args: {
+          requested_address_line: string;
+          requested_country_code: string;
+          requested_display_name: string;
+          requested_locality: string;
+          requested_postal_code: string;
+          requested_status: string;
+          requested_timezone: string;
+          target_business_id: string;
+          target_location_id: string;
+        };
+        Returns: {
+          address_line: string | null;
+          business_id: string;
+          country_code: string;
+          created_at: string;
+          created_by: string | null;
+          display_name: string;
+          id: string;
+          locality: string | null;
+          postal_code: string | null;
+          status: Database["core"]["Enums"]["location_status"];
+          timezone: string | null;
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "locations";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
     };
     Enums: {
       audit_actor_kind: "user" | "system" | "service";
