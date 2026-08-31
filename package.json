@@ -11,6 +11,10 @@
   "packageManager": "pnpm@11.24.0",
   "scripts": {
     "build": "turbo run build",
+    "db:lint": "supabase db lint --local --level warning",
+    "db:reset": "supabase db reset --local",
+    "db:test": "supabase test db",
+    "db:types": "pnpm --filter @darb/database generate:types",
     "dev": "turbo run dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

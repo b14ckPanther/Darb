@@ -1,0 +1,29 @@
+{
+  "name": "@darb/database",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./browser": "./src/browser.ts",
+    "./privileged": "./src/privileged.ts",
+    "./server": "./src/server.ts",
+    "./types": "./src/database.types.ts"
+  },
+  "scripts": {
+    "generate:types": "supabase gen types typescript --local --schema core --schema public --workdir ../.. > src/database.types.ts && prettier --write src/database.types.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@supabase/ssr": "catalog:",
+    "@supabase/supabase-js": "catalog:",
+    "server-only": "catalog:"
+  },
+  "devDependencies": {
+    "@darb/config": "workspace:*",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "supabase": "catalog:",
+    "typescript": "catalog:"
+  }
+}
