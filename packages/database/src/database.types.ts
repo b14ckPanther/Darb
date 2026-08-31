@@ -356,7 +356,29 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      bootstrap_first_business: {
+        Args: {
+          requested_default_locale: string;
+          requested_display_name: string;
+          requested_slug: string;
+        };
+        Returns: {
+          business_default_locale: Database["core"]["Enums"]["locale_code"];
+          business_display_name: string;
+          business_id: string;
+          business_slug: string;
+          was_created: boolean;
+        }[];
+      };
+      current_user_has_permission: {
+        Args: {
+          target_business_id: string;
+          target_location_id?: string;
+          target_permission_key: string;
+        };
+        Returns: boolean;
+      };
+      current_user_is_super_admin: { Args: never; Returns: boolean };
     };
     Enums: {
       audit_actor_kind: "user" | "system" | "service";
