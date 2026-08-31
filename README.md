@@ -32,13 +32,12 @@ than scaffolded speculatively.
 ## Prerequisites
 
 - Node.js 22 or newer
-- pnpm 11.24.0 (pinned in `package.json`; Corepack is recommended)
+- pnpm 11.24.0 (pinned in `package.json`)
 - Docker-compatible container runtime only when running the local Supabase stack
 
 ## Installation
 
 ```bash
-corepack enable
 pnpm install
 ```
 
