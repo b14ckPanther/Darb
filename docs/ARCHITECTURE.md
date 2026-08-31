@@ -8,16 +8,17 @@ implemented product capabilities.
 Darb begins as a modular monorepo managed by pnpm workspaces and Turborepo. Deployable surfaces use
 the Next.js App Router and can be released independently while sharing reviewed platform packages.
 
-| Area              | Responsibility                                              |
-| ----------------- | ----------------------------------------------------------- |
-| `apps/main`       | Public root-domain application for `darb.co.il`             |
-| `apps/admin`      | Platform administration application for `admin.darb.co.il`  |
-| `packages/config` | Shared build, lint, TypeScript, and platform constants      |
-| `packages/types`  | Genuinely platform-wide type contracts                      |
-| `packages/ui`     | Darb platform/admin UI foundation                           |
-| `packages/icons`  | Curated icon and custom-SVG boundary                        |
-| `packages/i18n`   | Locale and direction primitives                             |
-| `supabase`        | Local configuration for the initial shared Supabase project |
+| Area                | Responsibility                                             |
+| ------------------- | ---------------------------------------------------------- |
+| `apps/main`         | Public root-domain application for `darb.co.il`            |
+| `apps/admin`        | Platform administration application for `admin.darb.co.il` |
+| `packages/config`   | Shared build, lint, TypeScript, and platform constants     |
+| `packages/types`    | Genuinely platform-wide type contracts                     |
+| `packages/ui`       | Darb platform/admin UI foundation                          |
+| `packages/icons`    | Curated icon and custom-SVG boundary                       |
+| `packages/i18n`     | Locale and direction primitives                            |
+| `packages/database` | Generated DB types and separated Supabase client factories |
+| `supabase`          | Core migrations, RLS policies, local config, and DB tests  |
 
 Turborepo owns the common `dev`, `build`, `lint`, `typecheck`, and `test` task graph. Each workspace
 keeps an explicit manifest and exposes only intentional entry points.
@@ -38,12 +39,18 @@ Engine-to-engine imports and circular workspace dependencies are prohibited.
 ## Data platform
 
 The accepted starting point is one Supabase project. This keeps authentication, Postgres, storage,
-and policy management coherent while the platform model is established. Tenant boundaries will be
-enforced through server-side authorization and Row Level Security when a schema is approved.
+and policy management coherent while the platform model is established. The implemented `core`
+schema owns canonical businesses, reusable locations, memberships, permission assignments, module
+enablement, minimal profiles, and audit events. Non-exposed authorization helpers and platform
+super-admin assignments live in `private`.
 
-The repository currently contains no schema, migrations, seed data, Edge Functions, or remote
-database changes. Splitting data services or introducing microservices requires demonstrated scale,
-security, ownership, or operational needs; it is not a foundation-phase goal.
+Tenant boundaries are enforced in Postgres through explicit grants, Row Level Security, and
+scope-aware authorization helpers. Applications must repeat authorization server-side for defense
+in depth; application filtering is never the data boundary. The migration includes only stable
+platform module and permission definitions—no tenant seed data—and has not been applied remotely.
+
+Splitting data services or introducing microservices requires demonstrated scale, security,
+ownership, or operational needs; it is not a foundation goal.
 
 ## Deployment
 
@@ -56,8 +63,8 @@ Preview and production secrets belong in deployment environment configuration, n
 ## Deferred decisions
 
 - engine application names and subdomains;
-- database schema and migration strategy details;
-- authentication and permission implementation;
+- remote migration deployment and operational rollout;
+- authentication UI, invitations, and session policy;
 - locale routing and fallback policy;
 - storefront/template runtime architecture;
 - observability, queues, and background processing needs.

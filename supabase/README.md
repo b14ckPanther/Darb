@@ -1,11 +1,29 @@
 # Supabase workspace
 
-This directory contains the local Supabase configuration for Darb. The hosted project reference is
-`xtuhwpyqxgmsthgumktk`; the reference is an identifier, not a credential.
+This directory contains Darb's local Supabase configuration, version-controlled migrations, and
+database tests. The hosted project reference is `xtuhwpyqxgmsthgumktk`; the reference is an
+identifier, not a credential.
 
-No database schema, migration, seed data, Edge Function, or business data is defined in this
-foundation phase. Add migrations only when a later phase has an approved data model and its tenant
-isolation policy is explicit.
+The migrations establish the `core` tenant schema and non-exposed `private` authorization schema.
+They also install deterministic platform module and permission registries. They do not create or
+seed tenant, restaurant, booking, commerce, page, user, or branding data.
 
-Use `pnpm supabase:start`, `pnpm supabase:status`, and `pnpm supabase:stop` for the local stack.
-Linking to or changing a remote project is a separate, deliberate operation.
+Use these root commands for local development:
+
+```bash
+pnpm supabase:start
+pnpm db:reset
+pnpm db:lint
+pnpm db:test
+pnpm db:types
+pnpm supabase:stop
+```
+
+`db:reset` rebuilds the local database from migrations and is intentionally destructive only to the
+local development database. Database tests run through pgTAP and roll back their fixtures. Type
+generation targets only the exposed `core` and `public` schemas; `private` is deliberately absent
+from browser-shareable database types.
+
+Linking to, migrating, resetting, or changing a remote project is a separate deliberate operation.
+Before a future remote deployment, the project's Data API exposed schemas must include `core` to
+match `config.toml`; `private` must remain unexposed.

@@ -1,8 +1,8 @@
 # Darb / درب
 
 Darb is the foundation of a multi-tenant, multi-product business platform for the Israeli market.
-The repository currently provides the engineering baseline for future product development; it does
-not yet implement business engines or customer workflows.
+The repository provides the engineering baseline and RLS-first core tenancy data model for future
+product development. It does not yet implement business engines or customer workflows.
 
 The platform is organized as a pnpm/Turborepo monorepo with separate Next.js applications for the
 public root domain and platform administration, shared packages for true platform concerns, and a
@@ -20,7 +20,8 @@ packages/
   icons/      Governed icon and custom-SVG boundary
   types/      Platform-level TypeScript types
   ui/         Minimal platform/admin UI accessibility foundation
-supabase/     Local Supabase configuration; no schema or business data
+  database/   Generated database types and explicit Supabase client boundaries
+supabase/     Local configuration, versioned core migrations, and database tests
 docs/         Accepted architecture and engineering direction
 tests/e2e/    Playwright smoke specifications for both applications
 ```
@@ -58,6 +59,10 @@ pnpm --filter @darb/admin dev
 
 # Start the optional local Supabase stack
 pnpm supabase:start
+
+# Rebuild the local database from migrations and run its tests
+pnpm db:reset
+pnpm db:test
 ```
 
 The local applications use ports `3000` (main) and `3001` (admin).
@@ -70,6 +75,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm db:lint
 ```
 
 Vitest currently covers the shared locale/direction primitives. Playwright smoke tests are ready for
@@ -82,12 +88,14 @@ pnpm test:e2e
 
 ## Current status
 
-This repository is at the platform-foundation phase. It includes workspace orchestration, strict
-tooling, two minimal deployable application shells, shared package boundaries, testing setup,
-documentation, and local Supabase configuration.
+This repository has completed the monorepo foundation and the first core database foundation. It
+includes workspace orchestration, two minimal deployable application shells, shared package
+boundaries, a migration-driven core tenancy model, RLS authorization helpers and policies, generated
+database types, database isolation tests, and architecture documentation.
 
-No business-specific features, database schema, tenant records, commerce, billing, booking, content
-engine, or theme engine has been implemented.
+No tenant records or business-specific restaurant, booking, commerce, billing, page, storefront, or
+theme functionality has been implemented. The checked-in module and permission rows are deterministic
+platform registries, not tenant content.
 
 ## Engineering direction
 
@@ -99,6 +107,7 @@ The permanent engineering rules live in [`AGENTS.md`](./AGENTS.md). Accepted fou
 are documented in:
 
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
+- [`docs/DATABASE.md`](./docs/DATABASE.md)
 - [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md)
 - [`docs/TENANCY.md`](./docs/TENANCY.md)
 - [`docs/I18N.md`](./docs/I18N.md)
