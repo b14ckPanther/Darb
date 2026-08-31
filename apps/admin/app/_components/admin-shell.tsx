@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import {
   BuildingIcon,
@@ -37,6 +37,8 @@ export function AdminShell({
 }: AdminShellProps) {
   const pathname = usePathname();
   const [navigationOpen, setNavigationOpen] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
   const basePath = businessPath(currentBusiness.slug);
   const items = [
     { href: basePath, icon: HomeIcon, label: "Overview", match: pathname === basePath },
@@ -58,6 +60,30 @@ export function AdminShell({
       : []),
   ];
 
+  useEffect(() => {
+    if (!navigationOpen) {
+      return;
+    }
+
+    const openButton = openButtonRef.current;
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setNavigationOpen(false);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+    closeButtonRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+      openButton?.focus();
+    };
+  }, [navigationOpen]);
+
   return (
     <div className="core-admin-shell">
       <button
@@ -72,6 +98,7 @@ export function AdminShell({
         <div className="admin-sidebar__brand">
           <DarbAdminBrand />
           <button
+            ref={closeButtonRef}
             type="button"
             className="icon-button admin-sidebar__close"
             aria-label="Close navigation"
@@ -127,6 +154,7 @@ export function AdminShell({
       <div className="admin-workspace">
         <header className="admin-mobile-bar">
           <button
+            ref={openButtonRef}
             type="button"
             className="icon-button"
             aria-label="Open navigation"

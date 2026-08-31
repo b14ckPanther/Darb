@@ -731,7 +731,7 @@ button {
   padding-inline: 0.45rem;
 }
 
-.admin-sidebar__close {
+.icon-button.admin-sidebar__close {
   display: none;
 }
 
@@ -1628,6 +1628,12 @@ button {
   }
 }
 
+@media (min-width: 64.01rem) and (max-width: 80rem) {
+  .business-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 64rem) {
   .core-admin-shell {
     grid-template-columns: 1fr;
@@ -1650,7 +1656,7 @@ button {
     transform: translateX(0);
   }
 
-  .admin-sidebar__close {
+  .icon-button.admin-sidebar__close {
     display: inline-grid;
   }
 
