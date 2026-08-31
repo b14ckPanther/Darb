@@ -54,6 +54,12 @@ Next.js Proxy refreshes auth cookies through `getClaims()` but performs no tenan
 protected pages repeat authenticated identity and RLS-visible business resolution close to the
 route. Server Actions write response cookies and database RLS remains authoritative.
 
+The current tenant is an explicit `/b/[businessSlug]` route segment. Server Components resolve it
+only from the caller's RLS-visible list; Server Actions independently resolve the submitted business
+UUID through that same boundary. Location detail reads additionally constrain both `business_id`
+and `location_id`. Unauthorized tenant or resource routes fail closed without revealing whether an
+unavailable identifier exists.
+
 Return paths are accepted only as same-origin relative paths. Sign-in errors remain generic to avoid
 account enumeration. Sign-out is local to the current session. The app never uses the privileged
 client for ordinary auth, tenant reads, permission checks, or onboarding.
@@ -73,6 +79,25 @@ emitting sensitive values.
 The first concrete event is `business.created`, emitted atomically by the database bootstrap
 function with the authenticated caller and new tenant identity. Its fixed metadata contains only
 the bootstrap source marker.
+
+Core administration now emits `business.updated`, `location.created`, `location.updated`, and
+`location.archived`. Each event is written in the same database transaction as its mutation. The
+database derives the actor from `auth.uid()` and accepts no actor ID from the client. Update metadata
+contains an allowlisted array of changed field names; create/archive metadata contains only a fixed
+source marker or the prior lifecycle status, never raw form payloads or address values.
+
+## Core mutation boundaries
+
+Business and location Server Actions use the normal request-scoped authenticated client and never
+the privileged factory. Typed parsers normalize and validate form input, application helpers provide
+fail-closed UX decisions, and the database RPC repeats the authoritative permission check. The
+security-definer functions use empty `search_path`, schema-qualified references, no dynamic SQL,
+`auth.uid()` identity, narrow authenticated execution grants, and an atomic audit insert.
+
+Only platform super admins may set or clear `suspended`. Location creation requires a business-wide
+`locations.manage` assignment; an exact location-scoped assignment can update or archive only that
+location. Archived locations cannot be changed by the update function. Anonymous execution and
+service-role execution of these public RPCs are explicitly revoked.
 
 ## Bootstrap security
 
@@ -97,8 +122,11 @@ Security-relevant changes must include tests for denied access, not only success
 pgTAP coverage changes session roles and JWT subjects to exercise RLS for tenant users, a super
 admin, and anonymous access. It verifies cross-business denial, location scope, mutation denial,
 permission self-escalation denial, super-admin self-promotion denial, audit and module isolation,
-plus unauthenticated and adversarial first-business bootstrap cases. Fixtures are
-transaction-scoped and rolled back.
+plus unauthenticated and adversarial first-business bootstrap cases. Phase 4 coverage additionally
+proves business lifecycle restrictions, cross-tenant mutation denial, business-wide versus exact
+location scope, append-only audit emission, anonymous denial, and explicit super-admin behavior.
+Database fixtures are transaction-scoped and rolled back; browser fixtures are local-only and
+removed after the suite.
 
 Schema changes must review RLS, grants, indexes used by policies, migration behavior, and recovery
 expectations as one unit. Rate limiting, billing controls, and workflow-specific audit emission do

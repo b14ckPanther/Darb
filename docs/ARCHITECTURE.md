@@ -54,6 +54,13 @@ cookies, while Server Components and Server Actions resolve identity and RLS-vis
 route or mutation boundary. A narrow database RPC owns the atomic first-business bootstrap. No
 privileged client is used in normal admin application flows.
 
+Authenticated administration uses `/b/[businessSlug]` as the explicit current-business context.
+The route slug is resolved only from the caller's complete RLS-visible business list. A protected
+segment layout provides the business shell and a permission snapshot, while focused pages and
+Server Actions re-resolve the tenant and resource at their own trust boundaries. Business and
+location writes use narrow authenticated RPCs so each mutation and its redacted audit event commit
+atomically.
+
 Splitting data services or introducing microservices requires demonstrated scale, security,
 ownership, or operational needs; it is not a foundation goal.
 
@@ -71,6 +78,7 @@ Preview and production secrets belong in deployment environment configuration, n
 - remote migration deployment and operational rollout;
 - registration, invitations, password recovery, MFA, and detailed session policy;
 - locale routing and fallback policy;
+- member, permission, module, and super-admin management interfaces;
 - storefront/template runtime architecture;
 - observability, queues, and background processing needs.
 

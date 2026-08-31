@@ -69,6 +69,24 @@ It enables no business modules. An exact retry is idempotent; a different reques
 an active membership exists. The function has an empty `search_path`, fully qualified references,
 no dynamic SQL, and execution granted only to `authenticated`.
 
+Phase 4 adds one read helper and four narrow mutation boundaries:
+
+- `core.current_user_business_access(business_id)` returns a single caller-specific snapshot for
+  business settings, business-wide location access, audit visibility, and super-admin awareness;
+- `core.update_business_settings(...)` validates core identity/regional fields, enforces
+  `business.manage`, protects the `suspended` state, and emits `business.updated`;
+- `core.create_location(...)` requires business-wide `locations.manage`, validates reusable core
+  fields, and emits `location.created`;
+- `core.update_location(...)` accepts business-wide or exact location-scoped `locations.manage`,
+  keeps archived rows read-only, and emits `location.updated`;
+- `core.archive_location(business_id, location_id)` uses the same location-aware permission check,
+  performs an idempotent soft archive, and emits `location.archived`.
+
+`private.is_valid_timezone(text)` checks submitted values against Postgres' IANA timezone catalog.
+All mutation functions derive the actor with `auth.uid()`, fully qualify objects, use an empty
+`search_path`, and write the mutation plus allowlisted audit metadata in one transaction. Execute is
+granted only to `authenticated`; neither anonymous nor service-role callers use these RPCs.
+
 ## RLS and grants
 
 RLS is enabled on every table listed above. Authenticated reads and mutations require active
@@ -122,13 +140,16 @@ access, cross-tenant denial, location scope, mutation denial, anonymous denial, 
 isolation, permission escalation denial, and super-admin boundaries. Bootstrap coverage additionally
 proves authentication, caller ownership, the exact permission bundle, signature safety, atomic slug
 conflict handling, audit emission, exact retry behavior, suspended-membership semantics, and
-post-bootstrap tenant isolation.
+post-bootstrap tenant isolation. Core administration coverage proves permission-gated business
+updates, cross-tenant denial, lifecycle restrictions, super-admin suspension, business-wide create,
+location-scoped read/update/archive behavior, anonymous denial, and exact audit events.
 
 ## Intentionally deferred
 
-- additional-business workflows and membership invitations;
+- general additional-business workflows and membership invitations;
 - role templates and engine-specific permission catalogues;
-- business/location administration UI and durable current-business selection;
+- member, permission, module, and super-admin administration;
+- location restoration and hard-deletion workflows;
 - engine-owned tables and runtime behavior;
-- comprehensive audit emission and retention policy;
+- comprehensive audit retention and export policy;
 - billing, custom domains, storage policy, and remote deployment.

@@ -53,6 +53,10 @@ progress.
 
 ## Current implementation
 
-The foundation currently provides script-aware font loading and an accessible shared skip link. It
-does not provide a component catalogue, token library, dashboard, storefront template, tenant theme,
-or page builder. Those additions require real product requirements and visual review.
+The admin application now provides script-aware font loading, an accessible skip link, a responsive
+matte-surface business shell, a route-backed business switcher, focused navigation, form and status
+states, and reusable page-level admin patterns. These remain inside `apps/admin` until reuse is
+demonstrated; they have not been prematurely promoted to `@darb/ui`.
+
+This is a scoped operational foundation, not the final dashboard or a complete component catalogue.
+No storefront template, tenant theme, analytics experience, theme engine, or page builder exists.

@@ -1,7 +1,8 @@
 # Authentication and admin access
 
-Status: Phase 3 email/password authentication, secure session handling, protected routing, and
-first-business onboarding are implemented. This is not the final admin dashboard.
+Status: email/password authentication, secure session handling, protected routing, first-business
+onboarding, and explicit multi-business admin context are implemented. This is not the final admin
+dashboard.
 
 ## Session architecture
 
@@ -23,14 +24,16 @@ magic-link flow requires one.
 
 ## Protected routing
 
-The admin app is deployed at `admin.darb.co.il`, so its internal paths are `/login`, `/onboarding`,
-and `/` rather than carrying an extra `/admin` prefix.
+The admin app is deployed at `admin.darb.co.il`, so its internal paths do not carry an extra
+`/admin` prefix. Authenticated tenant workspaces use `/b/[businessSlug]`.
 
-| Request state                                  | Result                                        |
-| ---------------------------------------------- | --------------------------------------------- |
-| Unauthenticated request to `/`                 | Redirect to `/login?next=%2F`                 |
-| Authenticated with zero RLS-visible businesses | Redirect protected routes to `/onboarding`    |
-| Authenticated with one or more businesses      | Allow `/`; redirect auth/onboarding pages `/` |
+| Request state                                  | Result                                                  |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| Unauthenticated protected request              | Redirect to `/login` with a sanitized relative return   |
+| Authenticated with zero RLS-visible businesses | Redirect protected routes to `/onboarding`              |
+| Authenticated with one visible business        | `/` redirects to that canonical `/b/[businessSlug]`     |
+| Authenticated with multiple businesses         | `/` presents the authorized business chooser            |
+| Unauthorized business slug                     | Fail closed through the protected unavailable-workspace |
 
 Return paths are normalized to same-origin relative paths before they are retained or used. The
 database remains the source of business visibility; a client-supplied business ID never establishes
@@ -57,14 +60,15 @@ audit event, and tenant isolation are verified with pgTAP.
 
 ## Application authorization helpers
 
-Small server-only helpers resolve the current claims, list all RLS-visible businesses, list active
-memberships, resolve an explicit business UUID/slug from the authorized list, and ask database RPCs
-for permission or super-admin decisions. Helpers fail closed and do not reproduce database policy
-logic in TypeScript.
+Small server-only helpers resolve the current claims, list all RLS-visible businesses and locations,
+list active memberships, resolve an explicit business UUID/slug from the authorized list, and ask
+database RPCs for permission, business-wide access, or super-admin decisions. Helpers fail closed
+and do not reproduce database policy logic in TypeScript.
 
-Multi-business access is supported by returning the complete authorized list. A polished switcher
-and durable current-business route/session representation are intentionally deferred; future work
-must keep tenant selection explicit and server-authorized.
+`/b/[businessSlug]` is the server-resolved current-business identity. The switcher lists only the
+authorized businesses and routes between them. It preserves settings and the location list where
+safe, but never carries a tenant-owned location ID into another business. No security decision
+depends on local storage or an unvalidated browser value.
 
 ## Environment boundaries
 
@@ -84,4 +88,4 @@ must keep tenant selection explicit and server-authorized.
 - OAuth, magic links, and MFA;
 - super-admin UI and operational provisioning;
 - detailed session-duration/device management;
-- durable current-business selection and the full admin dashboard.
+- member/invitation administration and the full dashboard analytics experience.

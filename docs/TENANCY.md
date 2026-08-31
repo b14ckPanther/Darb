@@ -1,7 +1,7 @@
 # Tenancy
 
-Status: core tenancy model and first-business bootstrap implemented through version-controlled
-Supabase migrations. Business management interfaces remain deferred.
+Status: core tenancy, first-business bootstrap, explicit business route context, and permission-aware
+business/location administration are implemented through version-controlled changes.
 
 ## Core model
 
@@ -35,8 +35,17 @@ An invitation is not a membership: pending email invitations, acceptance, expiry
 remain a separate future model.
 
 The admin application always resolves the full RLS-visible business list. It does not assume one
-user equals one business. A helper can resolve an explicit business UUID or slug only from that
-authorized list; no durable current-business selection mechanism has been introduced yet.
+user equals one business. `/b/[businessSlug]` is the durable current-business context: every slug is
+resolved server-side from that authorized list, unauthorized slugs fail as unavailable, and the
+business switcher changes the route rather than storing critical tenant identity in local storage.
+It preserves settings or location-list context where safe; a location detail cannot be carried to
+another tenant because resource IDs are tenant-owned.
+
+Business settings remain readable to active members. Editing requires `business.manage`.
+Business-wide `locations.read` or `locations.manage` reveals all locations; exact location-scoped
+assignments reveal only matching rows through RLS. Creating a location requires business-wide
+`locations.manage`, while editing or archiving accepts business-wide or matching location-scoped
+`locations.manage`.
 
 ## Permission model
 
@@ -88,6 +97,19 @@ technical database bypass and is not conceptually promoted to super admin.
 Super-admin provisioning and revocation require a separately controlled operational process. They
 must never be implemented as a normal self-service client write.
 
+## Lifecycle semantics
+
+Business `active` and `archived` states are tenant-controlled through the audited settings
+boundary. Archived means retained and intentionally out of normal operation; it does not delete or
+revoke the tenant relationship, and an authorized business administrator may reactivate it.
+`suspended` is reserved for explicit platform enforcement: tenant administrators cannot enter or
+leave that state.
+
+Location `active` means operational, `inactive` means temporarily unavailable, and `archived` means
+retired and retained for historical integrity. Authorized managers may move between active and
+inactive. Archive is a separate, idempotent action; archived locations are read-only and are never
+hard-deleted through the admin UI. Restoration is intentionally deferred.
+
 ## Isolation requirements
 
 Strict tenant isolation is mandatory and currently enforced as follows:
@@ -102,12 +124,12 @@ Strict tenant isolation is mandatory and currently enforced as follows:
 
 ## Deferred work
 
-- creating additional businesses and selecting a persistent current business;
+- general additional-business creation workflows;
 - invitation lifecycle and acceptance;
 - product role templates and additional permission keys;
 - super-admin operational tooling;
 - engine-owned schemas and tables;
-- business, location, permission, and module management interfaces.
+- member, permission, module, and location-restoration interfaces.
 
 See [`AUTH.md`](./AUTH.md) for session and protected-routing behavior and [`DATABASE.md`](./DATABASE.md)
 for exact table and policy responsibilities.
