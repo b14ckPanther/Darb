@@ -14,3 +14,10 @@ export function canCreateLocation(access: BusinessAccessSnapshot): boolean {
 export function canEditLocation(hasScopedManagePermission: boolean): boolean {
   return hasScopedManagePermission;
 }
+
+export function canManageModules(
+  access: BusinessAccessSnapshot,
+  businessStatus: "active" | "archived" | "suspended",
+): boolean {
+  return access.canManageModules && businessStatus === "active";
+}

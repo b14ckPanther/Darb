@@ -32,4 +32,17 @@ describe("safe mutation error mapping", () => {
       status: "error",
     });
   });
+
+  it("maps module lifecycle and availability failures without SQL details", () => {
+    expect(mapMutationError({ code: "55000", message: "MODULE_UNAVAILABLE" }, "module")).toEqual({
+      message: "This capability is not currently available for enablement.",
+      status: "error",
+    });
+    expect(
+      mapMutationError({ code: "55000", message: "BUSINESS_MODULES_ARCHIVED" }, "module"),
+    ).toEqual({
+      message: "Capabilities cannot be changed while this business is not active.",
+      status: "error",
+    });
+  });
 });

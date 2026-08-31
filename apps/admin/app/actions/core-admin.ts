@@ -3,13 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import type { DarbServerSupabaseClient } from "@darb/database/server";
-
-import { hasBusinessPermission, resolveBusinessContext, resolveCurrentUser } from "../../lib/auth";
+import { requireActionBusiness } from "../../lib/action-context";
+import { hasBusinessPermission } from "../../lib/auth";
 import { type FormState, parseBusinessSettingsInput, parseLocationInput } from "../../lib/forms";
 import { mapMutationError } from "../../lib/mutation-errors";
 import {
-  adminPaths,
   businessLocationPath,
   businessPath,
   businessSectionPath,
@@ -178,20 +176,4 @@ export async function archiveLocationAction(
   revalidatePath(businessSectionPath(businessSlug, "locations"));
   revalidatePath(businessLocationPath(businessSlug, locationId));
   redirect(`${businessLocationPath(businessSlug, locationId)}?archived=1`);
-}
-
-async function requireActionBusiness(supabase: DarbServerSupabaseClient, businessId: string) {
-  const user = await resolveCurrentUser(supabase);
-
-  if (!user) {
-    redirect(adminPaths.login);
-  }
-
-  const business = await resolveBusinessContext(supabase, businessId);
-
-  if (!business) {
-    redirect(adminPaths.home);
-  }
-
-  return business;
 }

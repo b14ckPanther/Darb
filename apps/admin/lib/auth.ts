@@ -6,6 +6,8 @@ import type { DarbServerSupabaseClient } from "@darb/database/server";
 import type { Database } from "@darb/database/types";
 
 import { createServerComponentSupabaseClient } from "./supabase/server";
+import { listBusinessModuleStates } from "./modules";
+import type { BusinessModuleState } from "./module-state";
 
 type BusinessRow = Database["core"]["Tables"]["businesses"]["Row"];
 type LocationRow = Database["core"]["Tables"]["locations"]["Row"];
@@ -57,6 +59,7 @@ export interface AdminAccessSnapshot {
 export interface BusinessAccessSnapshot {
   canManageAllLocations: boolean;
   canManageBusiness: boolean;
+  canManageModules: boolean;
   canReadAllLocations: boolean;
   canViewAudit: boolean;
   isSuperAdmin: boolean;
@@ -66,6 +69,7 @@ export interface BusinessAdminContext extends AdminAccessSnapshot {
   access: BusinessAccessSnapshot;
   business: AccessibleBusiness;
   locations: AccessibleLocation[];
+  modules: BusinessModuleState[];
   user: CurrentUser;
 }
 
@@ -168,12 +172,13 @@ export const getBusinessAdminContext = cache(
     }
 
     const supabase = await createServerComponentSupabaseClient();
-    const [access, locations] = await Promise.all([
+    const [access, locations, modules] = await Promise.all([
       getBusinessAccessSnapshot(supabase, business.id),
       listAccessibleLocations(supabase, business.id),
+      listBusinessModuleStates(supabase, business.id, business.status),
     ]);
 
-    return { ...snapshot, access, business, locations, user: snapshot.user };
+    return { ...snapshot, access, business, locations, modules, user: snapshot.user };
   },
 );
 
@@ -193,6 +198,7 @@ export async function getBusinessAccessSnapshot(
   return {
     canManageAllLocations: data.can_manage_all_locations,
     canManageBusiness: data.can_manage_business,
+    canManageModules: data.can_manage_modules,
     canReadAllLocations: data.can_read_all_locations,
     canViewAudit: data.can_view_audit,
     isSuperAdmin: data.is_super_admin,

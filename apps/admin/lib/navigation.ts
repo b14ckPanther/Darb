@@ -6,7 +6,7 @@ export const adminPaths = {
   onboarding: "/onboarding",
 } as const;
 
-export type BusinessSection = "home" | "locations" | "settings";
+export type BusinessSection = "home" | "locations" | "modules" | "settings";
 
 export function businessPath(slug: string): string {
   return `/b/${slug}`;
@@ -39,6 +39,10 @@ export function getBusinessSwitchPath(
 
   if (suffix === "/locations" || suffix.startsWith("/locations/")) {
     return businessSectionPath(nextSlug, "locations");
+  }
+
+  if (suffix === "/modules" || suffix.startsWith("/modules/")) {
+    return businessSectionPath(nextSlug, "modules");
   }
 
   return businessPath(nextSlug);

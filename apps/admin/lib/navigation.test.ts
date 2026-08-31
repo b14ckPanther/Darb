@@ -17,6 +17,7 @@ describe("tenant-aware business routes", () => {
   it("builds canonical business and location paths", () => {
     expect(businessPath("darb-core")).toBe("/b/darb-core");
     expect(businessSectionPath("darb-core", "settings")).toBe("/b/darb-core/settings");
+    expect(businessSectionPath("darb-core", "modules")).toBe("/b/darb-core/modules");
     expect(businessLocationPath("darb-core", "location-id")).toBe(
       "/b/darb-core/locations/location-id",
     );
@@ -28,6 +29,7 @@ describe("tenant-aware business routes", () => {
     expect(getBusinessSwitchPath("/b/alpha/locations/location-id", "alpha", "beta")).toBe(
       "/b/beta/locations",
     );
+    expect(getBusinessSwitchPath("/b/alpha/modules", "alpha", "beta")).toBe("/b/beta/modules");
     expect(getBusinessSwitchPath("/b/alpha", "alpha", "beta")).toBe("/b/beta");
   });
 

@@ -278,20 +278,26 @@ export type Database = {
         Row: {
           created_at: string;
           description: string;
+          display_name: string;
           is_available: boolean;
           key: string;
+          sort_order: number;
         };
         Insert: {
           created_at?: string;
           description: string;
+          display_name: string;
           is_available?: boolean;
           key: string;
+          sort_order?: number;
         };
         Update: {
           created_at?: string;
           description?: string;
+          display_name?: string;
           is_available?: boolean;
           key?: string;
+          sort_order?: number;
         };
         Relationships: [];
       };
@@ -429,6 +435,7 @@ export type Database = {
         Returns: {
           can_manage_all_locations: boolean;
           can_manage_business: boolean;
+          can_manage_modules: boolean;
           can_read_all_locations: boolean;
           can_view_audit: boolean;
           is_super_admin: boolean;
@@ -443,6 +450,18 @@ export type Database = {
         Returns: boolean;
       };
       current_user_is_super_admin: { Args: never; Returns: boolean };
+      set_business_module_enabled: {
+        Args: {
+          requested_enabled: boolean;
+          target_business_id: string;
+          target_module_key: string;
+        };
+        Returns: {
+          changed: boolean;
+          is_enabled: boolean;
+          module_key: string;
+        }[];
+      };
       update_business_settings: {
         Args: {
           requested_default_locale: string;
