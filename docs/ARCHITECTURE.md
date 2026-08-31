@@ -61,6 +61,11 @@ Server Actions re-resolve the tenant and resource at their own trust boundaries.
 location writes use narrow authenticated RPCs so each mutation and its redacted audit event commit
 atomically.
 
+The module/capability registry is a shared platform concern, while future engines remain isolated
+implementations. The current-business context loads RLS-visible capability state and provides a
+server-side enablement gate. Capability enablement never replaces engine-specific authorization,
+and no engine route or schema exists yet.
+
 Splitting data services or introducing microservices requires demonstrated scale, security,
 ownership, or operational needs; it is not a foundation goal.
 
@@ -78,7 +83,7 @@ Preview and production secrets belong in deployment environment configuration, n
 - remote migration deployment and operational rollout;
 - registration, invitations, password recovery, MFA, and detailed session policy;
 - locale routing and fallback policy;
-- member, permission, module, and super-admin management interfaces;
+- member, permission, platform-module-registry, and super-admin management interfaces;
 - storefront/template runtime architecture;
 - observability, queues, and background processing needs.
 

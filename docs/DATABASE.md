@@ -23,7 +23,7 @@ schemas before clients can address it.
 | `core.businesses`             | Canonical tenant identity, lifecycle, locale, ISO currency, and IANA timezone      |
 | `core.locations`              | Reusable business locations with minimal postal fields and no engine-specific data |
 | `core.memberships`            | Unique user-to-business relationship with active or suspended lifecycle            |
-| `core.modules`                | Stable platform module registry                                                    |
+| `core.modules`                | Platform-owned capability key, label, description, availability, and order         |
 | `core.permissions`            | Stable permission-key registry and allowed assignment scope                        |
 | `core.membership_permissions` | Normalized business-wide or location-scoped permission assignments                 |
 | `core.business_modules`       | Data-driven module enablement per business, independent of billing                 |
@@ -82,6 +82,14 @@ Phase 4 adds one read helper and four narrow mutation boundaries:
 - `core.archive_location(business_id, location_id)` uses the same location-aware permission check,
   performs an idempotent soft archive, and emits `location.archived`.
 
+Phase 5 extends the access snapshot with `can_manage_modules` and adds
+`core.set_business_module_enabled(business_id, module_key, enabled)`. The mutation requires
+business-wide `modules.manage`, accepts only a canonical registry key and requested boolean state,
+locks the business, and changes capability state plus its audit event atomically. Repeated requests
+return `changed = false` and emit no audit event. New enablement is blocked for unavailable modules;
+tenant admins cannot mutate suspended or archived businesses, explicit super admins may handle
+suspended businesses, and archived businesses must be reactivated first.
+
 `private.is_valid_timezone(text)` checks submitted values against Postgres' IANA timezone catalog.
 All mutation functions derive the actor with `auth.uid()`, fully qualify objects, use an empty
 `search_path`, and write the mutation plus allowlisted audit metadata in one transaction. Execute is
@@ -100,16 +108,19 @@ businesses, write audit events, edit reference registries, or access super-admin
 First-business creation is the narrow reviewed RPC exception; general business creation remains
 deferred.
 
-The service role retains its expected technical RLS bypass for trusted server operations, but its
+Authenticated direct inserts and updates on `core.business_modules` are revoked; the narrow audited
+function is the ordinary tenant write path. The service role retains its expected technical RLS
+bypass for trusted server operations, but its
 grant cannot update, delete, or truncate audit events. It is not equivalent to a row in
 `private.super_admins`.
 
 ## Platform reference data
 
-Migrations deterministically register the future module identifiers `restaurant`, `booking`,
-`pages`, and `commerce`, plus the minimal permissions needed by the core model. These rows define
-platform vocabulary only. They do not enable a module for any business, create engine tables, or
-seed tenant content.
+Migrations deterministically register the module identifiers `restaurant`, `booking`, `pages`, and
+`commerce`, with platform labels, descriptions, availability, and sort order, plus the minimal
+permissions needed by the core model. These rows define platform vocabulary only. They do not
+enable a module for any business, create engine tables, or seed tenant content. An absent
+`core.business_modules` row means disabled; first-business bootstrap continues to create zero rows.
 
 ## Types and client boundaries
 
@@ -143,12 +154,16 @@ conflict handling, audit emission, exact retry behavior, suspended-membership se
 post-bootstrap tenant isolation. Core administration coverage proves permission-gated business
 updates, cross-tenant denial, lifecycle restrictions, super-admin suspension, business-wide create,
 location-scoped read/update/archive behavior, anonymous denial, and exact audit events.
+Module coverage proves audited enable/disable, no-op idempotency, unique state, direct-write denial,
+cross-tenant and location-scope isolation, unavailable-key rejection, lifecycle restrictions,
+anonymous denial, and explicit super-admin behavior.
 
 ## Intentionally deferred
 
 - general additional-business workflows and membership invitations;
 - role templates and engine-specific permission catalogues;
-- member, permission, module, and super-admin administration;
+- member, permission, platform-module-registry, and super-admin administration;
+- module dependencies, engine-specific configuration, and billing entitlements;
 - location restoration and hard-deletion workflows;
 - engine-owned tables and runtime behavior;
 - comprehensive audit retention and export policy;

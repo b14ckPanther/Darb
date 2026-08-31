@@ -60,14 +60,14 @@ audit event, and tenant isolation are verified with pgTAP.
 
 ## Application authorization helpers
 
-Small server-only helpers resolve the current claims, list all RLS-visible businesses and locations,
-list active memberships, resolve an explicit business UUID/slug from the authorized list, and ask
-database RPCs for permission, business-wide access, or super-admin decisions. Helpers fail closed
-and do not reproduce database policy logic in TypeScript.
+Small server-only helpers resolve the current claims, list all RLS-visible businesses, locations,
+and capability state, list active memberships, resolve an explicit business UUID/slug from the
+authorized list, and ask database RPCs for permission, business-wide access, or super-admin
+decisions. Helpers fail closed and do not reproduce database policy logic in TypeScript.
 
 `/b/[businessSlug]` is the server-resolved current-business identity. The switcher lists only the
-authorized businesses and routes between them. It preserves settings and the location list where
-safe, but never carries a tenant-owned location ID into another business. No security decision
+authorized businesses and routes between them. It preserves settings, modules, and the location
+list where safe, but never carries a tenant-owned location ID into another business. No security decision
 depends on local storage or an unvalidated browser value.
 
 ## Environment boundaries

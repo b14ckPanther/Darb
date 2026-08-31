@@ -86,6 +86,10 @@ database derives the actor from `auth.uid()` and accepts no actor ID from the cl
 contains an allowlisted array of changed field names; create/archive metadata contains only a fixed
 source marker or the prior lifecycle status, never raw form payloads or address values.
 
+Capability transitions emit `business.module_enabled` or `business.module_disabled` only for an
+actual state change. Metadata is limited to the canonical module key and previous/new booleans.
+No-op requests create neither duplicate state nor duplicate audit history.
+
 ## Core mutation boundaries
 
 Business and location Server Actions use the normal request-scoped authenticated client and never
@@ -98,6 +102,12 @@ Only platform super admins may set or clear `suspended`. Location creation requi
 `locations.manage` assignment; an exact location-scoped assignment can update or archive only that
 location. Archived locations cannot be changed by the update function. Anonymous execution and
 service-role execution of these public RPCs are explicitly revoked.
+
+Normal capability management uses the same request-scoped authenticated client. Direct tenant
+writes to `core.business_modules` are revoked, and `core.set_business_module_enabled` repeats the
+`modules.manage`, registry availability, and business lifecycle checks in Postgres. The caller
+cannot provide an actor, create a registry definition, attach metadata, or cross tenants. Module
+enablement is a business capability decision and is never treated as user authorization.
 
 ## Bootstrap security
 
@@ -125,6 +135,8 @@ permission self-escalation denial, super-admin self-promotion denial, audit and 
 plus unauthenticated and adversarial first-business bootstrap cases. Phase 4 coverage additionally
 proves business lifecycle restrictions, cross-tenant mutation denial, business-wide versus exact
 location scope, append-only audit emission, anonymous denial, and explicit super-admin behavior.
+Phase 5 adds module permission/scope denial, unavailable and unknown key rejection, audited
+idempotency, direct-write denial, suspended/archived business rules, and cross-tenant state tests.
 Database fixtures are transaction-scoped and rolled back; browser fixtures are local-only and
 removed after the suite.
 

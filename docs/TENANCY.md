@@ -47,6 +47,11 @@ assignments reveal only matching rows through RLS. Creating a location requires 
 `locations.manage`, while editing or archiving accepts business-wide or matching location-scoped
 `locations.manage`.
 
+The business route context also resolves all platform module definitions and the caller-visible
+`core.business_modules` rows. Authorized members may read this state; only business-wide
+`modules.manage` can change it. Absence means disabled, and capability state remains independent
+from membership permissions and tenant identity.
+
 ## Permission model
 
 The intended authorization vocabulary includes:
@@ -110,6 +115,11 @@ retired and retained for historical integrity. Authorized managers may move betw
 inactive. Archive is a separate, idempotent action; archived locations are read-only and are never
 hard-deleted through the admin UI. Restoration is intentionally deferred.
 
+Capability mutations are allowed for tenant admins only while the business is active. Suspended
+businesses require an explicit platform super admin at the database boundary; archived businesses
+must be reactivated before changes. A platform-unavailable module retains existing tenant state but
+is not effectively enabled and cannot be newly enabled.
+
 ## Isolation requirements
 
 Strict tenant isolation is mandatory and currently enforced as follows:
@@ -129,7 +139,9 @@ Strict tenant isolation is mandatory and currently enforced as follows:
 - product role templates and additional permission keys;
 - super-admin operational tooling;
 - engine-owned schemas and tables;
-- member, permission, module, and location-restoration interfaces.
+- member, permission, platform-module-registry, and location-restoration interfaces.
+
+See [`MODULES.md`](./MODULES.md) for capability semantics and the future engine-gating boundary.
 
 See [`AUTH.md`](./AUTH.md) for session and protected-routing behavior and [`DATABASE.md`](./DATABASE.md)
 for exact table and policy responsibilities.
