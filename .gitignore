@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build and task output
+.next/
+.turbo/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Environment files (examples remain tracked)
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Supabase local state
+supabase/.branches/
+supabase/.temp/
+
+# Tooling and operating-system files
+.DS_Store
+*.log
+*.tsbuildinfo
+.idea/
+.vscode/

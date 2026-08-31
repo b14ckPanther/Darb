@@ -1,0 +1,31 @@
+{
+  "name": "darb-platform",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Multi-tenant, multi-product business platform for the Israeli market.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=11.0.0"
+  },
+  "packageManager": "pnpm@11.24.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "turbo run lint",
+    "supabase:start": "supabase start",
+    "supabase:status": "supabase status",
+    "supabase:stop": "supabase stop",
+    "test": "turbo run test",
+    "test:e2e": "playwright test",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "prettier": "catalog:",
+    "supabase": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
+}
