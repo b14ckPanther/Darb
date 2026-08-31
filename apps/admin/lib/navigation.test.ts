@@ -1,12 +1,40 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  businessLocationPath,
+  businessPath,
+  businessSectionPath,
+  getBusinessSwitchPath,
+  getCanonicalBusinessPath,
   getLoginDestination,
   getOnboardingDestination,
   getPostSignInDestination,
   getProtectedAdminDestination,
   sanitizeReturnPath,
 } from "./navigation";
+
+describe("tenant-aware business routes", () => {
+  it("builds canonical business and location paths", () => {
+    expect(businessPath("darb-core")).toBe("/b/darb-core");
+    expect(businessSectionPath("darb-core", "settings")).toBe("/b/darb-core/settings");
+    expect(businessLocationPath("darb-core", "location-id")).toBe(
+      "/b/darb-core/locations/location-id",
+    );
+    expect(getCanonicalBusinessPath("new-slug", "settings")).toBe("/b/new-slug/settings");
+  });
+
+  it("preserves safe implemented sections when switching businesses", () => {
+    expect(getBusinessSwitchPath("/b/alpha/settings", "alpha", "beta")).toBe("/b/beta/settings");
+    expect(getBusinessSwitchPath("/b/alpha/locations/location-id", "alpha", "beta")).toBe(
+      "/b/beta/locations",
+    );
+    expect(getBusinessSwitchPath("/b/alpha", "alpha", "beta")).toBe("/b/beta");
+  });
+
+  it("fails back to the target business home for unrelated paths", () => {
+    expect(getBusinessSwitchPath("/unexpected", "alpha", "beta")).toBe("/b/beta");
+  });
+});
 
 describe("admin route decisions", () => {
   it("redirects unauthenticated protected access to login with a safe return path", () => {

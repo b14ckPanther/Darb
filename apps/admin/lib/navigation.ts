@@ -6,6 +6,48 @@ export const adminPaths = {
   onboarding: "/onboarding",
 } as const;
 
+export type BusinessSection = "home" | "locations" | "settings";
+
+export function businessPath(slug: string): string {
+  return `/b/${slug}`;
+}
+
+export function businessSectionPath(slug: string, section: BusinessSection): string {
+  return section === "home" ? businessPath(slug) : `${businessPath(slug)}/${section}`;
+}
+
+export function businessLocationPath(slug: string, locationId: string): string {
+  return `${businessSectionPath(slug, "locations")}/${locationId}`;
+}
+
+export function getBusinessSwitchPath(
+  currentPath: string,
+  currentSlug: string,
+  nextSlug: string,
+): string {
+  const currentBase = businessPath(currentSlug);
+
+  if (!currentPath.startsWith(currentBase)) {
+    return businessPath(nextSlug);
+  }
+
+  const suffix = currentPath.slice(currentBase.length);
+
+  if (suffix === "/settings" || suffix.startsWith("/settings/")) {
+    return businessSectionPath(nextSlug, "settings");
+  }
+
+  if (suffix === "/locations" || suffix.startsWith("/locations/")) {
+    return businessSectionPath(nextSlug, "locations");
+  }
+
+  return businessPath(nextSlug);
+}
+
+export function getCanonicalBusinessPath(slug: string, section: BusinessSection): string {
+  return businessSectionPath(slug, section);
+}
+
 export interface AdminAccessState {
   accessibleBusinessCount: number;
   isAuthenticated: boolean;

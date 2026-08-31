@@ -1,19 +1,15 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { BuildingIcon, LogoutIcon, ShieldIcon } from "@darb/icons";
+import { ArrowRightIcon, BuildingIcon, LogoutIcon } from "@darb/icons";
 
 import { signOutAction } from "../actions/auth";
 import { DarbAdminBrand } from "../_components/brand";
+import { StatusBadge } from "../_components/status-badge";
 import { getAdminAccessSnapshot } from "../../lib/auth";
-import { getProtectedAdminDestination } from "../../lib/navigation";
+import { businessPath, getProtectedAdminDestination } from "../../lib/navigation";
 
-const localeNames = {
-  ar: "Arabic",
-  he: "Hebrew",
-  en: "English",
-} as const;
-
-export default async function AdminPage() {
+export default async function BusinessChooserPage() {
   const snapshot = await getAdminAccessSnapshot();
   const destination = getProtectedAdminDestination(
     {
@@ -27,13 +23,13 @@ export default async function AdminPage() {
     redirect(destination);
   }
 
-  if (!snapshot.user) {
-    redirect("/login");
+  if (snapshot.businesses.length === 1) {
+    redirect(businessPath(snapshot.businesses[0]!.slug));
   }
 
   return (
-    <div className="admin-shell">
-      <header className="admin-header">
+    <div className="business-chooser-page">
+      <header className="chooser-header">
         <DarbAdminBrand />
         <form action={signOutAction}>
           <button className="quiet-button" type="submit">
@@ -43,47 +39,34 @@ export default async function AdminPage() {
         </form>
       </header>
 
-      <main id="main-content" className="admin-content">
-        <section className="access-hero" aria-labelledby="access-heading">
-          <p className="eyebrow">
-            <ShieldIcon size={17} />
-            Access confirmed
-          </p>
-          <h1 id="access-heading">Your Darb workspace is ready.</h1>
-          <p>
-            Signed in as <bdi>{snapshot.user.email ?? "your Darb account"}</bdi>. This minimal shell
-            confirms secure session and tenant access; administration tools arrive in later phases.
-          </p>
-        </section>
-
-        <section className="business-access" aria-labelledby="business-access-heading">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Authorized scope</p>
-              <h2 id="business-access-heading">Accessible businesses</h2>
-            </div>
-            <span className="count-badge">{snapshot.businesses.length}</span>
+      <main id="main-content" className="business-chooser-content">
+        <header className="page-header page-header--chooser">
+          <div>
+            <p className="eyebrow">Authorized workspaces</p>
+            <h1>Choose a business to manage.</h1>
+            <p className="page-header__summary">
+              Each workspace keeps its own settings, locations, permissions, and audit history.
+            </p>
           </div>
+        </header>
 
-          <ul className="business-list">
-            {snapshot.businesses.map((business) => (
-              <li key={business.id} className="business-card">
-                <span className="business-card__icon">
-                  <BuildingIcon size={22} />
+        <ul className="chooser-grid" aria-label="Accessible businesses">
+          {snapshot.businesses.map((business) => (
+            <li key={business.id}>
+              <Link href={businessPath(business.slug)}>
+                <span className="chooser-card__icon">
+                  <BuildingIcon size={23} />
                 </span>
-                <div>
-                  <h3 dir="auto">{business.display_name}</h3>
-                  <p>
-                    <span dir="ltr">{business.slug}</span>
-                    <span aria-hidden="true">·</span>
-                    {localeNames[business.default_locale]}
-                  </p>
-                </div>
-                <span className="status-chip">{business.status}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+                <span className="chooser-card__body">
+                  <strong dir="auto">{business.display_name}</strong>
+                  <small dir="ltr">{business.slug}</small>
+                </span>
+                <StatusBadge status={business.status} />
+                <ArrowRightIcon className="chooser-card__arrow" size={19} />
+              </Link>
+            </li>
+          ))}
+        </ul>
       </main>
     </div>
   );
