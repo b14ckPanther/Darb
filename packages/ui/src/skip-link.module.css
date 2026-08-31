@@ -1,0 +1,20 @@
+.root {
+  position: fixed;
+  z-index: 1000;
+  inset-block-start: 1rem;
+  inset-inline-start: 1rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid currentColor;
+  border-radius: 0.5rem;
+  color: #ffffff;
+  background: #171a17;
+  font: 600 0.875rem/1 var(--font-english, system-ui, sans-serif);
+  text-decoration: none;
+  transform: translateY(calc(-100% - 2rem));
+}
+
+.root:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+  transform: translateY(0);
+}

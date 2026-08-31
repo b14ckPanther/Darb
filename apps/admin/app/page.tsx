@@ -2,7 +2,7 @@ import { darbApplications, darbPlatform } from "@darb/config/platform";
 
 export default function AdminPage() {
   return (
-    <main className="foundation">
+    <main id="main-content" className="foundation">
       <section className="foundation__content" aria-labelledby="foundation-title">
         <p className="foundation__brand">
           <span lang="ar" dir="rtl">

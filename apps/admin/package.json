@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@darb/config": "workspace:*",
+    "@darb/i18n": "workspace:*",
     "@darb/types": "workspace:*",
+    "@darb/ui": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
