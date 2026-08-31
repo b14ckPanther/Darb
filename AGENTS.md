@@ -145,6 +145,8 @@ tenant-isolation tests and document security-sensitive decisions.
 - Add tests at the lowest useful level. Use Vitest for unit-level behavior and Playwright for
   user-visible cross-application flows.
 - Keep Turborepo tasks and root commands working for `dev`, `build`, `lint`, `typecheck`, and `test`.
+- Before changing a Next.js application, read the relevant version-matched guide in
+  `node_modules/next/dist/docs/`; framework APIs and conventions may differ from older knowledge.
 - Verify changes in proportion to risk, including production builds for framework or routing work.
 - Avoid empty abstractions, placeholder packages, and files whose only purpose is to make the
   repository look larger.

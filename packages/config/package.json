@@ -17,8 +17,9 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "@next/eslint-plugin-next": "catalog:",
     "eslint": "catalog:",
-    "eslint-config-next": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   }

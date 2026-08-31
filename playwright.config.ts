@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const isContinuousIntegration = Boolean(process.env.CI);
+const isContinuousIntegration = Boolean(globalThis.process.env.CI);
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -17,7 +17,7 @@ export default defineConfig({
       testMatch: /main\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
-        baseURL: "http://127.0.0.1:3000",
+        baseURL: "http://localhost:3000",
       },
     },
     {
@@ -25,20 +25,20 @@ export default defineConfig({
       testMatch: /admin\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
-        baseURL: "http://127.0.0.1:3001",
+        baseURL: "http://localhost:3001",
       },
     },
   ],
   webServer: [
     {
       command: "pnpm --filter @darb/main dev",
-      url: "http://127.0.0.1:3000",
+      url: "http://localhost:3000",
       reuseExistingServer: !isContinuousIntegration,
       timeout: 120_000,
     },
     {
       command: "pnpm --filter @darb/admin dev",
-      url: "http://127.0.0.1:3001",
+      url: "http://localhost:3001",
       reuseExistingServer: !isContinuousIntegration,
       timeout: 120_000,
     },
