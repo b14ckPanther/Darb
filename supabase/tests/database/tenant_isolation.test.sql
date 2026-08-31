@@ -264,13 +264,16 @@ select results_eq(
   'user A sees module enablement only for business A'
 );
 
-select is_empty(
-  $$update core.business_modules
+select is(
+  pg_temp.capture_sqlstate(
+    $$update core.business_modules
       set is_enabled = false,
           updated_by = '00000000-0000-0000-0000-0000000000a1'
       where business_id = '10000000-0000-0000-0000-000000000001'
-      returning business_id$$,
-  'user A cannot change module enablement without modules.manage'
+      returning business_id$$
+  ),
+  '42501',
+  'user A cannot bypass the audited module mutation boundary'
 );
 
 reset role;
