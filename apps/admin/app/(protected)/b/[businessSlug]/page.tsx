@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ArrowRightIcon, BuildingIcon, LocationIcon, SettingsIcon } from "@darb/icons";
+import { ArrowRightIcon, BuildingIcon, LocationIcon, ModulesIcon, SettingsIcon } from "@darb/icons";
 import { getTextDirection } from "@darb/i18n";
 
 import { PageHeader } from "../../../_components/page-header";
@@ -95,6 +95,16 @@ export default async function BusinessHomePage({ params }: BusinessHomePageProps
               <ArrowRightIcon size={18} />
             </Link>
           ) : null}
+          <Link href={businessSectionPath(context.business.slug, "modules")}>
+            <span>
+              <ModulesIcon size={20} />
+            </span>
+            <div>
+              <strong>Modules</strong>
+              <small>Review and manage this business&apos;s capability state.</small>
+            </div>
+            <ArrowRightIcon size={18} />
+          </Link>
         </div>
       </section>
     </>

@@ -11,6 +11,7 @@ import {
   LocationIcon,
   LogoutIcon,
   MenuIcon,
+  ModulesIcon,
   SettingsIcon,
 } from "@darb/icons";
 
@@ -47,6 +48,12 @@ export function AdminShell({
       icon: SettingsIcon,
       label: "Business settings",
       match: pathname.startsWith(`${basePath}/settings`),
+    },
+    {
+      href: businessSectionPath(currentBusiness.slug, "modules"),
+      icon: ModulesIcon,
+      label: "Modules",
+      match: pathname.startsWith(`${basePath}/modules`),
     },
     ...(showLocations
       ? [

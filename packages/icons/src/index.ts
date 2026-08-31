@@ -9,6 +9,7 @@ import {
   Edit02Icon,
   Home04Icon,
   InformationCircleIcon as InformationCircleHugeicon,
+  Layers01Icon,
   Location01Icon,
   LockPasswordIcon,
   Logout01Icon,
@@ -93,6 +94,10 @@ export function MailIcon(props: DarbIconProps): ReactElement {
 
 export function MenuIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Menu02Icon, props);
+}
+
+export function ModulesIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(Layers01Icon, props);
 }
 
 export function PlusIcon(props: DarbIconProps): ReactElement {
