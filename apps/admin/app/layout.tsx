@@ -15,7 +15,7 @@ const documentLocale = "en" satisfies SupportedLocale;
 
 export const metadata: Metadata = {
   title: application.name,
-  description: "Darb administration application foundation.",
+  description: "Secure Darb business administration.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

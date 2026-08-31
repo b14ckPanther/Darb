@@ -10,6 +10,11 @@
     "lint": "eslint .",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
+  "dependencies": {
+    "@hugeicons/core-free-icons": "catalog:",
+    "@hugeicons/react": "catalog:",
+    "react": "catalog:"
+  },
   "devDependencies": {
     "@darb/config": "workspace:*",
     "@types/react": "catalog:",

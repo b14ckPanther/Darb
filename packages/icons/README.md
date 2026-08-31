@@ -8,5 +8,6 @@ This package is the single product-facing boundary for Darb icons and custom SVG
 - Product code must not use emojis as icon fallbacks.
 - New exports should be curated here; applications should not assemble unrelated icon families.
 
-No arbitrary icon set is exported during the foundation phase. Icons will be added when a real
-interface needs them.
+The package exports only the small Hugeicons set currently required by Darb's authentication and
+onboarding interfaces. Add icons deliberately as real interface needs emerge; do not export an
+entire family wholesale.
