@@ -8,6 +8,7 @@ application is environment-specific and must be verified with `supabase migratio
 
 - `core` is the RLS-protected Data API schema for platform and tenant data.
 - `restaurant` is the RLS-protected Restaurant Engine schema; it has no anonymous public-read policy.
+- `public` contains the narrowly granted anonymous Restaurant projection, not tenant tables.
 - `private` is not exposed through the Data API. It owns authorization helpers and super-admin
   assignments.
 - `auth.users` remains the source of authentication identity. Darb does not duplicate auth-owned
@@ -122,6 +123,12 @@ active business, and an enabled and available Restaurant module; it resolves par
 target tenant and writes allowlisted audit metadata atomically. Unchanged requests are explicit
 no-ops. The API uses no dynamic SQL or generic JSON command.
 
+Phase 11 adds `public.get_restaurant_publication(requested_business_slug)`. This stable,
+security-definer read boundary returns one curated JSON projection and `null` when tenant,
+capability, lifecycle, configuration, publication, or template gates fail. It is the only anonymous
+Restaurant data function: direct table reads remain denied. The migration also registers the
+platform-owned `restaurant-signature` default template; it creates no tenant appearance or content.
+
 `core.record_business_domain_verification(domain_id, requesting_user_id, succeeded)` is the sole
 service-only application RPC. It accepts evidence only from trusted server runtime after Node DNS
 resolution, rechecks that the initiating user still holds `domains.manage` (or explicit platform
@@ -166,6 +173,9 @@ Direct authenticated Restaurant writes are withheld across all 15 tables. RLS re
 `restaurant.read` or `restaurant.manage`, including explicit super-admin authorization through the
 existing helper. Anonymous access is absent. Disabled/unavailable module state and non-active
 business lifecycle retain data for authorized historical reads but block every mutation.
+The anonymous role still has no Restaurant schema/table access; it can execute only the curated
+public projection, whose output omits internal names, audit fields, actors, and administration
+metadata.
 
 Storage uses the shared public-read buckets `tenant-media-images` and `tenant-media-videos`. Their
 10 MiB and 100 MiB bucket limits and MIME allowlists are version-controlled. Authenticated insert

@@ -142,8 +142,12 @@ before calling the existing narrow RPCs; direct table writes remain withheld. Th
 `restaurant.manage`, active tenant lifecycle, and an enabled/available Restaurant module, then
 re-resolve every parent inside the target business. Composite foreign keys prevent cross-tenant
 menu/category/item, media, modifier, translation, and location relationships even for trusted SQL.
-Anonymous and service-role execution of tenant RPCs is revoked. Phase 11 must add an explicit public
-read boundary; administration tables are not anonymously readable.
+Anonymous and service-role execution of tenant mutation RPCs is revoked. Public Restaurant delivery
+uses only `public.get_restaurant_publication(text)`, a separate stable security-definer function
+with an empty `search_path`, fully qualified reads, no dynamic SQL, and a narrow execute grant. It
+returns `null` unless all lifecycle/module/configuration/publication/template gates pass and exposes
+only a reviewed render-safe projection. Administration tables remain anonymously unreadable; the
+public application uses a stateless publishable-key client and has no privileged client.
 
 ## Storage and DNS boundaries
 

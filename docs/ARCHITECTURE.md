@@ -12,6 +12,7 @@ the Next.js App Router and can be released independently while sharing reviewed 
 | --------------------- | ---------------------------------------------------------- |
 | `apps/main`           | Public root-domain application for `darb.co.il`            |
 | `apps/admin`          | Platform administration application for `admin.darb.co.il` |
+| `apps/rest`           | Public Restaurant renderer for `rest.darb.co.il`           |
 | `packages/config`     | Shared build, lint, TypeScript, and platform constants     |
 | `packages/types`      | Genuinely platform-wide type contracts                     |
 | `packages/ui`         | Darb platform/admin UI foundation                          |
@@ -51,8 +52,15 @@ The first engine boundary is `restaurant.*`. It owns configuration, menus, categ
 variants, modifier structures, localized content, and location availability overrides while
 referencing canonical `core` businesses, locations, media, locales, currency, permissions, module
 state, and audit events. `@darb/restaurant` contains only generated-type aliases and pure domain
-semantics. Its authenticated administration stays in `apps/admin`; no public Restaurant runtime
-exists yet.
+semantics. Its authenticated administration stays in `apps/admin`; its customer-facing renderer
+lives in the dedicated `apps/rest` deployment.
+
+`apps/rest` resolves platform-slug routes server-side through one curated anonymous projection. It
+never reads Restaurant administration tables directly. The projection combines the active tenant,
+effective Restaurant capability, public configuration, enabled locales, active locations, resolved
+template/theme, published menu graph, safe media fields, modifiers, and location overrides. A null
+projection fails closed. The canonical host is `rest.darb.co.il`; custom-host resolution is deferred
+without coupling tenant identity to browser state.
 
 Tenant boundaries are enforced in Postgres through explicit grants, Row Level Security, and
 scope-aware authorization helpers. Applications must repeat authorization server-side for defense
@@ -118,14 +126,14 @@ Preview and production secrets belong in deployment environment configuration, n
 
 ## Deferred decisions
 
-- Restaurant public delivery routes; other engine application names and subdomains;
+- other engine application names and subdomains;
 - remote migration deployment and operational rollout;
 - registration, invitations, password recovery, MFA, and detailed session policy;
-- locale routing and fallback policy;
+- locale negotiation beyond the explicit Restaurant platform-slug route contract;
 - public custom-host routing, Vercel domain attachment, and SSL automation;
 - controlled physical media cleanup and image transformation;
 - member, permission, platform-module-registry, and super-admin management interfaces;
-- customer-facing rendering, publishing, and cache architecture;
+- customer-facing rendering for engines beyond Restaurant and advanced cache invalidation;
 - observability, queues, and background processing needs.
 
 These decisions should be made when their requirements are concrete. No premature microservices or

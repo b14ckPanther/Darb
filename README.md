@@ -2,9 +2,9 @@
 
 Darb is the foundation of a multi-tenant, multi-product business platform for the Israeli market.
 The repository provides the engineering baseline, RLS-first core tenancy model, secure admin
-authentication/onboarding, and a unified tenant-admin environment for core business, location,
-capability, media, custom-domain, language, appearance, and Restaurant content administration. It
-does not yet implement public business-engine or customer workflows.
+authentication/onboarding, a unified tenant-admin environment, the Restaurant domain/admin, and a
+curated multilingual public Restaurant menu experience. Ordering and other customer workflows are
+not implemented.
 
 The platform is organized as a pnpm/Turborepo monorepo with separate Next.js applications for the
 public root domain and platform administration, shared packages for true platform concerns, and a
@@ -16,6 +16,7 @@ local Supabase workspace whose approved core model is rebuilt entirely from vers
 apps/
   main/       Minimal Next.js shell for darb.co.il
   admin/      Supabase-authenticated admin shell for admin.darb.co.il
+  rest/       Server-rendered public Restaurant experience for rest.darb.co.il
 packages/
   config/     Shared TypeScript, ESLint, and platform configuration
   i18n/       Supported-locale and text-direction primitives
@@ -61,6 +62,7 @@ pnpm dev
 # Run one application
 pnpm --filter @darb/main dev
 pnpm --filter @darb/admin dev
+pnpm --filter @darb/rest dev
 
 # Start the optional local Supabase stack
 pnpm supabase:start
@@ -71,7 +73,7 @@ pnpm db:test
 pnpm db:types
 ```
 
-The local applications use ports `3000` (main) and `3001` (admin).
+The local applications use ports `3000` (main), `3001` (admin), and `3002` (Restaurant).
 
 ## Quality commands
 
@@ -85,7 +87,7 @@ pnpm db:lint
 ```
 
 Vitest covers locale primitives, validators, routing, permission decisions, DNS-result mapping, and
-media/domain state helpers. Playwright exercises the public shell and local admin flows including
+media/domain state helpers. Playwright exercises the public shells and local admin flows including
 auth, tenant switching, core settings, modules, media upload, DNS claims, language settings, and
 fixture cleanup. The E2E command starts local Supabase when needed and provides only its ephemeral
 configuration to the test processes:
@@ -103,11 +105,13 @@ It includes migration-driven tenancy, RLS authorization, atomic first-business b
 multi-business routes, audited core mutations, shared image/video Storage coordination,
 DNS-verified domain claims, business locale state, generated database types, database isolation
 tests, typed permission/module-aware navigation, real-state setup guidance, responsive accessible
-admin interaction patterns, and an isolated multilingual Restaurant menu administration workflow.
+admin interaction patterns, an isolated multilingual Restaurant menu administration workflow, and
+a server-rendered public menu with locale, location, media, variants, modifiers, availability,
+theme, metadata, and fail-closed publication behavior.
 
-No tenant records, public menu UI, ordering, booking, commerce, billing, page, storefront, or
-customer-facing engine runtime has been implemented. The checked-in module, permission, and
-template rows are deterministic platform registries, not tenant content.
+No tenant records are seeded. Ordering, booking, commerce, billing, page-builder, or other engine
+customer runtimes have been implemented. The checked-in module, permission, and template rows are
+deterministic platform registries, not tenant content.
 
 ## Engineering direction
 

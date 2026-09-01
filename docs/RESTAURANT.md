@@ -1,7 +1,7 @@
 # Restaurant Engine foundation
 
-Status: the Restaurant Engine database domain and its authenticated tenant-admin application are
-implemented. Public menu delivery and ordering remain intentionally absent.
+Status: the Restaurant Engine database domain, authenticated tenant administration, and curated
+customer-facing menu experience are implemented. Ordering remains intentionally absent.
 
 ## Boundary and capability
 
@@ -49,8 +49,9 @@ administration and are not the public fallback contract.
 Locale codes use `core.locale_code`; `(business_id, locale_code)` references
 `core.business_locales`. A locale must be enabled when a translation is created or changed.
 Disabling it later retains existing content. Primary keys enforce one translation per entity and
-locale. Runtime locale negotiation and deterministic fallback are Phase 11 concerns; there is no
-JSON translation blob or generic EAV translation store.
+locale. The public renderer resolves the requested enabled locale, then falls back per entity to
+the business default and remaining enabled Darb locales in stable platform order. There is no JSON
+translation blob or generic EAV translation store.
 
 ## Pricing, variants, and modifiers
 
@@ -105,10 +106,10 @@ owner bundle. The migration backfill extends only active memberships holding the
 ten-key Phase 8 owner bundle; custom and partial memberships are not broadened.
 
 All 15 tenant tables have RLS and an authenticated SELECT policy for either Restaurant permission.
-Authenticated direct writes are withheld, anonymous roles have no schema/table/function access,
-and no anonymous public menu policy exists. Authorized reads remain available after module or
-business lifecycle changes for retained administration/history. Phase 11 must introduce a separate
-safe public read model rather than expose these administration tables.
+Authenticated direct writes are withheld and no anonymous table policy exists. Authorized reads
+remain available after module or business lifecycle changes for retained administration/history.
+Anonymous public delivery crosses only the curated `public.get_restaurant_publication(text)`
+projection described below.
 
 The authenticated mutation API is intentionally explicit:
 
@@ -171,17 +172,48 @@ is a deterministic list of required or recommended actions, not a fabricated per
 KPI. Public activation remains an operational intent flag and is explicitly labelled as not yet a
 public renderer.
 
+## Public Restaurant experience
+
+`apps/rest` is a dedicated Next.js customer-facing engine application intended for
+`rest.darb.co.il`. Platform-slug routes are `/{businessSlug}` for the business default locale and
+`/{businessSlug}/{locale}` for another enabled locale. An optional, validated `location` query
+selects one projected active location; unknown tenant, locale, or location contexts fail closed.
+Phase 12 may add custom-host resolution without changing this canonical path contract.
+
+The server makes one anonymous request to `public.get_restaurant_publication`. The security-definer
+function has an empty `search_path`, a narrow `anon`/`authenticated` execute grant, and returns
+`null` unless the business is active, the Restaurant module is enabled and available, Restaurant is
+publicly active, and an available Restaurant template resolves. It exposes only render-safe
+identity, enabled locales, active locations, resolved appearance, published visible content,
+active media fields, variants/modifiers, and location overrides. Internal names, actors, audit
+data, and administration timestamps are not in the contract. Raw Restaurant tables remain
+protected by their existing RLS and grants.
+
+The `restaurant-signature` platform template is the current default Restaurant composition. The
+server validates its theme document, applies closed tenant overrides through `@darb/theme`, and
+emits controlled CSS variables with Cairo, Heebo, or Ubuntu according to locale. The renderer is
+Server Component-first; one small client controller owns native item-dialog opening, Escape,
+backdrop close, and focus restoration. A full menu arrives as one set-based projection, so the UI
+does not issue per-category/item queries.
+
+Customer presentation separates base price, absolute variant prices, non-negative modifier deltas,
+and sold-out availability without implying cart selection. JSON-LD describes only factual
+Restaurant/Menu/MenuItem/Offer state, and canonical/alternate metadata follows platform-slug locale
+routes. Search hardening beyond this foundation remains a later concern.
+
 ## Application boundary and deferred work
 
-`@darb/restaurant` exposes generated row/enum aliases and pure helpers for capability effectiveness,
-public activation, location availability inheritance, and modifier selection semantics. It has no
-React or Supabase client abstraction. `@darb/database` remains the generated schema/client boundary.
+`@darb/restaurant` exposes generated row/enum aliases plus pure helpers for capability
+effectiveness, projection parsing/localization, exact minor-unit formatting, location availability
+inheritance, and modifier selection semantics. It has no React or Supabase client abstraction.
+`@darb/database/anonymous` creates a stateless publishable-key client for the owning server runtime;
+it does not expose a privileged key.
 
 `@darb/restaurant` additionally exposes exact major-to-minor money parsing and pure readiness
 derivation. It still has no React or Supabase client abstraction. Admin-specific queries, actions,
 validation, and presentation stay inside `apps/admin`; `@darb/database` remains the generated
 schema/client boundary.
 
-Phase 11 may design explicit public menu queries, locale fallback, caching, and presentation. The
-current product does not include public Restaurant routes, carts, checkout, orders, payments,
-delivery, tables, kitchen/POS, inventory, taxes, coupons, loyalty, tips, or schedules.
+The current product does not include carts, checkout, orders, payments, delivery, tables,
+kitchen/POS, inventory, taxes, coupons, loyalty, tips, schedules, custom-domain routing, or a public
+template marketplace.

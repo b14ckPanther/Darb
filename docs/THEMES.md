@@ -1,8 +1,7 @@
 # Templates and themes
 
 Status: the platform template registry, per-business appearance state, typed theme contract,
-audited mutation boundary, and admin preview/editor are implemented. No customer-facing engine or
-renderer is implemented.
+audited mutation boundary, admin preview/editor, and Restaurant customer renderer are implemented.
 
 ## Boundaries
 
@@ -36,6 +35,11 @@ which is not a second source of platform template configuration.
 The foundation registry contains two deliberately generic `pages` compositions—`foundation-canvas`
 and `foundation-editorial`—only to prove the architecture and preview pipeline. They do not create a
 pages engine, routes, public renderer, content model, or business content.
+
+The registry also contains `restaurant-signature`, the platform-owned default composition for the
+public Restaurant renderer. It is configuration, not tenant content. `apps/rest` resolves the
+available selected/default Restaurant template and applies its validated defaults plus closed
+tenant overrides on the server; invalid runtime payloads fall back to the renderer emergency theme.
 
 ## Token contract
 
@@ -86,7 +90,7 @@ enablement, and engine-specific permission. Appearance is presentation state, no
 
 ## Deferred
 
-- customer-facing runtime routes, caching, publishing, SEO, and renderer deployment;
+- customer-facing renderers beyond Restaurant, advanced cache invalidation, and SEO hardening;
 - page-builder schema or UI and engine-specific content/configuration;
 - template inheritance, tenant-authored templates, uploads, marketplace, or dependency graphs;
 - themes connected to plans, billing, entitlements, or subscriptions;
