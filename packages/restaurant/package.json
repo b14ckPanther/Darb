@@ -14,7 +14,8 @@
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@darb/database": "workspace:*"
+    "@darb/database": "workspace:*",
+    "@darb/i18n": "workspace:*"
   },
   "devDependencies": {
     "@darb/config": "workspace:*",

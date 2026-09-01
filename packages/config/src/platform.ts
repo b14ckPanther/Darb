@@ -17,4 +17,8 @@ export const darbApplications = {
     name: "Darb Admin",
     productionHost: "admin.darb.co.il",
   },
+  rest: {
+    name: "Darb Restaurant",
+    productionHost: "rest.darb.co.il",
+  },
 } as const;

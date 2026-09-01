@@ -1,5 +1,30 @@
 import type { Database } from "@darb/database/types";
 
+export {
+  formatRestaurantMoney,
+  localizeRestaurantPublication,
+  parsePublicRestaurantPublication,
+  restaurantMoneyToDecimalString,
+  resolvePublicRestaurantLocale,
+  resolvePublicRestaurantLocation,
+  resolvePublicRestaurantTranslation,
+} from "./public";
+export type {
+  LocalizedRestaurantCategory,
+  LocalizedRestaurantItem,
+  LocalizedRestaurantMenu,
+  LocalizedRestaurantModifier,
+  LocalizedRestaurantModifierGroup,
+  LocalizedRestaurantPublication,
+  LocalizedRestaurantVariant,
+  PublicRestaurantAppearance,
+  PublicRestaurantImage,
+  PublicRestaurantLocation,
+  PublicRestaurantPublication,
+  PublicRestaurantTranslation,
+  PublicRestaurantTranslationWithoutDescription,
+} from "./public";
+
 export const RESTAURANT_MODULE_KEY = "restaurant" as const;
 
 export type RestaurantTables = Database["restaurant"]["Tables"];

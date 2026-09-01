@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./anonymous": "./src/anonymous.ts",
     "./browser": "./src/browser.ts",
     "./privileged": "./src/privileged.ts",
     "./server": "./src/server.ts",

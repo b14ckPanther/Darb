@@ -203,6 +203,61 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
+  apps/rest:
+    dependencies:
+      '@darb/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@darb/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@darb/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      '@darb/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
+      '@darb/restaurant':
+        specifier: workspace:*
+        version: link:../../packages/restaurant
+      '@darb/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
+      '@darb/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@darb/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      next:
+        specifier: 'catalog:'
+        version: 16.3.3(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.62.1)(@types/node@26.4.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.4.0
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.5(@types/react@19.2.18)
+      eslint:
+        specifier: 'catalog:'
+        version: 10.9.1(supports-color@7.2.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(vite@8.2.2(@types/node@26.4.0))
+
   packages/config:
     devDependencies:
       '@eslint/js':
@@ -300,6 +355,9 @@ importers:
       '@darb/database':
         specifier: workspace:*
         version: link:../database
+      '@darb/i18n':
+        specifier: workspace:*
+        version: link:../i18n
     devDependencies:
       '@darb/config':
         specifier: workspace:*
