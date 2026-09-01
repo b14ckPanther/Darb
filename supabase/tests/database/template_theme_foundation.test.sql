@@ -84,7 +84,8 @@ select ok(has_function_privilege('authenticated', 'core.set_business_appearance(
 select ok(not has_function_privilege('service_role', 'core.set_business_appearance(uuid,text,text,jsonb)', 'execute'), 'service role is not conceptually granted the tenant RPC');
 select is((select scope::text from core.permissions where key = 'appearance.manage'), 'business', 'appearance.manage is business scoped');
 select results_eq(
-  $$select key, module_key, is_default, sort_order from core.templates order by sort_order$$,
+  $$select key, module_key, is_default, sort_order from core.templates
+    where module_key = 'pages' order by sort_order$$,
   $$values ('foundation-canvas'::text, 'pages'::text, true, 10),
            ('foundation-editorial'::text, 'pages'::text, false, 20)$$,
   'the minimal platform template registry is deterministic'
@@ -125,7 +126,7 @@ select results_eq(
   $$values (true, false)$$,
   'the access snapshot exposes database-authoritative appearance access'
 );
-select is((select count(*)::integer from core.templates), 2, 'authenticated members can read platform templates');
+select is((select count(*)::integer from core.templates where module_key = 'pages'), 2, 'authenticated members can read both Pages templates');
 select results_eq(
   $$select module_key, template_key, changed, template_changed, theme_changed
     from core.set_business_appearance('70000000-0000-0000-0000-000000000001', 'pages', 'foundation-editorial', '{}'::jsonb)$$,

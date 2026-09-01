@@ -1085,7 +1085,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_restaurant_publication: {
+        Args: { requested_business_slug: string };
+        Returns: Json;
+      };
     };
     Enums: {
       [_ in never]: never;
