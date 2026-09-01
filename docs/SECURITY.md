@@ -92,6 +92,10 @@ Capability transitions emit `business.module_enabled` or `business.module_disabl
 actual state change. Metadata is limited to the canonical module key and previous/new booleans.
 No-op requests create neither duplicate state nor duplicate audit history.
 
+Appearance transitions emit `business.template_changed`, `business.theme_updated`, or
+`business.theme_reset` only for actual changes. Metadata contains module/template identifiers and
+changed semantic token paths, never the full override document or arbitrary CSS.
+
 Shared media transitions emit `business.media_registered`, `business.media_updated`, and
 `business.media_archived`. Domain transitions emit added, verification outcome/restart, primary,
 and disabled events. Locale changes emit `business.locales_updated`. Metadata is allowlisted and
@@ -116,6 +120,12 @@ writes to `core.business_modules` are revoked, and `core.set_business_module_ena
 cannot provide an actor, create a registry definition, attach metadata, or cross tenants. Module
 enablement is a business capability decision and is never treated as user authorization.
 
+Appearance management also uses the request-scoped authenticated client. Direct writes to the
+platform template registry and tenant visual settings are revoked. The RPC derives `auth.uid()`,
+requires business-wide `appearance.manage`, rechecks active tenant and enabled-module state,
+validates template context, accepts only a closed semantic JSON contract, and rejects critical
+contrast failure. URL/CSS/script-shaped values cannot enter the persisted theme model.
+
 ## Storage and DNS boundaries
 
 Media upload is a three-step, fail-closed flow: an authenticated RPC reserves a UUID-derived bucket
@@ -137,7 +147,7 @@ boundary, not tenant authorization; token values never enter logs or audit metad
 `core.bootstrap_first_business` is a narrowly granted `security definer` function. It uses an empty
 `search_path`, schema-qualified objects, no dynamic SQL, and `auth.uid()` rather than caller-supplied
 identity. It validates display name, slug, and locale in Postgres; accepts no permission list or
-target user; assigns a fixed nine-permission bundle; and executes only for `authenticated`.
+target user; assigns a fixed ten-permission bundle; and executes only for `authenticated`.
 Unauthenticated, cross-user, arbitrary-permission, duplicate-slug, concurrency, and tenant-isolation
 behavior is covered at the database layer.
 
@@ -163,6 +173,9 @@ idempotency, direct-write denial, suspended/archived business rules, and cross-t
 Phase 6 adds Storage reservation/path/bucket denial, media lifecycle, global hostname uniqueness,
 reserved-host denial, DNS attestation/retry/lifecycle, domain primary invariants, locale invariants,
 owner-bundle backfill isolation, and Phase 6 audit redaction.
+Phase 7 adds registry/direct-write denial, exact appearance permission and tenant isolation,
+enabled-module/template constraints, arbitrary token/CSS rejection, contrast enforcement,
+suspended/archived denial, audited idempotency, and narrow owner-bundle backfill isolation.
 Database fixtures are transaction-scoped and rolled back; browser fixtures are local-only and
 removed after the suite.
 

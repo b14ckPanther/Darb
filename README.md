@@ -22,6 +22,7 @@ packages/
   types/      Platform-level TypeScript types
   ui/         Minimal platform/admin UI accessibility foundation
   database/   Generated database types and explicit Supabase client boundaries
+  theme/      Closed semantic theme contract and deterministic resolver
 supabase/     Local configuration, versioned core migrations, and database tests
 docs/         Accepted architecture and engineering direction
 tests/e2e/    Playwright public-shell and authenticated admin workflows

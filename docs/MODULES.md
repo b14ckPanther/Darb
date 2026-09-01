@@ -7,8 +7,9 @@ gates, and tenant administration surface are implemented locally. No product eng
 
 - An **engine** is a major product implementation with its own domain logic and future data model.
 - A **module/capability** is platform-defined functionality that a business may enable.
-- A **template** is visual composition and is outside this system.
-- A **theme override** is per-business presentation configuration and is outside this system.
+- A **template** is platform-owned visual composition managed by the separate appearance system.
+- A **theme override** is validated per-business presentation configuration, also managed by the
+  appearance system.
 - A **vertical** describes a business category; it is never a capability identifier.
 
 `core.modules` is the canonical platform-owned registry. Stable machine keys drive logic; migration-
@@ -62,11 +63,16 @@ The `/b/[businessSlug]/modules` surface is readable by authorized business membe
 appear only with `modules.manage` on an active business. It deliberately offers no engine launch
 links.
 
+Module enablement provides the context in which templates may be selected, but it does not select a
+template, grant `appearance.manage`, or create engine data. Disabling a module retains its visual
+settings for a possible later re-enable; an unavailable module is excluded from effective
+appearance resolution.
+
 ## Deferred
 
 - engine-specific schemas, routes, permissions, and configuration;
 - module dependencies or a dependency graph;
 - billing, plans, subscriptions, and entitlement reconciliation;
-- templates, themes, and vertical classification;
+- template dependencies across modules, advanced template composition, and vertical classification;
 - platform-super-admin registry UI and module marketplace behavior;
 - localization of platform module labels and descriptions.

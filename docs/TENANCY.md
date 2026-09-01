@@ -22,8 +22,9 @@ application constants.
 ## Implemented ownership paths
 
 `core.businesses` is the tenant root. `core.locations`, `core.memberships`,
-`core.business_modules`, `core.media_assets`, `core.business_domains`, `core.business_locales`, and
-business-scoped `core.audit_events` point directly to it.
+`core.business_modules`, `core.business_visual_settings`, `core.media_assets`,
+`core.business_domains`, `core.business_locales`, and business-scoped `core.audit_events` point
+directly to it. `core.templates` is platform-owned reference data, not tenant content.
 `core.membership_permissions` carries `business_id` and uses composite foreign keys to guarantee
 that its membership and optional location belong to the same business.
 
@@ -76,12 +77,13 @@ accepted only when the permission definition supports location scope.
 
 The initial platform permission registry contains only the keys needed to secure the foundation:
 `business.manage`, `locations.read`, `locations.manage`, `memberships.manage`,
-`permissions.manage`, `modules.manage`, `media.manage`, `domains.manage`, and `audit.view`. A grantor must possess both
+`permissions.manage`, `modules.manage`, `media.manage`, `domains.manage`, `appearance.manage`, and
+`audit.view`. A grantor must possess both
 `permissions.manage` and the permission being delegated at an equal or broader scope. This prevents
 self-escalation and scope escalation. Role templates and richer permission catalogues remain future
 product work.
 
-The trusted first-business function assigns all nine keys above at business scope. The bundle is
+The trusted first-business function assigns all ten keys above at business scope. The bundle is
 fixed in database code and cannot be chosen by a browser. Future onboarding must not turn that
 bootstrap exception into a general membership or permission management path.
 
@@ -97,6 +99,10 @@ The Phase 6 forward migration extends the bootstrap bundle with `media.manage` a
 `domains.manage`. Its idempotent migration-time backfill grants those keys only to active
 memberships that already held the complete original seven-key owner bundle; arbitrary memberships
 are not broadened.
+
+The Phase 7 forward migration adds `appearance.manage`. Its idempotent backfill applies only to
+active memberships holding the complete approved nine-key Phase 6 owner bundle; partial or
+arbitrary memberships are not broadened.
 
 An exact retry returns the existing business. A different request is rejected while the caller has
 an active membership. A suspended membership is not active access, so the user may establish a new
@@ -134,6 +140,10 @@ is not effectively enabled and cannot be newly enabled.
 Media, domain, and locale mutations are also active-business operations. Media and domain records
 are retained when archived or disabled, and platform-suspended businesses cannot advance DNS
 verification. Business locale changes keep the new default enabled in the same transaction.
+
+Appearance state is readable through active membership and mutable only with business-wide
+`appearance.manage`. It applies only to effectively enabled module contexts. Suspended and archived
+businesses must be returned to active before any template/theme change, including by a super admin.
 
 ## Isolation requirements
 

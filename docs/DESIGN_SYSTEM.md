@@ -1,6 +1,7 @@
 # Design system direction
 
-Status: accepted principles; the complete design system and theme engine are not implemented.
+Status: accepted admin principles and the first controlled customer-facing theme contract are
+implemented; neither the complete design system nor a customer-facing renderer is implemented.
 
 ## Two distinct systems
 
@@ -14,8 +15,12 @@ Darb will maintain a deliberate separation between:
    tenant styling into administration surfaces.
 
 These systems may share low-level accessibility knowledge and selected technical primitives, but
-they must not be forced into one visual language or one unrestricted component API. The theme
-engine will be designed in a later phase.
+they must not be forced into one visual language or one unrestricted component API.
+
+`@darb/theme` now establishes the second system's closed semantic token contract, resolver,
+contrast validation, locale typography, motion intent, and CSS-variable mapping. Platform template
+definitions and tenant overrides are database-driven. These primitives do not move tenant styling
+into `@darb/ui` and do not constitute a page builder or storefront renderer.
 
 ## Product quality bar
 
@@ -59,4 +64,6 @@ states, and reusable page-level admin patterns. These remain inside `apps/admin`
 demonstrated; they have not been prematurely promoted to `@darb/ui`.
 
 This is a scoped operational foundation, not the final dashboard or a complete component catalogue.
-No storefront template, tenant theme, analytics experience, theme engine, or page builder exists.
+The admin Appearance surface is a scoped editor/preview for the implemented contract. No
+customer-facing engine route, publishing workflow, analytics experience, advanced template engine,
+or page builder exists. See [`THEMES.md`](./THEMES.md).

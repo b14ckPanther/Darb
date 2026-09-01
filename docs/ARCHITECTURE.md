@@ -17,6 +17,7 @@ the Next.js App Router and can be released independently while sharing reviewed 
 | `packages/ui`       | Darb platform/admin UI foundation                          |
 | `packages/icons`    | Curated icon and custom-SVG boundary                       |
 | `packages/i18n`     | Locale and direction primitives                            |
+| `packages/theme`    | Typed customer-facing theme contract and resolver          |
 | `packages/database` | Generated DB types and separated Supabase client factories |
 | `supabase`          | Core migrations, RLS policies, local config, and DB tests  |
 
@@ -41,9 +42,9 @@ Engine-to-engine imports and circular workspace dependencies are prohibited.
 The accepted starting point is one Supabase project. This keeps authentication, Postgres, storage,
 and policy management coherent while the platform model is established. The implemented `core`
 schema owns canonical businesses, reusable locations, memberships, permission assignments, module
-enablement, shared media metadata, custom-domain claims, business locale state, minimal profiles,
-and audit events. Non-exposed authorization helpers and platform super-admin assignments live in
-`private`.
+enablement, platform templates, tenant appearance state, shared media metadata, custom-domain
+claims, business locale state, minimal profiles, and audit events. Non-exposed authorization
+helpers and platform super-admin assignments live in `private`.
 
 Tenant boundaries are enforced in Postgres through explicit grants, Row Level Security, and
 scope-aware authorization helpers. Applications must repeat authorization server-side for defense
@@ -80,6 +81,13 @@ implementations. The current-business context loads RLS-visible capability state
 server-side enablement gate. Capability enablement never replaces engine-specific authorization,
 and no engine route or schema exists yet.
 
+The template/theme foundation remains separate from both module enablement and the admin design
+system. Platform-owned templates are scoped to a module rendering context; tenant rows store only a
+selection and validated semantic overrides. `@darb/theme` is a pure shared contract used by the
+admin preview and future server renderers. It maps a closed token set to controlled CSS variables,
+locale-aware typography, direction, contrast decisions, and reduced-motion behavior. No arbitrary
+CSS or customer-facing runtime route exists.
+
 Splitting data services or introducing microservices requires demonstrated scale, security,
 ownership, or operational needs; it is not a foundation goal.
 
@@ -100,7 +108,7 @@ Preview and production secrets belong in deployment environment configuration, n
 - public custom-host routing, Vercel domain attachment, and SSL automation;
 - controlled physical media cleanup and image transformation;
 - member, permission, platform-module-registry, and super-admin management interfaces;
-- storefront/template runtime architecture;
+- customer-facing rendering, publishing, and cache architecture;
 - observability, queues, and background processing needs.
 
 These decisions should be made when their requirements are concrete. No premature microservices or
