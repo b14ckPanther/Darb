@@ -1,13 +1,13 @@
 # Darb / درب
 
 Darb is the foundation of a multi-tenant, multi-product business platform for the Israeli market.
-The repository provides the engineering baseline, RLS-first core tenancy model, and initial secure
-admin authentication/onboarding flow for future product development. It does not yet implement
-business engines or customer workflows.
+The repository provides the engineering baseline, RLS-first core tenancy model, secure admin
+authentication/onboarding, and core business, location, capability, media, custom-domain, and
+language administration. It does not yet implement business engines or customer workflows.
 
 The platform is organized as a pnpm/Turborepo monorepo with separate Next.js applications for the
 public root domain and platform administration, shared packages for true platform concerns, and a
-local Supabase workspace prepared for a future approved data model.
+local Supabase workspace whose approved core model is rebuilt entirely from versioned migrations.
 
 ## Repository structure
 
@@ -24,7 +24,7 @@ packages/
   database/   Generated database types and explicit Supabase client boundaries
 supabase/     Local configuration, versioned core migrations, and database tests
 docs/         Accepted architecture and engineering direction
-tests/e2e/    Playwright public-shell and admin auth/onboarding flows
+tests/e2e/    Playwright public-shell and authenticated admin workflows
 ```
 
 There is intentionally no `@darb/utils` package yet. It should be created only when a real,
@@ -81,9 +81,11 @@ pnpm build
 pnpm db:lint
 ```
 
-Vitest covers locale primitives plus auth input and redirect decisions. Playwright exercises the
-public shell and the complete local admin sign-in/onboarding/sign-out flow. The E2E command starts
-local Supabase when needed and provides only its ephemeral configuration to the test processes:
+Vitest covers locale primitives, validators, routing, permission decisions, DNS-result mapping, and
+media/domain state helpers. Playwright exercises the public shell and local admin flows including
+auth, tenant switching, core settings, modules, media upload, DNS claims, language settings, and
+fixture cleanup. The E2E command starts local Supabase when needed and provides only its ephemeral
+configuration to the test processes:
 
 ```bash
 pnpm exec playwright install chromium
@@ -92,11 +94,11 @@ pnpm test:e2e
 
 ## Current status
 
-This repository has completed the monorepo, core database, and initial admin authentication
-foundations. It includes workspace orchestration, two deployable application shells, shared package
-boundaries, migration-driven tenancy, RLS authorization, atomic first-business bootstrap, secure
-SSR session handling, protected admin routes, generated database types, database isolation tests,
-and focused auth/onboarding UI.
+This repository has completed the monorepo, core database, authentication, core administration,
+capability, and Phase 6 platform-resource foundations. It includes migration-driven tenancy, RLS
+authorization, atomic first-business bootstrap, protected multi-business routes, audited core
+mutations, shared image/video Storage coordination, DNS-verified domain claims, business locale
+state, generated database types, database isolation tests, and focused responsive admin UI.
 
 No tenant records or business-specific restaurant, booking, commerce, billing, page, storefront, or
 theme functionality has been implemented. The checked-in module and permission rows are deterministic
@@ -115,6 +117,8 @@ are documented in:
 - [`docs/AUTH.md`](./docs/AUTH.md)
 - [`docs/DATABASE.md`](./docs/DATABASE.md)
 - [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md)
+- [`docs/DOMAINS.md`](./docs/DOMAINS.md)
+- [`docs/MEDIA.md`](./docs/MEDIA.md)
 - [`docs/TENANCY.md`](./docs/TENANCY.md)
 - [`docs/I18N.md`](./docs/I18N.md)
 - [`docs/SECURITY.md`](./docs/SECURITY.md)

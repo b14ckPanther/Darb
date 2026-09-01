@@ -22,7 +22,8 @@ application constants.
 ## Implemented ownership paths
 
 `core.businesses` is the tenant root. `core.locations`, `core.memberships`,
-`core.business_modules`, and business-scoped `core.audit_events` point directly to it.
+`core.business_modules`, `core.media_assets`, `core.business_domains`, `core.business_locales`, and
+business-scoped `core.audit_events` point directly to it.
 `core.membership_permissions` carries `business_id` and uses composite foreign keys to guarantee
 that its membership and optional location belong to the same business.
 
@@ -52,6 +53,11 @@ The business route context also resolves all platform module definitions and the
 `modules.manage` can change it. Absence means disabled, and capability state remains independent
 from membership permissions and tenant identity.
 
+Shared media, domain claims, and enabled locale rows are business-owned core resources. Immutable
+media paths use business UUIDs; hostname claims are globally unique but every read and mutation is
+tenant-resolved; locale rows use `(business_id, locale_code)` identity and cannot contradict the
+business's canonical default locale.
+
 ## Permission model
 
 The intended authorization vocabulary includes:
@@ -70,12 +76,12 @@ accepted only when the permission definition supports location scope.
 
 The initial platform permission registry contains only the keys needed to secure the foundation:
 `business.manage`, `locations.read`, `locations.manage`, `memberships.manage`,
-`permissions.manage`, `modules.manage`, and `audit.view`. A grantor must possess both
+`permissions.manage`, `modules.manage`, `media.manage`, `domains.manage`, and `audit.view`. A grantor must possess both
 `permissions.manage` and the permission being delegated at an equal or broader scope. This prevents
 self-escalation and scope escalation. Role templates and richer permission catalogues remain future
 product work.
 
-The trusted first-business function assigns all seven keys above at business scope. The bundle is
+The trusted first-business function assigns all nine keys above at business scope. The bundle is
 fixed in database code and cannot be chosen by a browser. Future onboarding must not turn that
 bootstrap exception into a general membership or permission management path.
 
@@ -86,6 +92,11 @@ create the initial tenant. It derives the owner from `auth.uid()`, serializes co
 that auth user, and atomically creates the business, active membership, reviewed permission bundle,
 and `business.created` audit event. It applies ILS and `Asia/Jerusalem` through the core business
 defaults and enables no modules.
+
+The Phase 6 forward migration extends the bootstrap bundle with `media.manage` and
+`domains.manage`. Its idempotent migration-time backfill grants those keys only to active
+memberships that already held the complete original seven-key owner bundle; arbitrary memberships
+are not broadened.
 
 An exact retry returns the existing business. A different request is rejected while the caller has
 an active membership. A suspended membership is not active access, so the user may establish a new
@@ -119,6 +130,10 @@ Capability mutations are allowed for tenant admins only while the business is ac
 businesses require an explicit platform super admin at the database boundary; archived businesses
 must be reactivated before changes. A platform-unavailable module retains existing tenant state but
 is not effectively enabled and cannot be newly enabled.
+
+Media, domain, and locale mutations are also active-business operations. Media and domain records
+are retained when archived or disabled, and platform-suspended businesses cannot advance DNS
+verification. Business locale changes keep the new default enabled in the same transaction.
 
 ## Isolation requirements
 

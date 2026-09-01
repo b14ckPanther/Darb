@@ -1,7 +1,8 @@
 # Core administration
 
-Status: authenticated business, location, and capability administration is implemented. Member,
-permission, engine, billing, media, domain, and analytics interfaces remain out of scope.
+Status: authenticated business, location, capability, shared media, custom-domain, and business
+language administration is implemented. Member, permission, engine, billing, and analytics
+interfaces remain out of scope.
 
 ## Current-business routing
 
@@ -20,6 +21,9 @@ storage.
 - `/b/[businessSlug]` shows the minimal core business summary;
 - `/b/[businessSlug]/settings` reads core identity, locale, currency, timezone, and lifecycle;
 - `/b/[businessSlug]/modules` reads the platform registry and current business capability state;
+- `/b/[businessSlug]/media` uploads, describes, lists, and archives shared business assets;
+- `/b/[businessSlug]/domains` manages retained DNS-verified hostname claims;
+- `/b/[businessSlug]/languages` manages the enabled locale set and canonical default;
 - `/b/[businessSlug]/locations` lists only locations visible through RLS;
 - `/b/[businessSlug]/locations/new` creates a reusable core location;
 - `/b/[businessSlug]/locations/[locationId]` edits or archives one accessible location.
@@ -30,6 +34,11 @@ when the caller has
 business-wide location access or at least one exact location is visible. Creating requires
 business-wide `locations.manage`; updating or archiving accepts business-wide or matching
 location-scoped `locations.manage`. Business edits require `business.manage`.
+
+Media and Domains navigation appears only with `media.manage` or `domains.manage`; the underlying
+pages remain RLS-readable if an authorized member follows a direct link, but controls are absent.
+Languages is broadly visible and becomes editable only with `business.manage`. All three sections
+are mutation-disabled unless the business is active.
 
 ## Mutation and audit boundary
 
@@ -42,6 +51,12 @@ metadata.
 Module state uses its own narrow Server Action and `core.set_business_module_enabled` RPC. It emits
 `business.module_enabled` or `business.module_disabled` only for actual transitions. The page is
 explicit that capability state does not launch an engine, create engine data, or represent billing.
+
+Media registration reserves a database-derived path before the browser uploads directly through
+Storage RLS. Completion, alt-text updates, and archive use normal authenticated RPCs. Domain claims
+use normal authenticated RPCs except for DNS verification evidence: Node resolves TXT records and a
+server-only client attests only the boolean outcome through a service-only RPC that repeats the
+initiating user's permission check. Language updates use one atomic `business.manage` RPC.
 
 Business currency is read-only until monetary workflows provide a safe product policy. Tenant admins
 may select `active` or `archived`; `suspended` remains platform-controlled. Locations can be active,
@@ -61,4 +76,7 @@ and Ubuntu remain the approved script fonts; mixed-direction data uses explicit 
 - member invitations, membership, role, and permission editors;
 - platform module-registry and super-admin interfaces;
 - location restoration or hard deletion;
-- all restaurant, booking, commerce, pages, media, domain, theme, and billing work.
+- physical media deletion, transformations, folders, and engine-specific references;
+- production custom-domain routing, provider attachment, and SSL automation;
+- translated engine content and translation-management tooling;
+- all restaurant, booking, commerce, pages, theme, and billing work.

@@ -41,7 +41,9 @@ be limited to audited, trusted server paths.
 
 `@darb/database/browser` and `@darb/database/server` accept publishable keys. The privileged factory
 is a separate `server-only` export, disables session persistence and refresh behavior, and requires
-its secret explicitly. No application uses it yet.
+its secret explicitly. The admin app uses it only after server-side DNS resolution to call the
+service-only domain verification attestation RPC. Ordinary tenant reads, writes, media uploads, and
+permission checks never use it.
 
 ## Application boundaries
 
@@ -90,6 +92,11 @@ Capability transitions emit `business.module_enabled` or `business.module_disabl
 actual state change. Metadata is limited to the canonical module key and previous/new booleans.
 No-op requests create neither duplicate state nor duplicate audit history.
 
+Shared media transitions emit `business.media_registered`, `business.media_updated`, and
+`business.media_archived`. Domain transitions emit added, verification outcome/restart, primary,
+and disabled events. Locale changes emit `business.locales_updated`. Metadata is allowlisted and
+never includes media payloads, raw forms, or DNS verification tokens.
+
 ## Core mutation boundaries
 
 Business and location Server Actions use the normal request-scoped authenticated client and never
@@ -109,12 +116,28 @@ writes to `core.business_modules` are revoked, and `core.set_business_module_ena
 cannot provide an actor, create a registry definition, attach metadata, or cross tenants. Module
 enablement is a business capability decision and is never treated as user authorization.
 
+## Storage and DNS boundaries
+
+Media upload is a three-step, fail-closed flow: an authenticated RPC reserves a UUID-derived bucket
+and path, the browser uploads directly with the same session through Storage RLS, and an
+authenticated completion RPC validates the stored owner, MIME, and byte size before activation.
+Image and video buckets carry separate MIME allowlists and 10 MiB/100 MiB limits. There is no tenant
+overwrite or delete policy; archive changes metadata and controlled physical cleanup remains
+deferred. Public-read bucket delivery is intentional for future high-volume storefront media and
+does not weaken metadata or write authorization.
+
+Domain verification never performs an HTTP ownership fetch. Server-only Node DNS resolves one exact
+TXT name with a timeout and distinguishes NXDOMAIN/no data from transient failures. Only the boolean
+result reaches a service-key RPC, which rechecks the initiating authenticated user's current
+`domains.manage` assignment and business lifecycle. The service key is an evidence-transport
+boundary, not tenant authorization; token values never enter logs or audit metadata.
+
 ## Bootstrap security
 
 `core.bootstrap_first_business` is a narrowly granted `security definer` function. It uses an empty
 `search_path`, schema-qualified objects, no dynamic SQL, and `auth.uid()` rather than caller-supplied
 identity. It validates display name, slug, and locale in Postgres; accepts no permission list or
-target user; assigns a fixed seven-permission bundle; and executes only for `authenticated`.
+target user; assigns a fixed nine-permission bundle; and executes only for `authenticated`.
 Unauthenticated, cross-user, arbitrary-permission, duplicate-slug, concurrency, and tenant-isolation
 behavior is covered at the database layer.
 
@@ -123,7 +146,7 @@ behavior is covered at the database layer.
 Sensitive public flows will be rate-limited and abuse-aware when those endpoints exist. Sensitive
 administrative operations will use the audit-event foundation when their server workflows are
 implemented. Password reset, sign-up, invitations, OAuth, magic links, MFA, session-duration policy,
-content-security policy, upload validation, audit retention, recovery, monitoring, and incident
+content-security policy, audit retention, recovery, monitoring, and incident
 response remain deferred until their concrete surfaces exist.
 
 ## Verification
@@ -137,6 +160,9 @@ proves business lifecycle restrictions, cross-tenant mutation denial, business-w
 location scope, append-only audit emission, anonymous denial, and explicit super-admin behavior.
 Phase 5 adds module permission/scope denial, unavailable and unknown key rejection, audited
 idempotency, direct-write denial, suspended/archived business rules, and cross-tenant state tests.
+Phase 6 adds Storage reservation/path/bucket denial, media lifecycle, global hostname uniqueness,
+reserved-host denial, DNS attestation/retry/lifecycle, domain primary invariants, locale invariants,
+owner-bundle backfill isolation, and Phase 6 audit redaction.
 Database fixtures are transaction-scoped and rolled back; browser fixtures are local-only and
 removed after the suite.
 

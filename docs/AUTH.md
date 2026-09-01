@@ -51,7 +51,8 @@ derives its caller from `auth.uid()` and atomically creates:
 1. the canonical business using the platform ILS and `Asia/Jerusalem` defaults;
 2. an active caller membership;
 3. business-wide assignments for `business.manage`, `locations.read`, `locations.manage`,
-   `memberships.manage`, `permissions.manage`, `modules.manage`, and `audit.view`;
+   `memberships.manage`, `permissions.manage`, `modules.manage`, `media.manage`, `domains.manage`,
+   and `audit.view`;
 4. a `business.created` audit event.
 
 No modules are enabled. The function accepts neither another user ID nor permission keys. Its exact
@@ -74,11 +75,11 @@ depends on local storage or an unvalidated browser value.
 
 - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are browser-visible and rely
   on RLS;
-- `SUPABASE_SECRET_KEY` is server-only and is not read by the admin application;
-- the secret key is used by local Playwright setup only to create an isolated auth test user and is
-  injected from local Supabase status rather than committed;
-- cleanup uses the local Postgres connection, refuses non-local hosts, and removes only the generated
-  user, business, and audit fixture without weakening production audit grants.
+- `SUPABASE_SECRET_KEY` is server-only. Runtime code reads it only for the narrow DNS-result
+  attestation RPC; local Playwright also uses the ephemeral local value to create and clean fixtures;
+- cleanup refuses non-local database hosts, removes generated Storage objects through the local
+  service boundary first, and then removes only the generated user/business fixtures without
+  weakening production audit grants.
 
 ## Deferred auth work
 

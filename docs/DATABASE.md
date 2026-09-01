@@ -1,7 +1,8 @@
 # Core database
 
-Status: core tenancy foundation and first-business bootstrap implemented locally through
-deterministic Supabase migrations. No remote migration has been performed.
+Status: core tenancy, capability, media, custom-domain, and business-locale foundations are
+implemented through deterministic Supabase migrations. Remote application is environment-specific
+and must be verified with `supabase migration list`.
 
 ## Schema boundaries
 
@@ -27,6 +28,9 @@ schemas before clients can address it.
 | `core.permissions`            | Stable permission-key registry and allowed assignment scope                        |
 | `core.membership_permissions` | Normalized business-wide or location-scoped permission assignments                 |
 | `core.business_modules`       | Data-driven module enablement per business, independent of billing                 |
+| `core.media_assets`           | Shared business media metadata and immutable Storage object identity               |
+| `core.business_domains`       | Retained, globally unique DNS-verified custom-domain claims                        |
+| `core.business_locales`       | Per-business enabled locale set; business default remains canonical                |
 | `core.audit_events`           | Append-oriented sensitive-operation event foundation                               |
 | `private.super_admins`        | Revocable platform-wide administrators, separate from tenant access                |
 
@@ -90,10 +94,23 @@ return `changed = false` and emit no audit event. New enablement is blocked for 
 tenant admins cannot mutate suspended or archived businesses, explicit super admins may handle
 suspended businesses, and archived businesses must be reactivated first.
 
+Phase 6 extends the snapshot with `can_manage_media` and `can_manage_domains`. It adds narrow
+authenticated media RPCs for reservation, Storage completion, alt-text updates, and archive;
+domain RPCs for add, verification restart, primary selection, and disable; and one atomic
+`business.manage` locale-set mutation. Media/domain mutation functions require their dedicated
+business-wide permission and an active business. All retain state instead of hard-deleting.
+
+`core.record_business_domain_verification(domain_id, requesting_user_id, succeeded)` is the sole
+service-only application RPC. It accepts evidence only from trusted server runtime after Node DNS
+resolution, rechecks that the initiating user still holds `domains.manage` (or explicit platform
+super-admin status), and records only the boolean outcome. It cannot be executed by normal or
+anonymous clients and no token is accepted or audited.
+
 `private.is_valid_timezone(text)` checks submitted values against Postgres' IANA timezone catalog.
-All mutation functions derive the actor with `auth.uid()`, fully qualify objects, use an empty
-`search_path`, and write the mutation plus allowlisted audit metadata in one transaction. Execute is
-granted only to `authenticated`; neither anonymous nor service-role callers use these RPCs.
+Ordinary tenant mutation functions derive the actor with `auth.uid()`, fully qualify objects, use an
+empty `search_path`, and write the mutation plus allowlisted audit metadata in one transaction.
+Execute is granted only to `authenticated`; the DNS attestation exception above is service-only and
+does not perform ordinary tenant management.
 
 ## RLS and grants
 
@@ -113,6 +130,17 @@ function is the ordinary tenant write path. The service role retains its expecte
 bypass for trusted server operations, but its
 grant cannot update, delete, or truncate audit events. It is not equivalent to a row in
 `private.super_admins`.
+
+Direct authenticated writes to Phase 6 core tables are also withheld. Active members may read only
+their tenant rows through RLS. Media, domain, and locale transitions go through reviewed RPCs;
+anonymous access is denied.
+
+Storage uses the shared public-read buckets `tenant-media-images` and `tenant-media-videos`. Their
+10 MiB and 100 MiB bucket limits and MIME allowlists are version-controlled. Authenticated insert
+policy requires an exact pending `core.media_assets` reservation, matching derived bucket/path,
+reservation owner, and current `media.manage`; there is no normal update/delete policy. Completion
+checks the final object owner, MIME, and byte size before activating metadata. Public reads are a
+delivery decision, not a write grant.
 
 ## Platform reference data
 
@@ -157,6 +185,10 @@ location-scoped read/update/archive behavior, anonymous denial, and exact audit 
 Module coverage proves audited enable/disable, no-op idempotency, unique state, direct-write denial,
 cross-tenant and location-scope isolation, unavailable-key rejection, lifecycle restrictions,
 anonymous denial, and explicit super-admin behavior.
+Phase 6 coverage adds kind-specific Storage configuration and ownership, immutable paths, MIME/size
+validation, permission and cross-tenant denial, archive retention, domain normalization and global
+uniqueness, DNS attestation/retry/lifecycle, primary-domain invariants, locale default/enablement
+invariants, owner-bundle evolution, anonymous denial, and redacted audit events.
 
 ## Intentionally deferred
 
@@ -167,4 +199,7 @@ anonymous denial, and explicit super-admin behavior.
 - location restoration and hard-deletion workflows;
 - engine-owned tables and runtime behavior;
 - comprehensive audit retention and export policy;
-- billing, custom domains, storage policy, and remote deployment.
+- physical media deletion and transformations;
+- production custom-domain routing/provider automation;
+- engine-localized content tables;
+- billing and remote deployment.
