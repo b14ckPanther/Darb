@@ -244,32 +244,33 @@ test("selects, customizes, previews, isolates, and resets an appearance foundati
   await expect(page.getByText("Composition and tokens—not arbitrary CSS")).toBeVisible();
   await expect(page.locator('a[href*="/pages"]')).toHaveCount(0);
 
-  await page.getByRole("radio", { name: /Editorial/ }).check();
-  await page.getByLabel("Primary color", { exact: true }).fill("#3a2140");
-  await page.getByLabel("Corners", { exact: true }).selectOption("bold");
-  await page.getByLabel("Density", { exact: true }).selectOption("spacious");
-  await page.getByLabel("Depth", { exact: true }).selectOption("medium");
-  await page.getByLabel("Motion", { exact: true }).selectOption("expressive");
-  await page.getByRole("button", { name: "Reset primary color" }).click();
-  await expect(page.getByLabel("Primary color", { exact: true })).toHaveValue("#4A253F");
-  await page.getByLabel("Primary color", { exact: true }).fill("#3a2140");
-  await page.getByRole("button", { name: "Reset section" }).click();
-  await expect(page.getByLabel("Corners", { exact: true })).toHaveValue("soft");
-  await page.getByLabel("Corners", { exact: true }).selectOption("bold");
-  await page.getByLabel("Density", { exact: true }).selectOption("spacious");
-  await page.getByLabel("Depth", { exact: true }).selectOption("medium");
-  await page.getByLabel("Motion", { exact: true }).selectOption("expressive");
-  await page.getByLabel("Preview language").selectOption("ar");
+  const pagesAppearance = page.getByRole("region", { name: "Pages rendering foundation" });
+  await pagesAppearance.getByRole("radio", { name: /Editorial/ }).check();
+  await pagesAppearance.getByLabel("Primary color", { exact: true }).fill("#3a2140");
+  await pagesAppearance.getByLabel("Corners", { exact: true }).selectOption("bold");
+  await pagesAppearance.getByLabel("Density", { exact: true }).selectOption("spacious");
+  await pagesAppearance.getByLabel("Depth", { exact: true }).selectOption("medium");
+  await pagesAppearance.getByLabel("Motion", { exact: true }).selectOption("expressive");
+  await pagesAppearance.getByRole("button", { name: "Reset primary color" }).click();
+  await expect(pagesAppearance.getByLabel("Primary color", { exact: true })).toHaveValue("#4A253F");
+  await pagesAppearance.getByLabel("Primary color", { exact: true }).fill("#3a2140");
+  await pagesAppearance.getByRole("button", { name: "Reset section" }).click();
+  await expect(pagesAppearance.getByLabel("Corners", { exact: true })).toHaveValue("soft");
+  await pagesAppearance.getByLabel("Corners", { exact: true }).selectOption("bold");
+  await pagesAppearance.getByLabel("Density", { exact: true }).selectOption("spacious");
+  await pagesAppearance.getByLabel("Depth", { exact: true }).selectOption("medium");
+  await pagesAppearance.getByLabel("Motion", { exact: true }).selectOption("expressive");
+  await pagesAppearance.getByLabel("Preview language").selectOption("ar");
   await expect(
     page.locator('[aria-label="Live appearance preview"] [lang="ar"][dir="rtl"]'),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Save appearance" }).click();
+  await pagesAppearance.getByRole("button", { name: "Save appearance" }).click();
   await expect(page.getByText("Appearance saved and ready for future rendering.")).toBeVisible();
 
   await page.reload();
-  await expect(page.getByRole("radio", { name: /Editorial/ })).toBeChecked();
-  await expect(page.getByLabel("Primary color", { exact: true })).toHaveValue("#3A2140");
-  await expect(page.getByLabel("Corners", { exact: true })).toHaveValue("bold");
+  await expect(pagesAppearance.getByRole("radio", { name: /Editorial/ })).toBeChecked();
+  await expect(pagesAppearance.getByLabel("Primary color", { exact: true })).toHaveValue("#3A2140");
+  await expect(pagesAppearance.getByLabel("Corners", { exact: true })).toHaveValue("bold");
 
   await page.getByLabel("Current business").selectOption(secondBusinessSlug);
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/appearance$`));
@@ -281,18 +282,18 @@ test("selects, customizes, previews, isolates, and resets an appearance foundati
   await secondaryPages.getByRole("button", { name: "Enable capability" }).click();
   await expect(secondaryPages.getByText("Pages enabled.")).toBeVisible();
   await page.getByRole("link", { exact: true, name: "Appearance" }).click();
-  await expect(page.getByRole("radio", { name: /Canvas/ })).toBeChecked();
+  await expect(pagesAppearance.getByRole("radio", { name: /Canvas/ })).toBeChecked();
 
   await page.getByLabel("Current business").selectOption(updatedBusinessSlug);
   await expect(page).toHaveURL(new RegExp(`/b/${updatedBusinessSlug}/appearance$`));
-  await expect(page.getByRole("radio", { name: /Editorial/ })).toBeChecked();
-  await page.getByRole("button", { name: "Reset theme" }).click();
-  await expect(page.getByText("Reset every override")).toBeVisible();
-  await page.getByRole("button", { name: "Confirm reset" }).click();
+  await expect(pagesAppearance.getByRole("radio", { name: /Editorial/ })).toBeChecked();
+  await pagesAppearance.getByRole("button", { name: "Reset theme" }).click();
+  await expect(pagesAppearance.getByText("Reset every override")).toBeVisible();
+  await pagesAppearance.getByRole("button", { name: "Confirm reset" }).click();
   await expect(page.getByText("Theme overrides reset to the template defaults.")).toBeVisible();
   await page.reload();
-  await expect(page.getByLabel("Primary color", { exact: true })).toHaveValue("#4A253F");
-  await expect(page.getByLabel("Corners", { exact: true })).toHaveValue("soft");
+  await expect(pagesAppearance.getByLabel("Primary color", { exact: true })).toHaveValue("#4A253F");
+  await expect(pagesAppearance.getByLabel("Corners", { exact: true })).toHaveValue("soft");
 
   await page.goto(`/b/${updatedBusinessSlug}`);
   const pagesCapability = page.locator(".overview-module-list > li").filter({ hasText: "Pages" });

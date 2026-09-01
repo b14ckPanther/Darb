@@ -28,6 +28,14 @@ export default defineConfig({
         baseURL: "http://localhost:3001",
       },
     },
+    {
+      name: "rest-chromium",
+      testMatch: /rest\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "http://localhost:3002",
+      },
+    },
   ],
   webServer: [
     {
@@ -39,6 +47,12 @@ export default defineConfig({
     {
       command: "pnpm --filter @darb/admin dev",
       url: "http://localhost:3001",
+      reuseExistingServer: !isContinuousIntegration,
+      timeout: 120_000,
+    },
+    {
+      command: "pnpm --filter @darb/rest dev",
+      url: "http://localhost:3002",
       reuseExistingServer: !isContinuousIntegration,
       timeout: 120_000,
     },
