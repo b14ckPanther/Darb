@@ -47,6 +47,91 @@ export type Database = {
           },
         ];
       };
+      business_domains: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          hostname: string;
+          id: string;
+          is_primary: boolean;
+          status: Database["core"]["Enums"]["domain_status"];
+          updated_at: string;
+          verification_checked_at: string | null;
+          verification_method: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at: string | null;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          hostname: string;
+          id?: string;
+          is_primary?: boolean;
+          status?: Database["core"]["Enums"]["domain_status"];
+          updated_at?: string;
+          verification_checked_at?: string | null;
+          verification_method?: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at?: string | null;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          hostname?: string;
+          id?: string;
+          is_primary?: boolean;
+          status?: Database["core"]["Enums"]["domain_status"];
+          updated_at?: string;
+          verification_checked_at?: string | null;
+          verification_method?: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token?: string;
+          verified_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_domains_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      business_locales: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          is_enabled: boolean;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          is_enabled?: boolean;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          is_enabled?: boolean;
+          locale_code?: Database["core"]["Enums"]["locale_code"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_locales_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       business_modules: {
         Row: {
           business_id: string;
@@ -174,6 +259,71 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "locations_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      media_assets: {
+        Row: {
+          alt_text: string | null;
+          business_id: string;
+          byte_size: number;
+          created_at: string;
+          created_by: string | null;
+          duration_ms: number | null;
+          height: number | null;
+          id: string;
+          media_kind: Database["core"]["Enums"]["media_kind"];
+          mime_type: string;
+          original_filename: string;
+          status: Database["core"]["Enums"]["media_status"];
+          storage_bucket: string;
+          storage_path: string;
+          updated_at: string;
+          width: number | null;
+        };
+        Insert: {
+          alt_text?: string | null;
+          business_id: string;
+          byte_size: number;
+          created_at?: string;
+          created_by?: string | null;
+          duration_ms?: number | null;
+          height?: number | null;
+          id?: string;
+          media_kind: Database["core"]["Enums"]["media_kind"];
+          mime_type: string;
+          original_filename: string;
+          status?: Database["core"]["Enums"]["media_status"];
+          storage_bucket: string;
+          storage_path: string;
+          updated_at?: string;
+          width?: number | null;
+        };
+        Update: {
+          alt_text?: string | null;
+          business_id?: string;
+          byte_size?: number;
+          created_at?: string;
+          created_by?: string | null;
+          duration_ms?: number | null;
+          height?: number | null;
+          id?: string;
+          media_kind?: Database["core"]["Enums"]["media_kind"];
+          mime_type?: string;
+          original_filename?: string;
+          status?: Database["core"]["Enums"]["media_status"];
+          storage_bucket?: string;
+          storage_path?: string;
+          updated_at?: string;
+          width?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "media_assets_business_id_fkey";
             columns: ["business_id"];
             isOneToOne: false;
             referencedRelation: "businesses";
@@ -362,6 +512,29 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      add_business_domain: {
+        Args: { requested_hostname: string; target_business_id: string };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          hostname: string;
+          id: string;
+          is_primary: boolean;
+          status: Database["core"]["Enums"]["domain_status"];
+          updated_at: string;
+          verification_checked_at: string | null;
+          verification_method: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "business_domains";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       archive_location: {
         Args: { target_business_id: string; target_location_id: string };
         Returns: {
@@ -385,6 +558,33 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      archive_media_asset: {
+        Args: { target_business_id: string; target_media_asset_id: string };
+        Returns: {
+          alt_text: string | null;
+          business_id: string;
+          byte_size: number;
+          created_at: string;
+          created_by: string | null;
+          duration_ms: number | null;
+          height: number | null;
+          id: string;
+          media_kind: Database["core"]["Enums"]["media_kind"];
+          mime_type: string;
+          original_filename: string;
+          status: Database["core"]["Enums"]["media_status"];
+          storage_bucket: string;
+          storage_path: string;
+          updated_at: string;
+          width: number | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "media_assets";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       bootstrap_first_business: {
         Args: {
           requested_default_locale: string;
@@ -398,6 +598,33 @@ export type Database = {
           business_slug: string;
           was_created: boolean;
         }[];
+      };
+      complete_media_asset: {
+        Args: { target_business_id: string; target_media_asset_id: string };
+        Returns: {
+          alt_text: string | null;
+          business_id: string;
+          byte_size: number;
+          created_at: string;
+          created_by: string | null;
+          duration_ms: number | null;
+          height: number | null;
+          id: string;
+          media_kind: Database["core"]["Enums"]["media_kind"];
+          mime_type: string;
+          original_filename: string;
+          status: Database["core"]["Enums"]["media_status"];
+          storage_bucket: string;
+          storage_path: string;
+          updated_at: string;
+          width: number | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "media_assets";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
       };
       create_location: {
         Args: {
@@ -435,6 +662,8 @@ export type Database = {
         Returns: {
           can_manage_all_locations: boolean;
           can_manage_business: boolean;
+          can_manage_domains: boolean;
+          can_manage_media: boolean;
           can_manage_modules: boolean;
           can_read_all_locations: boolean;
           can_view_audit: boolean;
@@ -450,6 +679,139 @@ export type Database = {
         Returns: boolean;
       };
       current_user_is_super_admin: { Args: never; Returns: boolean };
+      disable_business_domain: {
+        Args: { target_business_id: string; target_domain_id: string };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          hostname: string;
+          id: string;
+          is_primary: boolean;
+          status: Database["core"]["Enums"]["domain_status"];
+          updated_at: string;
+          verification_checked_at: string | null;
+          verification_method: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "business_domains";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      record_business_domain_verification: {
+        Args: {
+          requesting_user_id: string;
+          target_domain_id: string;
+          verification_succeeded: boolean;
+        };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          hostname: string;
+          id: string;
+          is_primary: boolean;
+          status: Database["core"]["Enums"]["domain_status"];
+          updated_at: string;
+          verification_checked_at: string | null;
+          verification_method: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "business_domains";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      register_media_asset: {
+        Args: {
+          requested_alt_text?: string;
+          requested_byte_size: number;
+          requested_duration_ms?: number;
+          requested_height?: number;
+          requested_media_kind: string;
+          requested_mime_type: string;
+          requested_original_filename: string;
+          requested_width?: number;
+          target_business_id: string;
+        };
+        Returns: {
+          alt_text: string | null;
+          business_id: string;
+          byte_size: number;
+          created_at: string;
+          created_by: string | null;
+          duration_ms: number | null;
+          height: number | null;
+          id: string;
+          media_kind: Database["core"]["Enums"]["media_kind"];
+          mime_type: string;
+          original_filename: string;
+          status: Database["core"]["Enums"]["media_status"];
+          storage_bucket: string;
+          storage_path: string;
+          updated_at: string;
+          width: number | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "media_assets";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      restart_business_domain_verification: {
+        Args: { target_business_id: string; target_domain_id: string };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          hostname: string;
+          id: string;
+          is_primary: boolean;
+          status: Database["core"]["Enums"]["domain_status"];
+          updated_at: string;
+          verification_checked_at: string | null;
+          verification_method: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "business_domains";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      set_business_domain_primary: {
+        Args: { target_business_id: string; target_domain_id: string };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          hostname: string;
+          id: string;
+          is_primary: boolean;
+          status: Database["core"]["Enums"]["domain_status"];
+          updated_at: string;
+          verification_checked_at: string | null;
+          verification_method: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "business_domains";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       set_business_module_enabled: {
         Args: {
           requested_enabled: boolean;
@@ -460,6 +822,18 @@ export type Database = {
           changed: boolean;
           is_enabled: boolean;
           module_key: string;
+        }[];
+      };
+      update_business_locales: {
+        Args: {
+          requested_default_locale: string;
+          requested_enabled_locales: string[];
+          target_business_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          default_locale: Database["core"]["Enums"]["locale_code"];
+          enabled_locales: Database["core"]["Enums"]["locale_code"][];
         }[];
       };
       update_business_settings: {
@@ -523,12 +897,47 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      update_media_asset_alt_text: {
+        Args: {
+          requested_alt_text: string;
+          target_business_id: string;
+          target_media_asset_id: string;
+        };
+        Returns: {
+          alt_text: string | null;
+          business_id: string;
+          byte_size: number;
+          created_at: string;
+          created_by: string | null;
+          duration_ms: number | null;
+          height: number | null;
+          id: string;
+          media_kind: Database["core"]["Enums"]["media_kind"];
+          mime_type: string;
+          original_filename: string;
+          status: Database["core"]["Enums"]["media_status"];
+          storage_bucket: string;
+          storage_path: string;
+          updated_at: string;
+          width: number | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "media_assets";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
     };
     Enums: {
       audit_actor_kind: "user" | "system" | "service";
       business_status: "active" | "suspended" | "archived";
+      domain_status: "pending" | "verified" | "failed" | "disabled";
+      domain_verification_method: "dns_txt";
       locale_code: "ar" | "he" | "en";
       location_status: "active" | "inactive" | "archived";
+      media_kind: "image" | "video";
+      media_status: "pending" | "active" | "archived";
       membership_status: "active" | "suspended";
       permission_scope: "business" | "business_or_location";
     };
@@ -671,8 +1080,12 @@ export const Constants = {
     Enums: {
       audit_actor_kind: ["user", "system", "service"],
       business_status: ["active", "suspended", "archived"],
+      domain_status: ["pending", "verified", "failed", "disabled"],
+      domain_verification_method: ["dns_txt"],
       locale_code: ["ar", "he", "en"],
       location_status: ["active", "inactive", "archived"],
+      media_kind: ["image", "video"],
+      media_status: ["pending", "active", "archived"],
       membership_status: ["active", "suspended"],
       permission_scope: ["business", "business_or_location"],
     },
