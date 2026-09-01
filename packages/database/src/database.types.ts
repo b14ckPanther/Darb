@@ -174,6 +174,61 @@ export type Database = {
           },
         ];
       };
+      business_visual_settings: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          module_key: string;
+          template_key: string;
+          theme_overrides: Json;
+          theme_schema_version: number;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          module_key: string;
+          template_key: string;
+          theme_overrides?: Json;
+          theme_schema_version?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          module_key?: string;
+          template_key?: string;
+          theme_overrides?: Json;
+          theme_schema_version?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_visual_settings_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "business_visual_settings_module_key_fkey";
+            columns: ["module_key"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "business_visual_settings_template_fk";
+            columns: ["module_key", "template_key"];
+            isOneToOne: false;
+            referencedRelation: "templates";
+            referencedColumns: ["module_key", "key"];
+          },
+        ];
+      };
       businesses: {
         Row: {
           created_at: string;
@@ -507,6 +562,59 @@ export type Database = {
         };
         Relationships: [];
       };
+      templates: {
+        Row: {
+          created_at: string;
+          default_theme: Json;
+          description: string;
+          display_name: string;
+          is_available: boolean;
+          is_default: boolean;
+          key: string;
+          module_key: string;
+          sort_order: number;
+          template_version: number;
+          theme_schema_version: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          default_theme: Json;
+          description: string;
+          display_name: string;
+          is_available?: boolean;
+          is_default?: boolean;
+          key: string;
+          module_key: string;
+          sort_order?: number;
+          template_version?: number;
+          theme_schema_version?: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          default_theme?: Json;
+          description?: string;
+          display_name?: string;
+          is_available?: boolean;
+          is_default?: boolean;
+          key?: string;
+          module_key?: string;
+          sort_order?: number;
+          template_version?: number;
+          theme_schema_version?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "templates_module_key_fkey";
+            columns: ["module_key"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["key"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -661,6 +769,7 @@ export type Database = {
         Args: { target_business_id: string };
         Returns: {
           can_manage_all_locations: boolean;
+          can_manage_appearance: boolean;
           can_manage_business: boolean;
           can_manage_domains: boolean;
           can_manage_media: boolean;
@@ -766,6 +875,14 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      reset_business_theme_overrides: {
+        Args: { target_business_id: string; target_module_key: string };
+        Returns: {
+          changed: boolean;
+          module_key: string;
+          template_key: string;
+        }[];
+      };
       restart_business_domain_verification: {
         Args: { target_business_id: string; target_domain_id: string };
         Returns: {
@@ -788,6 +905,21 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      set_business_appearance: {
+        Args: {
+          requested_theme_overrides: Json;
+          target_business_id: string;
+          target_module_key: string;
+          target_template_key: string;
+        };
+        Returns: {
+          changed: boolean;
+          module_key: string;
+          template_changed: boolean;
+          template_key: string;
+          theme_changed: boolean;
+        }[];
       };
       set_business_domain_primary: {
         Args: { target_business_id: string; target_domain_id: string };
