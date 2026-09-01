@@ -1094,6 +1094,805 @@ export type Database = {
       [_ in never]: never;
     };
   };
+  restaurant: {
+    Tables: {
+      categories: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          display_order: number;
+          id: string;
+          image_media_asset_id: string | null;
+          internal_name: string;
+          is_visible: boolean;
+          lifecycle_status: Database["restaurant"]["Enums"]["lifecycle_status"];
+          menu_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          display_order?: number;
+          id?: string;
+          image_media_asset_id?: string | null;
+          internal_name: string;
+          is_visible?: boolean;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          menu_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          display_order?: number;
+          id?: string;
+          image_media_asset_id?: string | null;
+          internal_name?: string;
+          is_visible?: boolean;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          menu_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "categories_menu_fk";
+            columns: ["business_id", "menu_id"];
+            isOneToOne: false;
+            referencedRelation: "menus";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+      category_translations: {
+        Row: {
+          business_id: string;
+          category_id: string;
+          created_at: string;
+          description: string | null;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          category_id: string;
+          created_at?: string;
+          description?: string | null;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          category_id?: string;
+          created_at?: string;
+          description?: string | null;
+          locale_code?: Database["core"]["Enums"]["locale_code"];
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "category_translations_category_fk";
+            columns: ["business_id", "category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+      configurations: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          is_publicly_active: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          is_publicly_active?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          is_publicly_active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      item_location_availability: {
+        Row: {
+          availability_status: Database["restaurant"]["Enums"]["availability_status"];
+          business_id: string;
+          created_at: string;
+          item_id: string;
+          location_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          availability_status: Database["restaurant"]["Enums"]["availability_status"];
+          business_id: string;
+          created_at?: string;
+          item_id: string;
+          location_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          availability_status?: Database["restaurant"]["Enums"]["availability_status"];
+          business_id?: string;
+          created_at?: string;
+          item_id?: string;
+          location_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "item_location_availability_item_fk";
+            columns: ["business_id", "item_id"];
+            isOneToOne: false;
+            referencedRelation: "items";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+      item_modifier_groups: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          display_order: number;
+          item_id: string;
+          maximum_selections: number;
+          minimum_selections: number;
+          modifier_group_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          display_order?: number;
+          item_id: string;
+          maximum_selections?: number;
+          minimum_selections?: number;
+          modifier_group_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          display_order?: number;
+          item_id?: string;
+          maximum_selections?: number;
+          minimum_selections?: number;
+          modifier_group_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "item_modifier_groups_group_fk";
+            columns: ["business_id", "modifier_group_id"];
+            isOneToOne: false;
+            referencedRelation: "modifier_groups";
+            referencedColumns: ["business_id", "id"];
+          },
+          {
+            foreignKeyName: "item_modifier_groups_item_fk";
+            columns: ["business_id", "item_id"];
+            isOneToOne: false;
+            referencedRelation: "items";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+      item_translations: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          description: string | null;
+          item_id: string;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          description?: string | null;
+          item_id: string;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          description?: string | null;
+          item_id?: string;
+          locale_code?: Database["core"]["Enums"]["locale_code"];
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "item_translations_item_fk";
+            columns: ["business_id", "item_id"];
+            isOneToOne: false;
+            referencedRelation: "items";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+      item_variant_translations: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          item_variant_id: string;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          item_variant_id: string;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          item_variant_id?: string;
+          locale_code?: Database["core"]["Enums"]["locale_code"];
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "item_variant_translations_variant_fk";
+            columns: ["business_id", "item_variant_id"];
+            isOneToOne: false;
+            referencedRelation: "item_variants";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+      item_variants: {
+        Row: {
+          availability_status: Database["restaurant"]["Enums"]["availability_status"];
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          display_order: number;
+          id: string;
+          internal_name: string;
+          is_visible: boolean;
+          item_id: string;
+          lifecycle_status: Database["restaurant"]["Enums"]["lifecycle_status"];
+          price_minor: number;
+          updated_at: string;
+        };
+        Insert: {
+          availability_status?: Database["restaurant"]["Enums"]["availability_status"];
+          business_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          display_order?: number;
+          id?: string;
+          internal_name: string;
+          is_visible?: boolean;
+          item_id: string;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          price_minor: number;
+          updated_at?: string;
+        };
+        Update: {
+          availability_status?: Database["restaurant"]["Enums"]["availability_status"];
+          business_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          display_order?: number;
+          id?: string;
+          internal_name?: string;
+          is_visible?: boolean;
+          item_id?: string;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          price_minor?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "item_variants_item_fk";
+            columns: ["business_id", "item_id"];
+            isOneToOne: false;
+            referencedRelation: "items";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+      items: {
+        Row: {
+          availability_status: Database["restaurant"]["Enums"]["availability_status"];
+          base_price_minor: number;
+          business_id: string;
+          category_id: string;
+          created_at: string;
+          created_by: string | null;
+          display_order: number;
+          id: string;
+          image_media_asset_id: string | null;
+          internal_name: string;
+          is_visible: boolean;
+          lifecycle_status: Database["restaurant"]["Enums"]["lifecycle_status"];
+          menu_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          availability_status?: Database["restaurant"]["Enums"]["availability_status"];
+          base_price_minor: number;
+          business_id: string;
+          category_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          display_order?: number;
+          id?: string;
+          image_media_asset_id?: string | null;
+          internal_name: string;
+          is_visible?: boolean;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          menu_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          availability_status?: Database["restaurant"]["Enums"]["availability_status"];
+          base_price_minor?: number;
+          business_id?: string;
+          category_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          display_order?: number;
+          id?: string;
+          image_media_asset_id?: string | null;
+          internal_name?: string;
+          is_visible?: boolean;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          menu_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "items_category_fk";
+            columns: ["business_id", "menu_id", "category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["business_id", "menu_id", "id"];
+          },
+        ];
+      };
+      menu_translations: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          description: string | null;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          menu_id: string;
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          description?: string | null;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          menu_id: string;
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          description?: string | null;
+          locale_code?: Database["core"]["Enums"]["locale_code"];
+          menu_id?: string;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "menu_translations_menu_fk";
+            columns: ["business_id", "menu_id"];
+            isOneToOne: false;
+            referencedRelation: "menus";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+      menus: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          display_order: number;
+          id: string;
+          internal_name: string;
+          lifecycle_status: Database["restaurant"]["Enums"]["lifecycle_status"];
+          publication_status: Database["restaurant"]["Enums"]["publication_status"];
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          display_order?: number;
+          id?: string;
+          internal_name: string;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          publication_status?: Database["restaurant"]["Enums"]["publication_status"];
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          display_order?: number;
+          id?: string;
+          internal_name?: string;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          publication_status?: Database["restaurant"]["Enums"]["publication_status"];
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      modifier_group_translations: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          description: string | null;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          modifier_group_id: string;
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          description?: string | null;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          modifier_group_id: string;
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          description?: string | null;
+          locale_code?: Database["core"]["Enums"]["locale_code"];
+          modifier_group_id?: string;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "modifier_group_translations_group_fk";
+            columns: ["business_id", "modifier_group_id"];
+            isOneToOne: false;
+            referencedRelation: "modifier_groups";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+      modifier_groups: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          internal_name: string;
+          is_visible: boolean;
+          lifecycle_status: Database["restaurant"]["Enums"]["lifecycle_status"];
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          internal_name: string;
+          is_visible?: boolean;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          internal_name?: string;
+          is_visible?: boolean;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      modifier_translations: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          modifier_id: string;
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          locale_code: Database["core"]["Enums"]["locale_code"];
+          modifier_id: string;
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          locale_code?: Database["core"]["Enums"]["locale_code"];
+          modifier_id?: string;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "modifier_translations_modifier_fk";
+            columns: ["business_id", "modifier_id"];
+            isOneToOne: false;
+            referencedRelation: "modifiers";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+      modifiers: {
+        Row: {
+          availability_status: Database["restaurant"]["Enums"]["availability_status"];
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          display_order: number;
+          id: string;
+          internal_name: string;
+          is_visible: boolean;
+          lifecycle_status: Database["restaurant"]["Enums"]["lifecycle_status"];
+          modifier_group_id: string;
+          price_delta_minor: number;
+          updated_at: string;
+        };
+        Insert: {
+          availability_status?: Database["restaurant"]["Enums"]["availability_status"];
+          business_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          display_order?: number;
+          id?: string;
+          internal_name: string;
+          is_visible?: boolean;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          modifier_group_id: string;
+          price_delta_minor?: number;
+          updated_at?: string;
+        };
+        Update: {
+          availability_status?: Database["restaurant"]["Enums"]["availability_status"];
+          business_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          display_order?: number;
+          id?: string;
+          internal_name?: string;
+          is_visible?: boolean;
+          lifecycle_status?: Database["restaurant"]["Enums"]["lifecycle_status"];
+          modifier_group_id?: string;
+          price_delta_minor?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "modifiers_group_fk";
+            columns: ["business_id", "modifier_group_id"];
+            isOneToOne: false;
+            referencedRelation: "modifier_groups";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      remove_item_modifier_group: {
+        Args: {
+          target_business_id: string;
+          target_item_id: string;
+          target_modifier_group_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          item_id: string;
+          modifier_group_id: string;
+        }[];
+      };
+      save_category: {
+        Args: {
+          requested_display_order: number;
+          requested_image_media_asset_id: string;
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_visible: boolean;
+          target_business_id: string;
+          target_category_id: string;
+          target_menu_id: string;
+        };
+        Returns: {
+          category_id: string;
+          changed: boolean;
+          created: boolean;
+        }[];
+      };
+      save_configuration: {
+        Args: { requested_publicly_active: boolean; target_business_id: string };
+        Returns: {
+          business_id: string;
+          changed: boolean;
+          is_publicly_active: boolean;
+        }[];
+      };
+      save_item: {
+        Args: {
+          requested_availability_status: string;
+          requested_base_price_minor: number;
+          requested_display_order: number;
+          requested_image_media_asset_id: string;
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_visible: boolean;
+          target_business_id: string;
+          target_category_id: string;
+          target_item_id: string;
+          target_menu_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          created: boolean;
+          item_id: string;
+        }[];
+      };
+      save_item_variant: {
+        Args: {
+          requested_availability_status: string;
+          requested_display_order: number;
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_price_minor: number;
+          requested_visible: boolean;
+          target_business_id: string;
+          target_item_id: string;
+          target_variant_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          created: boolean;
+          variant_id: string;
+        }[];
+      };
+      save_menu: {
+        Args: {
+          requested_display_order: number;
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_publication_status: string;
+          target_business_id: string;
+          target_menu_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          created: boolean;
+          menu_id: string;
+        }[];
+      };
+      save_modifier: {
+        Args: {
+          requested_availability_status: string;
+          requested_display_order: number;
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_price_delta_minor: number;
+          requested_visible: boolean;
+          target_business_id: string;
+          target_modifier_group_id: string;
+          target_modifier_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          created: boolean;
+          modifier_id: string;
+        }[];
+      };
+      save_modifier_group: {
+        Args: {
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_visible: boolean;
+          target_business_id: string;
+          target_modifier_group_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          created: boolean;
+          modifier_group_id: string;
+        }[];
+      };
+      save_translation: {
+        Args: {
+          requested_description?: string;
+          requested_entity_type: string;
+          requested_locale_code: string;
+          requested_name: string;
+          target_business_id: string;
+          target_entity_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          entity_id: string;
+          entity_type: Database["restaurant"]["Enums"]["translatable_entity_type"];
+          locale_code: Database["core"]["Enums"]["locale_code"];
+        }[];
+      };
+      set_item_location_availability: {
+        Args: {
+          requested_availability_status: string;
+          target_business_id: string;
+          target_item_id: string;
+          target_location_id: string;
+        };
+        Returns: {
+          availability_status: Database["restaurant"]["Enums"]["availability_status"];
+          changed: boolean;
+          item_id: string;
+          location_id: string;
+        }[];
+      };
+      set_item_modifier_group: {
+        Args: {
+          requested_display_order: number;
+          requested_maximum_selections: number;
+          requested_minimum_selections: number;
+          target_business_id: string;
+          target_item_id: string;
+          target_modifier_group_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          item_id: string;
+          modifier_group_id: string;
+        }[];
+      };
+    };
+    Enums: {
+      availability_status: "available" | "sold_out";
+      lifecycle_status: "active" | "archived";
+      publication_status: "draft" | "published";
+      translatable_entity_type:
+        "menu" | "category" | "item" | "item_variant" | "modifier_group" | "modifier";
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
 };
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
@@ -1224,5 +2023,20 @@ export const Constants = {
   },
   public: {
     Enums: {},
+  },
+  restaurant: {
+    Enums: {
+      availability_status: ["available", "sold_out"],
+      lifecycle_status: ["active", "archived"],
+      publication_status: ["draft", "published"],
+      translatable_entity_type: [
+        "menu",
+        "category",
+        "item",
+        "item_variant",
+        "modifier_group",
+        "modifier",
+      ],
+    },
   },
 } as const;

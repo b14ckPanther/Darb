@@ -10,7 +10,7 @@
     "./types": "./src/database.types.ts"
   },
   "scripts": {
-    "generate:types": "supabase gen types typescript --local --schema core --schema public --workdir ../.. > src/database.types.ts && prettier --write src/database.types.ts",
+    "generate:types": "supabase gen types typescript --local --schema core --schema public --schema restaurant --workdir ../.. > src/database.types.ts && prettier --write src/database.types.ts",
     "lint": "eslint .",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
