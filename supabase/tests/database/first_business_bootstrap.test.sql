@@ -15,7 +15,7 @@ exception
 end;
 $$;
 
-select plan(27);
+select plan(28);
 
 insert into auth.users (
   id,
@@ -139,8 +139,18 @@ select set_eq(
       ('memberships.manage'::text),
       ('permissions.manage'::text),
       ('modules.manage'::text),
+      ('media.manage'::text),
+      ('domains.manage'::text),
       ('audit.view'::text)$$,
-  'bootstrap grants exactly the reviewed seven-permission owner bundle'
+  'bootstrap grants exactly the current reviewed nine-permission owner bundle'
+);
+
+select results_eq(
+  $$select locale_code::text, is_enabled
+      from core.business_locales
+      where business_id = (select id from core.businesses where slug = 'business-a')$$,
+  $$values ('ar'::text, true)$$,
+  'bootstrap creates one enabled row for the selected default locale'
 );
 
 select results_eq(
