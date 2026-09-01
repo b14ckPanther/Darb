@@ -15,7 +15,7 @@ const initialBusinessName = `Darb E2E ${runId}`;
 const initialBusinessSlug = fixturePrefix;
 const updatedBusinessName = `${initialBusinessName} Core`;
 const updatedBusinessSlug = `${fixturePrefix}-core`;
-const secondBusinessName = `Darb E2E Second ${runId}`;
+const secondBusinessName = `Darb E2E Regional Services and Operations Workspace ${runId}`;
 const secondBusinessSlug = `${fixturePrefix}-second`;
 const assignedLocationName = `Central Studio ${runId}`;
 const otherLocationName = `North Office ${runId}`;
@@ -105,7 +105,7 @@ test("completes first-business onboarding and enters the canonical workspace rou
   await page.getByRole("button", { name: "Create business" }).click();
 
   await expect(page).toHaveURL(new RegExp(`/b/${initialBusinessSlug}$`));
-  await expect(page.getByRole("heading", { name: initialBusinessName })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: initialBusinessName })).toBeVisible();
 
   const { data, error } = await adminClient
     .schema("core")
@@ -138,6 +138,34 @@ test("chooses and switches only between accessible business routes", async ({ pa
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/settings$`));
   await page.getByLabel("Current business").selectOption(initialBusinessSlug);
   await expect(page).toHaveURL(new RegExp(`/b/${initialBusinessSlug}/settings$`));
+});
+
+test("renders the unified Overview from real platform state and one grouped navigation model", async ({
+  page,
+}) => {
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${initialBusinessSlug}`);
+
+  await expect(page.getByRole("heading", { level: 1, name: initialBusinessName })).toBeVisible();
+  await expect(page.getByText(`darb.co.il/b/${initialBusinessSlug}`)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Clear next steps, without a made-up score" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Enabled state is not an engine launch" }),
+  ).toBeVisible();
+  await expect(page.locator(".overview-facts dd")).toHaveText(["0", "1", "0", "0"]);
+  await expect(page.locator('a[href*="/restaurant"]')).toHaveCount(0);
+
+  const navigation = page.getByRole("navigation", { name: "Business administration" });
+  await expect(navigation.getByRole("heading", { name: "Workspace" })).toBeVisible();
+  await expect(navigation.getByRole("heading", { name: "Business" })).toBeVisible();
+  await expect(navigation.getByRole("heading", { name: "Experience" })).toBeVisible();
+  await expect(navigation.getByRole("heading", { name: "Products" })).toBeVisible();
+  await expect(navigation.getByRole("link", { name: "Overview" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
 });
 
 test("updates business settings and redirects a slug change to its canonical route", async ({
@@ -263,6 +291,19 @@ test("selects, customizes, previews, isolates, and resets an appearance foundati
   await page.reload();
   await expect(page.getByLabel("Primary color", { exact: true })).toHaveValue("#4A253F");
   await expect(page.getByLabel("Corners", { exact: true })).toHaveValue("soft");
+
+  await page.goto(`/b/${updatedBusinessSlug}`);
+  const pagesCapability = page.locator(".overview-module-list > li").filter({ hasText: "Pages" });
+  await expect(
+    pagesCapability.getByText("Enabled · engine pending", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    pagesCapability.getByText(
+      "Capability enabled. Its engine administration is not available yet.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(page.locator('a[href*="/pages"]')).toHaveCount(0);
 });
 
 test("uploads, describes, and archives shared media without deleting Storage", async ({ page }) => {
@@ -296,7 +337,7 @@ test("uploads, describes, and archives shared media without deleting Storage", a
   );
   await persistedAsset.getByRole("button", { name: "Archive asset" }).click();
   await persistedAsset.getByRole("button", { name: "Confirm archive" }).click();
-  await expect(persistedAsset.getByText("archived", { exact: true })).toBeVisible();
+  await expect(persistedAsset.getByText("Archived", { exact: true })).toBeVisible();
 
   const { count, error } = await adminClient
     .schema("core")
@@ -326,7 +367,7 @@ test("records an honest failed DNS check and keeps domains isolated by business"
   await expect(
     domain.getByText("The exact TXT value was not found.", { exact: false }),
   ).toBeVisible();
-  await expect(domain.getByText("failed", { exact: true })).toBeVisible();
+  await expect(domain.getByText("Failed", { exact: true })).toBeVisible();
 
   await page.getByLabel("Current business").selectOption(secondBusinessSlug);
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/domains$`));
@@ -337,7 +378,7 @@ test("records an honest failed DNS check and keeps domains isolated by business"
   const restoredDomain = page.getByRole("article", { name: new RegExp(customHostname, "i") });
   await restoredDomain.getByRole("button", { name: "Disable domain" }).click();
   await restoredDomain.getByRole("button", { name: "Confirm disable" }).click();
-  await expect(restoredDomain.getByText("disabled", { exact: true })).toBeVisible();
+  await expect(restoredDomain.getByText("Disabled", { exact: true })).toBeVisible();
 });
 
 test("persists enabled languages and an atomic default-locale change", async ({ page }) => {
@@ -391,6 +432,11 @@ test("enforces read-only business access and exact location scope in the UI", as
 
   await signIn(page, scopedEmail);
   await expect(page).toHaveURL(new RegExp(`/b/${updatedBusinessSlug}$`));
+
+  await expect(page.getByText("Your access is scoped", { exact: false })).toBeVisible();
+  await expect(page.getByRole("link", { exact: true, name: "Media" })).toHaveCount(0);
+  await expect(page.getByRole("link", { exact: true, name: "Domains" })).toHaveCount(0);
+  await expect(page.getByRole("link", { exact: true, name: "Locations" })).toBeVisible();
 
   await page.getByRole("link", { exact: true, name: "Business settings" }).click();
   await expect(page.getByText("The business.manage permission is required")).toBeVisible();
@@ -451,7 +497,13 @@ test("archives a location without hard-deleting it", async ({ page }) => {
 
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}/locations/${otherLocationId}`);
-  await page.getByRole("button", { name: "Archive location" }).click();
+  const archiveTrigger = page.getByRole("button", { name: "Archive location" });
+  await archiveTrigger.click();
+  await expect(page.getByRole("dialog", { name: "Archive this location?" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Archive this location?" })).not.toBeVisible();
+  await expect(archiveTrigger).toBeFocused();
+  await archiveTrigger.click();
   await page.getByRole("button", { name: "Confirm archive" }).click();
 
   await expect(page).toHaveURL(new RegExp(`/locations/${otherLocationId}\\?archived=1$`));
@@ -465,8 +517,41 @@ test("keeps mobile navigation and the business switcher keyboard-operable", asyn
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}`);
 
-  await expect(page.getByRole("button", { name: "Open navigation" })).toBeVisible();
-  await page.getByRole("button", { name: "Open navigation" }).click();
+  await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+    .toBe(true);
+
+  const openNavigation = page.getByRole("button", { name: "Open navigation" });
+  await expect(openNavigation).toBeVisible();
+  await openNavigation.click();
+  await expect(page.getByRole("button", { name: "Close navigation" }).last()).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("button", { name: "Sign out" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Close navigation" }).last()).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(openNavigation).toBeFocused();
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect
+    .poll(() =>
+      page
+        .locator(".admin-sidebar")
+        .evaluate((element) => Number.parseFloat(getComputedStyle(element).transitionDuration)),
+    )
+    .toBeLessThanOrEqual(0.00001);
+
+  await page.evaluate(() => {
+    document.documentElement.dir = "rtl";
+  });
+  await openNavigation.click();
+  await expect
+    .poll(async () => {
+      const drawerBox = await page.locator(".admin-sidebar").boundingBox();
+      return drawerBox ? drawerBox.x + drawerBox.width : 0;
+    })
+    .toBeGreaterThan(380);
   await expect(page.getByRole("navigation", { name: "Business administration" })).toBeVisible();
   await page.getByLabel("Current business").focus();
   await page.getByLabel("Current business").selectOption(secondBusinessSlug);
@@ -486,6 +571,43 @@ test("keeps mobile navigation and the business switcher keyboard-operable", asyn
   await mobileRestaurant.getByRole("button", { name: "Disable capability" }).click();
   await mobileRestaurant.getByRole("button", { name: "Confirm disable" }).click();
   await expect(mobileRestaurant.getByText("Restaurant disabled.")).toBeVisible();
+});
+
+test("presents suspended and archived lifecycle restrictions consistently", async ({ page }) => {
+  if (!primaryBusinessId) throw new Error("The primary business fixture was not prepared.");
+
+  await signIn(page, ownerEmail);
+
+  const { error: suspendError } = await adminClient
+    .schema("core")
+    .from("businesses")
+    .update({ status: "suspended" })
+    .eq("id", primaryBusinessId);
+  if (suspendError) throw suspendError;
+
+  await page.goto(`/b/${updatedBusinessSlug}`);
+  await expect(page.getByText("Suspended by Darb", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("business users cannot reactivate it", { exact: false }),
+  ).toBeVisible();
+
+  const { error: archiveError } = await adminClient
+    .schema("core")
+    .from("businesses")
+    .update({ status: "archived" })
+    .eq("id", primaryBusinessId);
+  if (archiveError) throw archiveError;
+
+  await page.reload();
+  await expect(page.getByText("Archived · read-only", { exact: true })).toBeVisible();
+  await expect(page.getByText("retained for history", { exact: false })).toBeVisible();
+
+  const { error: restoreError } = await adminClient
+    .schema("core")
+    .from("businesses")
+    .update({ status: "active" })
+    .eq("id", primaryBusinessId);
+  if (restoreError) throw restoreError;
 });
 
 test("signs out and re-protects the admin route", async ({ page }) => {
