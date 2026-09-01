@@ -62,6 +62,11 @@ UUID through that same boundary. Location detail reads additionally constrain bo
 and `location_id`. Unauthorized tenant or resource routes fail closed without revealing whether an
 unavailable identifier exists.
 
+The admin navigation registry is filtered from the server-resolved permission and effective-module
+snapshot to avoid misleading UI, but it is never an authorization boundary. Direct routes and
+mutations retain their existing server/database checks. The Overview uses only ordinary
+request-scoped, RLS-visible reads and stores no dashboard or activity state.
+
 Return paths are accepted only as same-origin relative paths. Sign-in errors remain generic to avoid
 account enumeration. Sign-out is local to the current session. The app never uses the privileged
 client for ordinary auth, tenant reads, permission checks, or onboarding.

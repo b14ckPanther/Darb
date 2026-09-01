@@ -2,8 +2,9 @@
 
 Darb is the foundation of a multi-tenant, multi-product business platform for the Israeli market.
 The repository provides the engineering baseline, RLS-first core tenancy model, secure admin
-authentication/onboarding, and core business, location, capability, media, custom-domain, and
-language administration. It does not yet implement business engines or customer workflows.
+authentication/onboarding, and a unified tenant-admin environment for core business, location,
+capability, media, custom-domain, language, and appearance administration. It does not yet
+implement business engines or customer workflows.
 
 The platform is organized as a pnpm/Turborepo monorepo with separate Next.js applications for the
 public root domain and platform administration, shared packages for true platform concerns, and a
@@ -95,15 +96,16 @@ pnpm test:e2e
 
 ## Current status
 
-This repository has completed the monorepo, core database, authentication, core administration,
-capability, and Phase 6 platform-resource foundations. It includes migration-driven tenancy, RLS
+This repository has completed the monorepo, core database, authentication, platform-resource,
+theme/appearance, and unified tenant-admin foundations. It includes migration-driven tenancy, RLS
 authorization, atomic first-business bootstrap, protected multi-business routes, audited core
 mutations, shared image/video Storage coordination, DNS-verified domain claims, business locale
-state, generated database types, database isolation tests, and focused responsive admin UI.
+state, generated database types, database isolation tests, typed permission/module-aware navigation,
+real-state setup guidance, and responsive accessible admin interaction patterns.
 
-No tenant records or business-specific restaurant, booking, commerce, billing, page, storefront, or
-theme functionality has been implemented. The checked-in module and permission rows are deterministic
-platform registries, not tenant content.
+No tenant records or business-specific restaurant, booking, commerce, billing, page, storefront,
+or customer-facing engine runtime has been implemented. The checked-in module, permission, and
+template rows are deterministic platform registries, not tenant content.
 
 ## Engineering direction
 

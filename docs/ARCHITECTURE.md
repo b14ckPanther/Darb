@@ -64,6 +64,13 @@ Server Actions re-resolve the tenant and resource at their own trust boundaries.
 location writes use narrow authenticated RPCs so each mutation and its redacted audit event commit
 atomically.
 
+The tenant-admin shell is composed from one typed static navigation registry. Core sections and
+future engine contributions share the same item contract, but the server-resolved permission and
+effective-module snapshot filters every business instance before rendering. This is build-time
+application composition, not runtime plugin loading. The Overview parallelizes ordinary
+RLS-visible platform reads and derives honest setup guidance without persisting dashboard state.
+Platform super administration remains a separate future route/application concern.
+
 Shared media uses two platform buckets—images and videos—rather than tenant or engine buckets. UUID-
 derived paths and Storage RLS bind uploads to a database reservation; kind-specific buckets enforce
 the reviewed size/MIME ceilings, and completion rechecks stored metadata before activation. Public

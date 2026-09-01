@@ -1,8 +1,8 @@
 # Core administration
 
-Status: authenticated business, location, capability, appearance, shared media, custom-domain, and
-business language administration is implemented. Member, permission, engine, billing, and
-analytics interfaces remain out of scope.
+Status: the unified authenticated tenant-admin foundation is implemented across business,
+location, capability, appearance, shared media, custom-domain, and business-language surfaces.
+Member, permission, engine, billing, and analytics interfaces remain out of scope.
 
 ## Current-business routing
 
@@ -11,14 +11,16 @@ layout resolves the slug from the authenticated user's RLS-visible businesses, b
 business-wide access snapshot, and loads RLS-visible locations and capability state. Unauthorized
 slugs fail closed.
 
-The business chooser appears at `/` when more than one business is accessible; one business redirects
-directly to its workspace. The switcher lists only authorized businesses and preserves settings,
-modules, appearance, or the location-list section when safe. Tenant identity is never sourced solely from local
-storage.
+The business chooser appears at `/` when more than one business is accessible; one business
+redirects directly to its workspace. The switcher lists only authorized businesses and preserves a
+registered core top-level section when safe. Resource-specific paths fall back to that section's
+list. Engine and unregistered paths fall back to the target business Overview until the target
+business's capability/access state can be resolved. Tenant identity is never sourced solely from
+local storage.
 
 ## Available sections
 
-- `/b/[businessSlug]` shows the minimal core business summary;
+- `/b/[businessSlug]` shows the real platform-state Overview and setup guidance;
 - `/b/[businessSlug]/settings` reads core identity, locale, currency, timezone, and lifecycle;
 - `/b/[businessSlug]/modules` reads the platform registry and current business capability state;
 - `/b/[businessSlug]/appearance` resolves enabled template contexts and controlled theme state;
@@ -29,9 +31,11 @@ storage.
 - `/b/[businessSlug]/locations/new` creates a reusable core location;
 - `/b/[businessSlug]/locations/[locationId]` edits or archives one accessible location.
 
-Navigation contains only these implemented sections. Modules are a read surface for authorized
-business members; controls require `modules.manage` and an active business. Locations appear only
-when the caller has
+One typed, ordered navigation registry owns the implemented Workspace, Business, Experience,
+Products, and future Governance groups. The protected layout resolves and filters it from the
+server-authoritative access snapshot and effective module state. Route and mutation authorization
+remain independent of navigation visibility. Modules are a read surface for authorized business
+members; controls require `modules.manage` and an active business. Locations appear only when the caller has
 business-wide location access or at least one exact location is visible. Creating requires
 business-wide `locations.manage`; updating or archiving accepts business-wide or matching
 location-scoped `locations.manage`. Business edits require `business.manage`.
@@ -73,14 +77,42 @@ inactive, or archived. Archive is non-destructive, idempotent, and read-only; re
 
 ## Interface foundation
 
-The shell is responsive across desktop, tablet, and mobile, with an accessible drawer, native
-keyboard-operable business selector, visible focus, touch-sized actions, labeled/error-associated
-forms, pending states, permission notices, empty states, and reduced-motion handling. Cairo, Heebo,
-and Ubuntu remain the approved script fonts; mixed-direction data uses explicit direction handling.
+The shell provides a stable Darb identity, obvious current-business context, grouped selected-state
+navigation, lifecycle communication, and an intentionally constrained content region. Desktop uses
+a proportioned fixed workspace rail. Tablet and mobile use a focus-trapped, scroll-locking drawer
+with Escape dismissal and focus restoration. The business selector is keyboard-operable, handles
+long names, and is usable inside either shell.
+
+The Overview derives identity, visible location count, enabled languages and modules, active media,
+verified/primary domains, and appearance state from RLS-visible platform data. Readiness is expressed
+as actionable required, recommended, and optional checks rather than a fabricated score. Enabled
+capabilities whose engines do not exist are explicitly identified as enabled but not yet available.
+
+Reusable admin-local primitives provide compact page headers and breadcrumbs, semantic status
+labels, lifecycle notices, page-shaped skeletons, empty/error/read-only states, and an accessible
+confirmation dialog. High-impact location archive and capability disable actions use the shared
+dialog rather than browser confirmation. Native form status remains inline and screen-reader
+announced; no global client-state or toast dependency is required.
+
+Cairo, Heebo, and Ubuntu remain the approved script fonts; mixed-direction data uses explicit
+direction handling. The shell retains semantic landmarks, skip navigation, visible focus,
+touch-sized actions, `aria-current`, reduced-motion handling, and responsive layout behavior.
+
+## Static engine extension contract
+
+`AdminEngineContribution` is the lightweight application-level contract for future engine-owned
+navigation. A contribution names its module key and provides typed navigation items with route and
+permission requirements. Composition is static and build-time controlled: there is no runtime code
+injection, marketplace, or plugin loader. A future Restaurant engine can contribute its implemented
+admin routes in one registry entry only after its schema, authorization, and routes exist.
+
+Platform super administration remains a separate future application boundary. Tenant navigation
+does not expose platform controls, and service-role capability is not treated as a tenant or
+platform-user permission.
 
 ## Intentionally deferred
 
-- full dashboard analytics and final navigation hierarchy;
+- engine KPIs, analytics dashboards, and configurable dashboard widgets;
 - additional-business creation beyond first-business bootstrap;
 - member invitations, membership, role, and permission editors;
 - platform module-registry and super-admin interfaces;

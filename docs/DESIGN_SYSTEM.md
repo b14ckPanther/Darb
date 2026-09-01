@@ -59,11 +59,15 @@ progress.
 ## Current implementation
 
 The admin application now provides script-aware font loading, an accessible skip link, a responsive
-matte-surface business shell, a route-backed business switcher, focused navigation, form and status
-states, and reusable page-level admin patterns. These remain inside `apps/admin` until reuse is
-demonstrated; they have not been prematurely promoted to `@darb/ui`.
+matte-surface business shell, a route-backed business switcher, grouped selected-state navigation,
+compact page headers, semantic statuses, lifecycle notices, page-shaped loading, empty/error/
+read-only states, and a focus-managed confirmation dialog. These admin-orchestration components
+remain inside `apps/admin` until cross-application reuse is demonstrated; they have not been
+prematurely promoted to `@darb/ui`.
 
-This is a scoped operational foundation, not the final dashboard or a complete component catalogue.
+The Overview presents real RLS-visible platform state and actionable readiness categories; it does
+not manufacture engine metrics, charts, or completion percentages. This is a scoped operational
+foundation, not an analytics dashboard or a complete component catalogue.
 The admin Appearance surface is a scoped editor/preview for the implemented contract. No
 customer-facing engine route, publishing workflow, analytics experience, advanced template engine,
 or page builder exists. See [`THEMES.md`](./THEMES.md).
