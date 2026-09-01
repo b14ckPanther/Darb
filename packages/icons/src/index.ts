@@ -6,10 +6,15 @@ import {
   Building03Icon,
   Cancel01Icon,
   CheckmarkCircle02Icon,
+  Copy01Icon,
   Edit02Icon,
+  Globe02Icon,
   Home04Icon,
+  Image01Icon,
+  ImageUpload01Icon,
   InformationCircleIcon as InformationCircleHugeicon,
   Layers01Icon,
+  LanguagesIcon,
   Location01Icon,
   LockPasswordIcon,
   Logout01Icon,
@@ -18,6 +23,7 @@ import {
   PlusSignIcon,
   Settings02Icon,
   Shield01Icon,
+  Video01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import { createElement, type ReactElement, type SVGProps } from "react";
@@ -64,6 +70,10 @@ export function CheckmarkCircleIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(CheckmarkCircle02Icon, props);
 }
 
+export function CopyIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(Copy01Icon, props);
+}
+
 export function EditIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Edit02Icon, props);
 }
@@ -72,12 +82,28 @@ export function HomeIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Home04Icon, props);
 }
 
+export function DomainIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(Globe02Icon, props);
+}
+
+export function ImageIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(Image01Icon, props);
+}
+
+export function ImageUploadIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(ImageUpload01Icon, props);
+}
+
 export function InformationCircleIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(InformationCircleHugeicon, props);
 }
 
 export function LocationIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Location01Icon, props);
+}
+
+export function LanguagesSettingsIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(LanguagesIcon, props);
 }
 
 export function LockIcon(props: DarbIconProps): ReactElement {
@@ -110,4 +136,8 @@ export function SettingsIcon(props: DarbIconProps): ReactElement {
 
 export function ShieldIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Shield01Icon, props);
+}
+
+export function VideoIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(Video01Icon, props);
 }

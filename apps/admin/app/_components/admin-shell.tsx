@@ -7,7 +7,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   BuildingIcon,
   CancelIcon,
+  DomainIcon,
   HomeIcon,
+  ImageIcon,
+  LanguagesSettingsIcon,
   LocationIcon,
   LogoutIcon,
   MenuIcon,
@@ -25,7 +28,9 @@ interface AdminShellProps {
   businesses: AccessibleBusiness[];
   children: ReactNode;
   currentBusiness: AccessibleBusiness;
+  showDomains: boolean;
   showLocations: boolean;
+  showMedia: boolean;
   user: CurrentUser;
 }
 
@@ -33,7 +38,9 @@ export function AdminShell({
   businesses,
   children,
   currentBusiness,
+  showDomains,
   showLocations,
+  showMedia,
   user,
 }: AdminShellProps) {
   const pathname = usePathname();
@@ -54,6 +61,32 @@ export function AdminShell({
       icon: ModulesIcon,
       label: "Modules",
       match: pathname.startsWith(`${basePath}/modules`),
+    },
+    ...(showMedia
+      ? [
+          {
+            href: businessSectionPath(currentBusiness.slug, "media"),
+            icon: ImageIcon,
+            label: "Media",
+            match: pathname.startsWith(`${basePath}/media`),
+          },
+        ]
+      : []),
+    ...(showDomains
+      ? [
+          {
+            href: businessSectionPath(currentBusiness.slug, "domains"),
+            icon: DomainIcon,
+            label: "Domains",
+            match: pathname.startsWith(`${basePath}/domains`),
+          },
+        ]
+      : []),
+    {
+      href: businessSectionPath(currentBusiness.slug, "languages"),
+      icon: LanguagesSettingsIcon,
+      label: "Languages",
+      match: pathname.startsWith(`${basePath}/languages`),
     },
     ...(showLocations
       ? [

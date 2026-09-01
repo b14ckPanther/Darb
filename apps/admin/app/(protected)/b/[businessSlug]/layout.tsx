@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { AdminShell } from "../../../_components/admin-shell";
-import { canShowLocations } from "../../../../lib/admin-access";
+import { canShowDomains, canShowLocations, canShowMedia } from "../../../../lib/admin-access";
 import { requireBusinessAdminContext } from "../../../../lib/admin-context";
 
 interface BusinessLayoutProps {
@@ -18,7 +18,9 @@ export default async function BusinessLayout({ children, params }: BusinessLayou
     <AdminShell
       businesses={context.businesses}
       currentBusiness={context.business}
+      showDomains={canShowDomains(context.access)}
       showLocations={showLocations}
+      showMedia={canShowMedia(context.access)}
       user={context.user}
     >
       {children}
