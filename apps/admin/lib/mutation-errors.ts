@@ -6,6 +6,7 @@ interface DatabaseErrorLike {
 }
 
 export type MutationKind =
+  | "appearance"
   | "business"
   | "domain"
   | "languages"
@@ -54,6 +55,32 @@ export function mapMutationError(error: DatabaseErrorLike, kind: MutationKind): 
   if (error.message?.includes("MODULE_NOT_FOUND")) {
     return {
       message: "That capability is not part of the current Darb registry.",
+      status: "error",
+    };
+  }
+
+  if (error.message?.includes("TEMPLATE_NOT_FOUND")) {
+    return { message: "That template is not available for this capability.", status: "error" };
+  }
+
+  if (error.message?.includes("TEMPLATE_UNAVAILABLE")) {
+    return { message: "This template is not currently available for selection.", status: "error" };
+  }
+
+  if (error.message?.includes("MODULE_NOT_ENABLED")) {
+    return { message: "Enable this capability before managing its appearance.", status: "error" };
+  }
+
+  if (error.message?.includes("THEME_CONTRAST_UNSAFE")) {
+    return {
+      message: "Primary text and action colors must meet accessible contrast.",
+      status: "error",
+    };
+  }
+
+  if (error.message?.includes("BUSINESS_APPEARANCE_INACTIVE")) {
+    return {
+      message: "Appearance cannot be changed while this business is not active.",
       status: "error",
     };
   }
@@ -122,17 +149,19 @@ export function mapMutationError(error: DatabaseErrorLike, kind: MutationKind): 
   }
 
   const fallback =
-    kind === "business"
-      ? "business settings"
-      : kind === "module"
-        ? "capability"
-        : kind === "domain"
-          ? "domain"
-          : kind === "media"
-            ? "media"
-            : kind === "languages"
-              ? "languages"
-              : "location";
+    kind === "appearance"
+      ? "appearance"
+      : kind === "business"
+        ? "business settings"
+        : kind === "module"
+          ? "capability"
+          : kind === "domain"
+            ? "domain"
+            : kind === "media"
+              ? "media"
+              : kind === "languages"
+                ? "languages"
+                : "location";
   return {
     message: `We could not save the ${fallback}. Please try again.`,
     status: "error",

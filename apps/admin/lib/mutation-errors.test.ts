@@ -46,6 +46,27 @@ describe("safe mutation error mapping", () => {
     });
   });
 
+  it("maps appearance trust-boundary failures to safe product language", () => {
+    expect(
+      mapMutationError({ code: "22023", message: "THEME_CONTRAST_UNSAFE details" }, "appearance"),
+    ).toEqual({
+      message: "Primary text and action colors must meet accessible contrast.",
+      status: "error",
+    });
+    expect(
+      mapMutationError({ code: "55000", message: "MODULE_NOT_ENABLED" }, "appearance"),
+    ).toEqual({
+      message: "Enable this capability before managing its appearance.",
+      status: "error",
+    });
+    expect(
+      mapMutationError({ code: "55000", message: "TEMPLATE_UNAVAILABLE" }, "appearance"),
+    ).toEqual({
+      message: "This template is not currently available for selection.",
+      status: "error",
+    });
+  });
+
   it("maps domain conflicts, lifecycle failures, and media failures without SQL details", () => {
     expect(mapMutationError({ code: "23505", message: "constraint_name" }, "domain")).toEqual({
       fieldErrors: { hostname: "That hostname is already claimed on Darb." },

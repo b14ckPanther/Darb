@@ -36,6 +36,13 @@ export function canManageDomains(
   return access.canManageDomains && businessStatus === "active";
 }
 
+export function canManageAppearance(
+  access: BusinessAccessSnapshot,
+  businessStatus: "active" | "archived" | "suspended",
+): boolean {
+  return access.canManageAppearance && businessStatus === "active";
+}
+
 export function canShowMedia(access: BusinessAccessSnapshot): boolean {
   return access.canManageMedia;
 }

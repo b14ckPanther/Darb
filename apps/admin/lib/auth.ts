@@ -57,6 +57,7 @@ export interface AdminAccessSnapshot {
 }
 
 export interface BusinessAccessSnapshot {
+  canManageAppearance: boolean;
   canManageAllLocations: boolean;
   canManageBusiness: boolean;
   canManageDomains: boolean;
@@ -198,6 +199,7 @@ export async function getBusinessAccessSnapshot(
   }
 
   return {
+    canManageAppearance: data.can_manage_appearance,
     canManageAllLocations: data.can_manage_all_locations,
     canManageBusiness: data.can_manage_business,
     canManageDomains: data.can_manage_domains,

@@ -4,6 +4,7 @@ import type { BusinessAccessSnapshot } from "./auth";
 import {
   canCreateLocation,
   canEditLocation,
+  canManageAppearance,
   canManageDomains,
   canManageMedia,
   canManageModules,
@@ -13,6 +14,7 @@ import {
 } from "./admin-access";
 
 const noAccess: BusinessAccessSnapshot = {
+  canManageAppearance: false,
   canManageAllLocations: false,
   canManageBusiness: false,
   canManageDomains: false,
@@ -49,6 +51,14 @@ describe("admin access decisions", () => {
     expect(canManageModules({ ...noAccess, canManageModules: true }, "suspended")).toBe(false);
     expect(canManageModules({ ...noAccess, canManageModules: true }, "archived")).toBe(false);
     expect(canManageModules(noAccess, "active")).toBe(false);
+  });
+
+  it("allows appearance mutation only with appearance.manage on an active business", () => {
+    const access = { ...noAccess, canManageAppearance: true };
+    expect(canManageAppearance(access, "active")).toBe(true);
+    expect(canManageAppearance(access, "suspended")).toBe(false);
+    expect(canManageAppearance(access, "archived")).toBe(false);
+    expect(canManageAppearance(noAccess, "active")).toBe(false);
   });
 
   it("keeps media and domain navigation scoped to their explicit permissions", () => {
