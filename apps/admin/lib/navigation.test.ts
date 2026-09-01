@@ -18,6 +18,7 @@ describe("tenant-aware business routes", () => {
     expect(businessPath("darb-core")).toBe("/b/darb-core");
     expect(businessSectionPath("darb-core", "settings")).toBe("/b/darb-core/settings");
     expect(businessSectionPath("darb-core", "modules")).toBe("/b/darb-core/modules");
+    expect(businessSectionPath("darb-core", "appearance")).toBe("/b/darb-core/appearance");
     expect(businessSectionPath("darb-core", "media")).toBe("/b/darb-core/media");
     expect(businessSectionPath("darb-core", "domains")).toBe("/b/darb-core/domains");
     expect(businessSectionPath("darb-core", "languages")).toBe("/b/darb-core/languages");
@@ -33,6 +34,9 @@ describe("tenant-aware business routes", () => {
       "/b/beta/locations",
     );
     expect(getBusinessSwitchPath("/b/alpha/modules", "alpha", "beta")).toBe("/b/beta/modules");
+    expect(getBusinessSwitchPath("/b/alpha/appearance", "alpha", "beta")).toBe(
+      "/b/beta/appearance",
+    );
     expect(getBusinessSwitchPath("/b/alpha/media", "alpha", "beta")).toBe("/b/beta/media");
     expect(getBusinessSwitchPath("/b/alpha/domains", "alpha", "beta")).toBe("/b/beta/domains");
     expect(getBusinessSwitchPath("/b/alpha/languages", "alpha", "beta")).toBe("/b/beta/languages");

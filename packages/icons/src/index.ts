@@ -6,6 +6,7 @@ import {
   Building03Icon,
   Cancel01Icon,
   CheckmarkCircle02Icon,
+  ColorsIcon,
   Copy01Icon,
   Edit02Icon,
   Globe02Icon,
@@ -21,8 +22,11 @@ import {
   Mail01Icon,
   Menu02Icon,
   PlusSignIcon,
+  RefreshIcon,
   Settings02Icon,
   Shield01Icon,
+  TextFontIcon,
+  ViewIcon,
   Video01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
@@ -52,6 +56,10 @@ export function AlertCircleIcon(props: DarbIconProps): ReactElement {
 
 export function ArchiveIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Archive03Icon, props);
+}
+
+export function AppearanceIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(ColorsIcon, props);
 }
 
 export function ArrowDownIcon(props: DarbIconProps): ReactElement {
@@ -130,12 +138,24 @@ export function PlusIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(PlusSignIcon, props);
 }
 
+export function PreviewIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(ViewIcon, props);
+}
+
+export function ResetIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(RefreshIcon, props);
+}
+
 export function SettingsIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Settings02Icon, props);
 }
 
 export function ShieldIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Shield01Icon, props);
+}
+
+export function TypographyIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(TextFontIcon, props);
 }
 
 export function VideoIcon(props: DarbIconProps): ReactElement {

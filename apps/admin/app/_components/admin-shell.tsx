@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import {
+  AppearanceIcon,
   BuildingIcon,
   CancelIcon,
   DomainIcon,
@@ -61,6 +62,12 @@ export function AdminShell({
       icon: ModulesIcon,
       label: "Modules",
       match: pathname.startsWith(`${basePath}/modules`),
+    },
+    {
+      href: businessSectionPath(currentBusiness.slug, "appearance"),
+      icon: AppearanceIcon,
+      label: "Appearance",
+      match: pathname.startsWith(`${basePath}/appearance`),
     },
     ...(showMedia
       ? [

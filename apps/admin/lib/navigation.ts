@@ -7,7 +7,7 @@ export const adminPaths = {
 } as const;
 
 export type BusinessSection =
-  "domains" | "home" | "languages" | "locations" | "media" | "modules" | "settings";
+  "appearance" | "domains" | "home" | "languages" | "locations" | "media" | "modules" | "settings";
 
 export function businessPath(slug: string): string {
   return `/b/${slug}`;
@@ -44,6 +44,10 @@ export function getBusinessSwitchPath(
 
   if (suffix === "/modules" || suffix.startsWith("/modules/")) {
     return businessSectionPath(nextSlug, "modules");
+  }
+
+  if (suffix === "/appearance" || suffix.startsWith("/appearance/")) {
+    return businessSectionPath(nextSlug, "appearance");
   }
 
   if (suffix === "/media" || suffix.startsWith("/media/")) {
