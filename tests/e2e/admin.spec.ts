@@ -23,6 +23,7 @@ const mediaFilename = `phase6-${runId}.png`;
 const customHostname = `${fixturePrefix}.example.invalid`;
 
 const ownerPermissionBundle = [
+  "appearance.manage",
   "audit.view",
   "business.manage",
   "domains.manage",
@@ -198,6 +199,72 @@ test("enables and disables a module with persistent multi-business isolation", a
   ).toBeVisible();
 });
 
+test("selects, customizes, previews, isolates, and resets an appearance foundation", async ({
+  page,
+}) => {
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/modules`);
+  const primaryPages = page.getByRole("article", { name: "Pages" });
+  await primaryPages.getByRole("button", { name: "Enable capability" }).click();
+  await expect(primaryPages.getByText("Pages enabled.")).toBeVisible();
+
+  await page.getByRole("link", { exact: true, name: "Appearance" }).click();
+  await expect(page).toHaveURL(new RegExp(`/b/${updatedBusinessSlug}/appearance$`));
+  await expect(page.getByRole("heading", { name: "Appearance" })).toBeVisible();
+  await expect(page.getByText("Composition and tokens—not arbitrary CSS")).toBeVisible();
+  await expect(page.locator('a[href*="/pages"]')).toHaveCount(0);
+
+  await page.getByRole("radio", { name: /Editorial/ }).check();
+  await page.getByLabel("Primary color", { exact: true }).fill("#3a2140");
+  await page.getByLabel("Corners", { exact: true }).selectOption("bold");
+  await page.getByLabel("Density", { exact: true }).selectOption("spacious");
+  await page.getByLabel("Depth", { exact: true }).selectOption("medium");
+  await page.getByLabel("Motion", { exact: true }).selectOption("expressive");
+  await page.getByRole("button", { name: "Reset primary color" }).click();
+  await expect(page.getByLabel("Primary color", { exact: true })).toHaveValue("#4A253F");
+  await page.getByLabel("Primary color", { exact: true }).fill("#3a2140");
+  await page.getByRole("button", { name: "Reset section" }).click();
+  await expect(page.getByLabel("Corners", { exact: true })).toHaveValue("soft");
+  await page.getByLabel("Corners", { exact: true }).selectOption("bold");
+  await page.getByLabel("Density", { exact: true }).selectOption("spacious");
+  await page.getByLabel("Depth", { exact: true }).selectOption("medium");
+  await page.getByLabel("Motion", { exact: true }).selectOption("expressive");
+  await page.getByLabel("Preview language").selectOption("ar");
+  await expect(
+    page.locator('[aria-label="Live appearance preview"] [lang="ar"][dir="rtl"]'),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Save appearance" }).click();
+  await expect(page.getByText("Appearance saved and ready for future rendering.")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole("radio", { name: /Editorial/ })).toBeChecked();
+  await expect(page.getByLabel("Primary color", { exact: true })).toHaveValue("#3A2140");
+  await expect(page.getByLabel("Corners", { exact: true })).toHaveValue("bold");
+
+  await page.getByLabel("Current business").selectOption(secondBusinessSlug);
+  await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/appearance$`));
+  await expect(
+    page.getByRole("heading", { name: "Enable a capability with an appearance foundation" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Review modules" }).click();
+  const secondaryPages = page.getByRole("article", { name: "Pages" });
+  await secondaryPages.getByRole("button", { name: "Enable capability" }).click();
+  await expect(secondaryPages.getByText("Pages enabled.")).toBeVisible();
+  await page.getByRole("link", { exact: true, name: "Appearance" }).click();
+  await expect(page.getByRole("radio", { name: /Canvas/ })).toBeChecked();
+
+  await page.getByLabel("Current business").selectOption(updatedBusinessSlug);
+  await expect(page).toHaveURL(new RegExp(`/b/${updatedBusinessSlug}/appearance$`));
+  await expect(page.getByRole("radio", { name: /Editorial/ })).toBeChecked();
+  await page.getByRole("button", { name: "Reset theme" }).click();
+  await expect(page.getByText("Reset every override")).toBeVisible();
+  await page.getByRole("button", { name: "Confirm reset" }).click();
+  await expect(page.getByText("Theme overrides reset to the template defaults.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Primary color", { exact: true })).toHaveValue("#4A253F");
+  await expect(page.getByLabel("Corners", { exact: true })).toHaveValue("soft");
+});
+
 test("uploads, describes, and archives shared media without deleting Storage", async ({ page }) => {
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}/media`);
@@ -335,6 +402,12 @@ test("enforces read-only business access and exact location scope in the UI", as
   await expect(page.getByRole("button", { name: "Enable capability" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Disable capability" })).toHaveCount(0);
 
+  await page.getByRole("link", { exact: true, name: "Appearance" }).click();
+  await expect(page.getByText("Appearance is read-only.")).toBeVisible();
+  await expect(page.getByRole("radio", { name: /Editorial/ })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Save appearance" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Reset theme" })).toHaveCount(0);
+
   await expect(page.getByRole("link", { exact: true, name: "Media" })).toHaveCount(0);
   await expect(page.getByRole("link", { exact: true, name: "Domains" })).toHaveCount(0);
   await page.goto(`/b/${updatedBusinessSlug}/media`);
@@ -403,6 +476,7 @@ test("keeps mobile navigation and the business switcher keyboard-operable", asyn
   await expect(page.getByRole("link", { exact: true, name: "Media" })).toBeVisible();
   await expect(page.getByRole("link", { exact: true, name: "Domains" })).toBeVisible();
   await expect(page.getByRole("link", { exact: true, name: "Languages" })).toBeVisible();
+  await expect(page.getByRole("link", { exact: true, name: "Appearance" })).toBeVisible();
   await page.getByRole("link", { exact: true, name: "Modules" }).click();
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/modules$`));
   const mobileRestaurant = page.getByRole("article", { name: "Restaurant" });
