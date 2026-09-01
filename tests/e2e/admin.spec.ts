@@ -19,12 +19,16 @@ const secondBusinessName = `Darb E2E Second ${runId}`;
 const secondBusinessSlug = `${fixturePrefix}-second`;
 const assignedLocationName = `Central Studio ${runId}`;
 const otherLocationName = `North Office ${runId}`;
+const mediaFilename = `phase6-${runId}.png`;
+const customHostname = `${fixturePrefix}.example.invalid`;
 
 const ownerPermissionBundle = [
   "audit.view",
   "business.manage",
+  "domains.manage",
   "locations.manage",
   "locations.read",
+  "media.manage",
   "memberships.manage",
   "modules.manage",
   "permissions.manage",
@@ -54,7 +58,8 @@ test.beforeAll(async () => {
   scopedUserId = await createTestUser(scopedEmail);
 });
 
-test.afterAll(() => {
+test.afterAll(async () => {
+  await cleanLocalStorageFixtures();
   cleanLocalDatabaseFixtures([ownerUserId, scopedUserId].filter(isPresent));
 });
 
@@ -193,6 +198,99 @@ test("enables and disables a module with persistent multi-business isolation", a
   ).toBeVisible();
 });
 
+test("uploads, describes, and archives shared media without deleting Storage", async ({ page }) => {
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/media`);
+
+  await expect(page.getByRole("heading", { exact: true, name: "Media" })).toBeVisible();
+  await page.getByLabel("Image or video").setInputFiles({
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl+fRcAAAAASUVORK5CYII=",
+      "base64",
+    ),
+    mimeType: "image/png",
+    name: mediaFilename,
+  });
+  await page.getByLabel("Alternative text").fill("A tiny Darb test asset");
+  await page.getByRole("button", { name: "Upload media" }).click();
+
+  const asset = page.getByRole("article", { name: mediaFilename });
+  await expect(asset).toBeVisible();
+  await expect(asset.getByRole("img", { name: "A tiny Darb test asset" })).toBeVisible();
+
+  await asset.getByLabel("Alternative text").fill("Updated accessible Darb asset");
+  await asset.getByRole("button", { name: "Save description" }).click();
+  await expect(asset.getByText("Alternative text saved.")).toBeVisible();
+
+  await page.reload();
+  const persistedAsset = page.getByRole("article", { name: mediaFilename });
+  await expect(persistedAsset.getByLabel("Alternative text")).toHaveValue(
+    "Updated accessible Darb asset",
+  );
+  await persistedAsset.getByRole("button", { name: "Archive asset" }).click();
+  await persistedAsset.getByRole("button", { name: "Confirm archive" }).click();
+  await expect(persistedAsset.getByText("archived", { exact: true })).toBeVisible();
+
+  const { count, error } = await adminClient
+    .schema("core")
+    .from("media_assets")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", primaryBusinessId!);
+  if (error) throw error;
+  expect(count).toBe(1);
+});
+
+test("records an honest failed DNS check and keeps domains isolated by business", async ({
+  page,
+}) => {
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/domains`);
+
+  await page.locator('input[name="hostname"]').fill(customHostname.toUpperCase());
+  await page.getByRole("button", { name: "Add domain" }).click();
+
+  const domain = page.getByRole("article", { name: new RegExp(customHostname, "i") });
+  await expect(domain).toBeVisible();
+  await expect(domain.getByText("_darb-verification.", { exact: false })).toBeVisible();
+  await expect(domain.getByText("darb-verification=", { exact: false })).toBeVisible();
+  await expect(domain.getByRole("button", { name: "Make primary" })).toHaveCount(0);
+
+  await domain.getByRole("button", { name: "Verify TXT record" }).click();
+  await expect(
+    domain.getByText("The exact TXT value was not found.", { exact: false }),
+  ).toBeVisible();
+  await expect(domain.getByText("failed", { exact: true })).toBeVisible();
+
+  await page.getByLabel("Current business").selectOption(secondBusinessSlug);
+  await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/domains$`));
+  await expect(page.getByText(customHostname, { exact: true })).toHaveCount(0);
+  await expect(page.getByText("No custom domains")).toBeVisible();
+
+  await page.getByLabel("Current business").selectOption(updatedBusinessSlug);
+  const restoredDomain = page.getByRole("article", { name: new RegExp(customHostname, "i") });
+  await restoredDomain.getByRole("button", { name: "Disable domain" }).click();
+  await restoredDomain.getByRole("button", { name: "Confirm disable" }).click();
+  await expect(restoredDomain.getByText("disabled", { exact: true })).toBeVisible();
+});
+
+test("persists enabled languages and an atomic default-locale change", async ({ page }) => {
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/languages`);
+
+  const english = page.locator(".language-card").filter({ hasText: "English" });
+  const hebrew = page.locator(".language-card").filter({ hasText: "עברית" });
+  await english.getByRole("checkbox").check();
+  await english.getByRole("radio").check();
+  await page.getByRole("button", { name: "Save language settings" }).click();
+  await expect(page.getByText("Business languages saved.")).toBeVisible();
+
+  await page.reload();
+  await expect(english.getByRole("checkbox")).toBeChecked();
+  await expect(english.getByRole("checkbox")).toBeDisabled();
+  await expect(english.getByRole("radio")).toBeChecked();
+  await expect(hebrew.getByRole("checkbox")).toBeChecked();
+});
+
 test("creates and edits a core location through audited tenant actions", async ({ page }) => {
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}/locations`);
@@ -236,6 +334,22 @@ test("enforces read-only business access and exact location scope in the UI", as
   await expect(page.getByRole("article", { name: "Restaurant" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Enable capability" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Disable capability" })).toHaveCount(0);
+
+  await expect(page.getByRole("link", { exact: true, name: "Media" })).toHaveCount(0);
+  await expect(page.getByRole("link", { exact: true, name: "Domains" })).toHaveCount(0);
+  await page.goto(`/b/${updatedBusinessSlug}/media`);
+  await expect(page.getByText("Media is read-only.")).toBeVisible();
+  await expect(page.getByText(mediaFilename, { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Upload media" })).toHaveCount(0);
+
+  await page.goto(`/b/${updatedBusinessSlug}/domains`);
+  await expect(page.getByText("Domain settings are read-only.")).toBeVisible();
+  await expect(page.getByText(customHostname, { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add domain" })).toHaveCount(0);
+
+  await page.getByRole("link", { exact: true, name: "Languages" }).click();
+  await expect(page.getByText("Language settings are read-only.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Save language settings" })).toHaveCount(0);
 
   await page.getByRole("link", { exact: true, name: "Locations" }).click();
   await expect(page.getByText(`${assignedLocationName} Updated`, { exact: true })).toBeVisible();
@@ -286,6 +400,9 @@ test("keeps mobile navigation and the business switcher keyboard-operable", asyn
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}$`));
 
   await page.getByRole("button", { name: "Open navigation" }).click();
+  await expect(page.getByRole("link", { exact: true, name: "Media" })).toBeVisible();
+  await expect(page.getByRole("link", { exact: true, name: "Domains" })).toBeVisible();
+  await expect(page.getByRole("link", { exact: true, name: "Languages" })).toBeVisible();
   await page.getByRole("link", { exact: true, name: "Modules" }).click();
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/modules$`));
   const mobileRestaurant = page.getByRole("article", { name: "Restaurant" });
@@ -327,6 +444,29 @@ async function createTestUser(email: string): Promise<string> {
   }
 
   return data.user.id;
+}
+
+async function cleanLocalStorageFixtures(): Promise<void> {
+  if (!primaryBusinessId) return;
+
+  const { data, error } = await adminClient
+    .schema("core")
+    .from("media_assets")
+    .select("storage_bucket, storage_path")
+    .eq("business_id", primaryBusinessId);
+
+  if (error) throw error;
+  if (data.length === 0) return;
+
+  for (const bucket of ["tenant-media-images", "tenant-media-videos"] as const) {
+    const paths = data
+      .filter((asset) => asset.storage_bucket === bucket)
+      .map((asset) => asset.storage_path);
+    if (paths.length === 0) continue;
+
+    const { error: removeError } = await adminClient.storage.from(bucket).remove(paths);
+    if (removeError) throw removeError;
+  }
 }
 
 async function provisionMultiBusinessFixture(): Promise<void> {
