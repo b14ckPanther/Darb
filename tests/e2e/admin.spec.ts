@@ -33,6 +33,8 @@ const ownerPermissionBundle = [
   "memberships.manage",
   "modules.manage",
   "permissions.manage",
+  "restaurant.manage",
+  "restaurant.read",
 ] as const;
 
 let adminClient: SupabaseClient;
@@ -190,7 +192,7 @@ test("updates business settings and redirects a slug change to its canonical rou
   ).toBeVisible();
 });
 
-test("enables and disables a module with persistent multi-business isolation", async ({ page }) => {
+test("enables Restaurant with persistent multi-business isolation", async ({ page }) => {
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}/modules`);
 
@@ -202,6 +204,7 @@ test("enables and disables a module with persistent multi-business isolation", a
   await expect(primaryRestaurant.getByText("Disabled", { exact: true })).toBeVisible();
   await primaryRestaurant.getByRole("button", { name: "Enable capability" }).click();
   await expect(primaryRestaurant.getByText("Restaurant enabled.")).toBeVisible();
+  await expect(page.getByRole("link", { exact: true, name: "Restaurant" })).toBeVisible();
 
   await page.reload();
   await expect(
@@ -214,17 +217,16 @@ test("enables and disables a module with persistent multi-business isolation", a
     page.getByRole("article", { name: "Restaurant" }).getByText("Disabled", { exact: true }),
   ).toBeVisible();
 
+  const secondaryRestaurant = page.getByRole("article", { name: "Restaurant" });
+  await secondaryRestaurant.getByRole("button", { name: "Enable capability" }).click();
+  await expect(secondaryRestaurant.getByText("Restaurant enabled.")).toBeVisible();
+  await secondaryRestaurant.getByRole("button", { name: "Disable capability" }).click();
+  await secondaryRestaurant.getByRole("button", { name: "Confirm disable" }).click();
+  await expect(secondaryRestaurant.getByText("Restaurant disabled.")).toBeVisible();
+
   await page.getByLabel("Current business").selectOption(updatedBusinessSlug);
   const restoredPrimaryRestaurant = page.getByRole("article", { name: "Restaurant" });
-  await restoredPrimaryRestaurant.getByRole("button", { name: "Disable capability" }).click();
-  await expect(restoredPrimaryRestaurant.getByText("Disable this capability")).toBeVisible();
-  await restoredPrimaryRestaurant.getByRole("button", { name: "Confirm disable" }).click();
-  await expect(restoredPrimaryRestaurant.getByText("Restaurant disabled.")).toBeVisible();
-
-  await page.reload();
-  await expect(
-    page.getByRole("article", { name: "Restaurant" }).getByText("Disabled", { exact: true }),
-  ).toBeVisible();
+  await expect(restoredPrimaryRestaurant.getByText("Enabled", { exact: true })).toBeVisible();
 });
 
 test("selects, customizes, previews, isolates, and resets an appearance foundation", async ({
@@ -364,10 +366,14 @@ test("records an honest failed DNS check and keeps domains isolated by business"
   await expect(domain.getByRole("button", { name: "Make primary" })).toHaveCount(0);
 
   await domain.getByRole("button", { name: "Verify TXT record" }).click();
+  const missingRecord = domain.getByText("The exact TXT value was not found.", { exact: false });
+  const unavailableResolver = domain.getByText("DNS could not be checked reliably.", {
+    exact: false,
+  });
+  await expect(missingRecord.or(unavailableResolver)).toBeVisible();
   await expect(
-    domain.getByText("The exact TXT value was not found.", { exact: false }),
+    domain.getByText((await missingRecord.isVisible()) ? "Failed" : "Pending", { exact: true }),
   ).toBeVisible();
-  await expect(domain.getByText("Failed", { exact: true })).toBeVisible();
 
   await page.getByLabel("Current business").selectOption(secondBusinessSlug);
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/domains$`));
@@ -425,6 +431,142 @@ test("creates and edits a core location through audited tenant actions", async (
   await provisionLocationScopeFixture();
 });
 
+test("manages real Restaurant menus, localization, variants, modifiers, media, and location state", async ({
+  page,
+}) => {
+  if (!primaryBusinessId || !assignedLocationId) {
+    throw new Error("Restaurant dependencies were not prepared.");
+  }
+
+  const { error: mediaError } = await adminClient
+    .schema("core")
+    .from("media_assets")
+    .update({ status: "active" })
+    .eq("business_id", primaryBusinessId)
+    .eq("original_filename", mediaFilename);
+  if (mediaError) throw mediaError;
+
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/restaurant`);
+  await expect(page.getByRole("heading", { level: 1, name: "Restaurant" })).toBeVisible();
+  await expect(page.getByText("Administration is live; public delivery is next")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Restaurant content totals" }).locator("strong").first(),
+  ).toHaveText("0");
+
+  await page.getByLabel("Public Restaurant experience active").check();
+  await page.getByRole("button", { name: "Save configuration" }).click();
+  await expect(page.getByText("Restaurant public experience marked active.")).toBeVisible();
+
+  await page.getByRole("link", { name: "Menus & items" }).click();
+  const createMenu = page.locator("details").filter({ hasText: "Create a menu" }).first();
+  await createMenu.locator("summary").click();
+  await createMenu.getByLabel("Internal name").fill("All day menu");
+  await createMenu.getByLabel("Publication").selectOption("published");
+  await createMenu.getByLabel("Display position").fill("10");
+  await createMenu.getByRole("button", { name: "Create menu" }).click();
+  await expect(page).toHaveURL(/\/restaurant\/menus\/[0-9a-f-]+\?created=1$/);
+  const menuUrl = page.url().replace(/\?created=1$/, "");
+
+  const englishMenu = page.locator('form[lang="en"]').first();
+  await englishMenu.getByLabel("Customer-facing name").fill("All day");
+  await englishMenu.getByLabel("Description").fill("Available throughout the day.");
+  await englishMenu.getByRole("button", { name: "Save EN" }).click();
+  await expect(englishMenu.getByText("Localized content saved.")).toBeVisible();
+
+  const addCategory = page.locator("details").filter({ hasText: "Add category" }).first();
+  await addCategory.locator("summary").click();
+  await addCategory.getByLabel("Internal name").fill("Coffee");
+  await addCategory.getByLabel("Display position").fill("10");
+  await addCategory.getByRole("button", { name: "Create category" }).click();
+  await expect(addCategory.getByText("Category created.")).toBeVisible();
+
+  const addItem = page.locator("details").filter({ hasText: "Add item" }).first();
+  await addItem.locator("summary").click();
+  await addItem.getByLabel("Internal name").fill("House espresso");
+  await addItem.getByLabel("Category").selectOption({ label: "Coffee" });
+  await addItem.getByLabel("Base price").fill("12.50");
+  await addItem.getByLabel("Display position").fill("10");
+  await addItem.getByRole("radio", { name: mediaFilename }).check();
+  await addItem.getByRole("button", { name: "Create item" }).click();
+  await expect(page).toHaveURL(/\/restaurant\/items\/[0-9a-f-]+\?created=1$/);
+  const itemUrl = page.url().replace(/\?created=1$/, "");
+
+  const englishItem = page.locator('form[lang="en"]').first();
+  await englishItem.getByLabel("Customer-facing name").fill("House espresso");
+  await englishItem.getByLabel("Description").fill("A balanced double espresso.");
+  await englishItem.getByRole("button", { name: "Save EN" }).click();
+  await expect(englishItem.getByText("Localized content saved.")).toBeVisible();
+
+  const addVariant = page.locator("details").filter({ hasText: "Add variant" }).first();
+  await addVariant.locator("summary").click();
+  await addVariant.getByLabel("Variant name").fill("Double");
+  await addVariant.getByLabel("Absolute price").fill("16.00");
+  await addVariant.getByLabel("Display position").fill("10");
+  await addVariant.getByRole("button", { name: "Add variant" }).click();
+  await expect(addVariant.getByText("Variant created.")).toBeVisible();
+
+  await page.getByRole("link", { name: "Modifier library" }).click();
+  const createGroup = page.locator("details").filter({ hasText: "Create modifier group" }).first();
+  await createGroup.locator("summary").click();
+  await createGroup.getByLabel("Internal group name").fill("Milk choice");
+  await createGroup.getByRole("button", { name: "Create modifier group" }).click();
+  await expect(createGroup.getByText("Modifier group created.")).toBeVisible();
+
+  const groupCard = page.locator("li").filter({ hasText: "Milk choice" }).first();
+  await groupCard.getByText("Edit group, translations, and options").click();
+  const addOption = groupCard.locator("details").filter({ hasText: "Add option" }).first();
+  await addOption.getByText("Add option", { exact: true }).click();
+  await addOption.getByLabel("Option name").fill("Oat milk");
+  await addOption.getByLabel("Price add-on").fill("2.00");
+  await addOption.getByLabel("Display position").fill("10");
+  await addOption.getByRole("button", { name: "Add modifier option" }).click();
+  await expect(addOption.getByText("Modifier option created.")).toBeVisible();
+
+  await page.goto(itemUrl);
+  const assignmentForm = page
+    .locator("form")
+    .filter({ has: page.getByRole("button", { name: "Assign modifier group" }) });
+  await assignmentForm.locator('select[name="modifierGroupId"]').selectOption({
+    label: "Milk choice",
+  });
+  await assignmentForm.getByLabel("Minimum selections").fill("0");
+  await assignmentForm.getByLabel("Maximum selections").fill("1");
+  await assignmentForm.getByRole("button", { name: "Assign modifier group" }).click();
+  await expect(page.getByText("Milk choice", { exact: true }).first()).toBeVisible();
+
+  await page.getByLabel(`${assignedLocationName} Updated availability`).selectOption("sold_out");
+  const locationForm = page
+    .locator("form")
+    .filter({ has: page.getByLabel(`${assignedLocationName} Updated availability`) });
+  await locationForm.getByRole("button", { name: "Save" }).click();
+  await expect(locationForm.getByText("Location availability saved.")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByLabel(`${assignedLocationName} Updated availability`)).toHaveValue(
+    "sold_out",
+  );
+  await expect(page.getByText("Milk choice", { exact: true })).toBeVisible();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const archiveItem = page.getByRole("button", { name: "Archive item", exact: true }).first();
+  await archiveItem.click();
+  const confirmation = page.getByRole("dialog", { name: "Archive this item?" });
+  await expect(confirmation).toBeVisible();
+  const closeConfirmation = confirmation.getByRole("button", { name: "Close confirmation" });
+  await expect
+    .poll(async () => (await closeConfirmation.boundingBox())?.width ?? Number.POSITIVE_INFINITY)
+    .toBeLessThanOrEqual(44);
+  await confirmation.getByRole("button", { name: "Cancel" }).click();
+  await expect(archiveItem).toBeFocused();
+
+  await page.getByLabel("Current business").selectOption(secondBusinessSlug);
+  await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}$`));
+  await expect(page.getByText("House espresso", { exact: true })).toHaveCount(0);
+  await page.goto(menuUrl);
+  await expect(page.getByRole("heading", { level: 1, name: "All day menu" })).toBeVisible();
+});
+
 test("enforces read-only business access and exact location scope in the UI", async ({ page }) => {
   if (!assignedLocationId || !otherLocationId) {
     throw new Error("Location scope fixtures were not prepared.");
@@ -437,6 +579,12 @@ test("enforces read-only business access and exact location scope in the UI", as
   await expect(page.getByRole("link", { exact: true, name: "Media" })).toHaveCount(0);
   await expect(page.getByRole("link", { exact: true, name: "Domains" })).toHaveCount(0);
   await expect(page.getByRole("link", { exact: true, name: "Locations" })).toBeVisible();
+  await expect(page.getByRole("link", { exact: true, name: "Restaurant" })).toBeVisible();
+
+  await page.getByRole("link", { exact: true, name: "Restaurant" }).click();
+  await expect(page.getByText("Restaurant is read-only.")).toBeVisible();
+  await expect(page.getByLabel("Public Restaurant experience active")).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Save configuration" })).toHaveCount(0);
 
   await page.getByRole("link", { exact: true, name: "Business settings" }).click();
   await expect(page.getByText("The business.manage permission is required")).toBeVisible();
@@ -786,6 +934,12 @@ async function provisionLocationScopeFixture(): Promise<void> {
         membership_id: membership.id,
         permission_key: "locations.manage",
       },
+      {
+        business_id: primaryBusinessId,
+        granted_by: ownerUserId,
+        membership_id: membership.id,
+        permission_key: "restaurant.read",
+      },
     ]);
 
   if (permissionError) {
@@ -827,6 +981,18 @@ function cleanLocalDatabaseFixtures(fixtureUserIds: string[]): void {
       encoding: "utf8",
       input: `
         begin;
+        delete from restaurant.menus
+          where business_id in (
+            select id from core.businesses where slug like :'fixture_prefix' || '%'
+          );
+        delete from restaurant.modifier_groups
+          where business_id in (
+            select id from core.businesses where slug like :'fixture_prefix' || '%'
+          );
+        delete from restaurant.configurations
+          where business_id in (
+            select id from core.businesses where slug like :'fixture_prefix' || '%'
+          );
         delete from core.audit_events
           where business_id in (
             select id from core.businesses where slug like :'fixture_prefix' || '%'

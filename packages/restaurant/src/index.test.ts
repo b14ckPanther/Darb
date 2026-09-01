@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  deriveRestaurantReadiness,
   describeModifierSelection,
+  formatMinorMoneyInput,
   isRestaurantCapabilityEffective,
   isRestaurantPublicExperienceEffective,
+  parseMajorMoneyToMinor,
   resolveRestaurantItemAvailability,
 } from "./index";
 
@@ -78,5 +81,36 @@ describe("Restaurant Engine domain helpers", () => {
     expect(() => describeModifierSelection(2, 1)).toThrow(RangeError);
     expect(() => describeModifierSelection(0, 0)).toThrow(RangeError);
     expect(() => describeModifierSelection(0.5, 1)).toThrow(RangeError);
+  });
+
+  it("converts human-entered prices to exact minor units without floating point math", () => {
+    expect(parseMajorMoneyToMinor("12.34")).toBe(1234);
+    expect(parseMajorMoneyToMinor("0.5")).toBe(50);
+    expect(parseMajorMoneyToMinor("12.345")).toBeNull();
+    expect(parseMajorMoneyToMinor("-1")).toBeNull();
+    expect(parseMajorMoneyToMinor("9999999.99")).toBe(999_999_999);
+    expect(parseMajorMoneyToMinor("10000000.00")).toBeNull();
+    expect(formatMinorMoneyInput(1234)).toBe("12.34");
+  });
+
+  it("derives factual Restaurant setup states without a fabricated score", () => {
+    expect(
+      deriveRestaurantReadiness({
+        activeCategoryCount: 1,
+        activeItemCount: 2,
+        activeMenuCount: 1,
+        configured: true,
+        enabledLocaleCount: 2,
+        modifierGroupCount: 0,
+        publishedMenuCount: 0,
+        publiclyActive: false,
+      }),
+    ).toEqual([
+      expect.objectContaining({ key: "configuration", ready: true }),
+      expect.objectContaining({ key: "content", ready: true }),
+      expect.objectContaining({ key: "localization", ready: true }),
+      expect.objectContaining({ key: "publication", ready: false }),
+      expect.objectContaining({ key: "modifiers", ready: false, requirement: "optional" }),
+    ]);
   });
 });

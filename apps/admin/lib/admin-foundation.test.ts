@@ -89,4 +89,12 @@ describe("honest engine readiness", () => {
       state: "enabled",
     });
   });
+
+  it("states when a registered engine administration is available", () => {
+    expect(getHonestModuleAvailability(moduleState, true)).toEqual({
+      detail: "Capability enabled. Its authenticated engine administration is available.",
+      label: "Enabled · admin ready",
+      state: "enabled",
+    });
+  });
 });

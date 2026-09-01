@@ -52,6 +52,9 @@ describe("tenant-aware business routes", () => {
     expect(getBusinessSwitchPath("/b/alpha/media", "alpha", "beta")).toBe("/b/beta/media");
     expect(getBusinessSwitchPath("/b/alpha/domains", "alpha", "beta")).toBe("/b/beta/domains");
     expect(getBusinessSwitchPath("/b/alpha/languages", "alpha", "beta")).toBe("/b/beta/languages");
+    expect(getBusinessSwitchPath("/b/alpha/restaurant/items/item-id", "alpha", "beta")).toBe(
+      "/b/beta/restaurant",
+    );
     expect(getBusinessSwitchPath("/b/alpha", "alpha", "beta")).toBe("/b/beta");
   });
 
@@ -146,6 +149,29 @@ describe("admin navigation registry", () => {
         .flatMap((group) => group.items)
         .find((item) => item.key === "sample-engine-overview")?.href,
     ).toBe("/b/darb-core/sample-engine");
+  });
+
+  it("composes Restaurant navigation for an enabled capability and either permission", () => {
+    expect(
+      buildAdminNavigation("darb-core", {
+        ...navigationContext,
+        enabledModules: ["restaurant"],
+      })
+        .flatMap((group) => group.items)
+        .some((item) => item.key === "restaurant-overview"),
+    ).toBe(false);
+
+    for (const permission of ["restaurant.read", "restaurant.manage"] as const) {
+      const items = buildAdminNavigation("darb-core", {
+        ...navigationContext,
+        enabledModules: ["restaurant"],
+        permissionKeys: [...navigationContext.permissionKeys, permission],
+      }).flatMap((group) => group.items);
+
+      expect(items.find((item) => item.key === "restaurant-overview")?.href).toBe(
+        "/b/darb-core/restaurant",
+      );
+    }
   });
 
   it("marks only the exact overview or matching section as current", () => {
