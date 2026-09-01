@@ -7,7 +7,7 @@ import { PermissionNotice } from "../../../../_components/permission-notice";
 import { canManageAppearance } from "../../../../../lib/admin-access";
 import { listResolvedBusinessAppearances } from "../../../../../lib/appearance";
 import { requireBusinessAdminContext } from "../../../../../lib/admin-context";
-import { businessSectionPath } from "../../../../../lib/navigation";
+import { businessPath, businessSectionPath } from "../../../../../lib/navigation";
 import { createServerComponentSupabaseClient } from "../../../../../lib/supabase/server";
 import { AppearanceEditor } from "./appearance-editor";
 import styles from "./appearance.module.css";
@@ -30,6 +30,10 @@ export default async function AppearancePage({ params }: AppearancePageProps) {
   return (
     <div className={styles.page}>
       <PageHeader
+        breadcrumbs={[
+          { href: businessPath(context.business.slug), label: "Overview" },
+          { label: "Appearance" },
+        ]}
         eyebrow="Customer experience foundation"
         title="Appearance"
         summary="Choose a composition and tune controlled visual tokens for enabled capabilities. These settings prepare future renderers; they do not create an engine or storefront."

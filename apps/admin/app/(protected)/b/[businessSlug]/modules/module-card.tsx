@@ -4,6 +4,8 @@ import { useActionState, useState } from "react";
 
 import { CheckmarkCircleIcon, ModulesIcon } from "@darb/icons";
 
+import { ConfirmationDialog } from "../../../../_components/confirmation-dialog";
+import { StatusBadge } from "../../../../_components/status-badge";
 import { setBusinessModuleEnabledAction } from "../../../../actions/modules";
 import { initialFormState } from "../../../../../lib/forms";
 import type { BusinessModuleState } from "../../../../../lib/module-state";
@@ -38,12 +40,16 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
         <span className="module-card__icon">
           <ModulesIcon size={22} />
         </span>
-        <span
-          className={`module-state-pill module-state-pill--${module.isEffectivelyEnabled ? "enabled" : module.isAvailable ? "disabled" : "unavailable"}`}
-        >
-          <span aria-hidden="true" />
-          {statusLabel}
-        </span>
+        <StatusBadge
+          status={
+            module.isEffectivelyEnabled
+              ? "enabled"
+              : module.isAvailable
+                ? "disabled"
+                : "unavailable"
+          }
+          label={statusLabel}
+        />
       </div>
 
       <div className="module-card__copy">
@@ -73,32 +79,7 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
           </p>
         ) : null}
 
-        {canDisable && confirmingDisable ? (
-          <div
-            className="module-confirmation"
-            role="group"
-            aria-label={`Disable ${module.displayName}`}
-          >
-            <p>Disable this capability for the current business?</p>
-            <div>
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={() => setConfirmingDisable(false)}
-                disabled={pending}
-              >
-                Keep enabled
-              </button>
-              <form action={formAction}>
-                <input type="hidden" name="moduleKey" value={module.key} />
-                <input type="hidden" name="enabled" value="false" />
-                <button type="submit" className="danger-button" disabled={pending}>
-                  {pending ? "Disabling…" : "Confirm disable"}
-                </button>
-              </form>
-            </div>
-          </div>
-        ) : canDisable ? (
+        {canDisable ? (
           <button
             type="button"
             className="secondary-button module-card__action"
@@ -116,6 +97,30 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
           </form>
         ) : null}
       </div>
+
+      <ConfirmationDialog
+        open={canDisable && confirmingDisable}
+        pending={pending}
+        onClose={() => setConfirmingDisable(false)}
+        title={`Disable ${module.displayName}?`}
+        description="Disable this capability for the current business? Existing retained foundation data is not deleted, and no engine route is created or removed."
+      >
+        <button
+          type="button"
+          className="secondary-button"
+          onClick={() => setConfirmingDisable(false)}
+          disabled={pending}
+        >
+          Keep enabled
+        </button>
+        <form action={formAction}>
+          <input type="hidden" name="moduleKey" value={module.key} />
+          <input type="hidden" name="enabled" value="false" />
+          <button type="submit" className="danger-button" disabled={pending}>
+            {pending ? "Disabling…" : "Confirm disable"}
+          </button>
+        </form>
+      </ConfirmationDialog>
     </article>
   );
 }

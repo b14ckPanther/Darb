@@ -6,6 +6,7 @@ import { useActionState, useState } from "react";
 import { ArchiveIcon, ImageIcon, VideoIcon } from "@darb/icons";
 
 import { archiveMediaAssetAction, updateMediaAltTextAction } from "../../../../actions/media";
+import { StatusBadge } from "../../../../_components/status-badge";
 import type { AccessibleMediaAsset } from "../../../../../lib/media";
 import { initialFormState } from "../../../../../lib/forms";
 
@@ -63,7 +64,7 @@ export function MediaAssetCard({
             {asset.media_kind === "image" ? <ImageIcon size={28} /> : <VideoIcon size={28} />}
           </span>
         )}
-        <span className={`media-status media-status--${asset.status}`}>{asset.status}</span>
+        <StatusBadge className="media-status" status={asset.status} />
       </div>
 
       <div className="media-card__body">

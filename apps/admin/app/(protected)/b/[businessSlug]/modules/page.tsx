@@ -4,6 +4,7 @@ import { PageHeader } from "../../../../_components/page-header";
 import { PermissionNotice } from "../../../../_components/permission-notice";
 import { canManageModules } from "../../../../../lib/admin-access";
 import { requireBusinessAdminContext } from "../../../../../lib/admin-context";
+import { businessPath } from "../../../../../lib/navigation";
 import { ModuleCard } from "./module-card";
 
 interface ModulesPageProps {
@@ -18,6 +19,10 @@ export default async function ModulesPage({ params }: ModulesPageProps) {
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { href: businessPath(context.business.slug), label: "Overview" },
+          { label: "Modules" },
+        ]}
         eyebrow="Business capabilities"
         title="Modules"
         summary="Control the administrative capability state for this business. Enablement does not grant user permission or imply that an engine is available yet."

@@ -6,6 +6,7 @@ import { canManageMedia } from "../../../../../lib/admin-access";
 import { requireBusinessAdminContext } from "../../../../../lib/admin-context";
 import { listBusinessMediaAssets } from "../../../../../lib/media";
 import { buildPublicMediaUrl } from "../../../../../lib/media-validation";
+import { businessPath } from "../../../../../lib/navigation";
 import { getSupabasePublicConfig } from "../../../../../lib/supabase/config";
 import { createServerComponentSupabaseClient } from "../../../../../lib/supabase/server";
 import { MediaAssetCard } from "./media-asset-card";
@@ -26,6 +27,10 @@ export default async function MediaPage({ params }: MediaPageProps) {
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { href: businessPath(context.business.slug), label: "Overview" },
+          { label: "Media" },
+        ]}
         eyebrow="Shared assets"
         title="Media"
         summary="Upload reusable images and videos once, then let future Darb experiences reference their stable asset IDs."

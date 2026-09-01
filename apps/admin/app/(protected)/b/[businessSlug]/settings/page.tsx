@@ -1,6 +1,7 @@
 import { PageHeader } from "../../../../_components/page-header";
 import { PermissionNotice } from "../../../../_components/permission-notice";
 import { requireBusinessAdminContext } from "../../../../../lib/admin-context";
+import { businessPath } from "../../../../../lib/navigation";
 import { getSupportedTimezones } from "../../../../../lib/timezones";
 import { BusinessSettingsForm } from "./business-settings-form";
 
@@ -16,6 +17,10 @@ export default async function BusinessSettingsPage({ params }: BusinessSettingsP
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { href: businessPath(context.business.slug), label: "Overview" },
+          { label: "Business settings" },
+        ]}
         eyebrow="Core settings"
         title="Business settings"
         summary="Manage the canonical identity and regional defaults shared by this business."

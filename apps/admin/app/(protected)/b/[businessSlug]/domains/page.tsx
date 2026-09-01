@@ -5,6 +5,7 @@ import { PermissionNotice } from "../../../../_components/permission-notice";
 import { canManageDomains } from "../../../../../lib/admin-access";
 import { requireBusinessAdminContext } from "../../../../../lib/admin-context";
 import { listBusinessDomains } from "../../../../../lib/domains";
+import { businessPath } from "../../../../../lib/navigation";
 import { createServerComponentSupabaseClient } from "../../../../../lib/supabase/server";
 import { AddDomainForm } from "./add-domain-form";
 import { DomainCard } from "./domain-card";
@@ -23,6 +24,10 @@ export default async function DomainsPage({ params }: DomainsPageProps) {
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { href: businessPath(context.business.slug), label: "Overview" },
+          { label: "Domains" },
+        ]}
         eyebrow="Domain ownership"
         title="Domains"
         summary="Claim a hostname with DNS TXT proof. Verification records ownership only; production routing and SSL automation remain separate."

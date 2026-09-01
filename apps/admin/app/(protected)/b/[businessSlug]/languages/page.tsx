@@ -4,6 +4,7 @@ import { PageHeader } from "../../../../_components/page-header";
 import { PermissionNotice } from "../../../../_components/permission-notice";
 import { requireBusinessAdminContext } from "../../../../../lib/admin-context";
 import { listBusinessLocales, mapBusinessLocaleState } from "../../../../../lib/business-locales";
+import { businessPath } from "../../../../../lib/navigation";
 import { createServerComponentSupabaseClient } from "../../../../../lib/supabase/server";
 import { LanguageSettingsForm } from "./language-settings-form";
 
@@ -22,6 +23,10 @@ export default async function LanguagesPage({ params }: LanguagesPageProps) {
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { href: businessPath(context.business.slug), label: "Overview" },
+          { label: "Languages" },
+        ]}
         eyebrow="Language availability"
         title="Languages"
         summary="Choose the languages this business supports and one canonical default. Content translation remains owned by each future engine."

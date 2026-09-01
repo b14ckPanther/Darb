@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 
 import { ArchiveIcon } from "@darb/icons";
 
+import { ConfirmationDialog } from "../../../../_components/confirmation-dialog";
 import { archiveLocationAction } from "../../../../actions/core-admin";
 import { initialFormState } from "../../../../../lib/forms";
 
@@ -37,33 +38,35 @@ export function ArchiveLocationControl({
           {state.message}
         </p>
       ) : null}
-      {confirming ? (
-        <form action={formAction} className="archive-confirmation">
-          <p>Archive this location now?</p>
-          <div>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => setConfirming(false)}
-              disabled={pending}
-            >
-              Cancel
-            </button>
-            <button type="submit" className="danger-button" disabled={pending}>
-              {pending ? "Archiving…" : "Confirm archive"}
-            </button>
-          </div>
-        </form>
-      ) : (
+      <button
+        type="button"
+        className="danger-button danger-button--quiet"
+        onClick={() => setConfirming(true)}
+      >
+        <ArchiveIcon size={18} />
+        Archive location
+      </button>
+      <ConfirmationDialog
+        open={confirming}
+        pending={pending}
+        onClose={() => setConfirming(false)}
+        title="Archive this location?"
+        description="The location will become historical and read-only. Darb will retain its identity and audit history, and restoration is not available in this phase."
+      >
         <button
           type="button"
-          className="danger-button danger-button--quiet"
-          onClick={() => setConfirming(true)}
+          className="secondary-button"
+          onClick={() => setConfirming(false)}
+          disabled={pending}
         >
-          <ArchiveIcon size={18} />
-          Archive location
+          Keep location
         </button>
-      )}
+        <form action={formAction}>
+          <button type="submit" className="danger-button" disabled={pending}>
+            {pending ? "Archiving…" : "Confirm archive"}
+          </button>
+        </form>
+      </ConfirmationDialog>
     </section>
   );
 }

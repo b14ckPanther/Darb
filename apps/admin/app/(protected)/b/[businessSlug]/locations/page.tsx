@@ -7,7 +7,11 @@ import { PermissionNotice } from "../../../../_components/permission-notice";
 import { StatusBadge } from "../../../../_components/status-badge";
 import { canCreateLocation, canShowLocations } from "../../../../../lib/admin-access";
 import { requireBusinessAdminContext } from "../../../../../lib/admin-context";
-import { businessLocationPath, businessSectionPath } from "../../../../../lib/navigation";
+import {
+  businessLocationPath,
+  businessPath,
+  businessSectionPath,
+} from "../../../../../lib/navigation";
 
 interface LocationsPageProps {
   params: Promise<{ businessSlug: string }>;
@@ -22,6 +26,10 @@ export default async function LocationsPage({ params }: LocationsPageProps) {
     return (
       <>
         <PageHeader
+          breadcrumbs={[
+            { href: businessPath(context.business.slug), label: "Overview" },
+            { label: "Locations" },
+          ]}
           eyebrow="Business locations"
           title="Locations"
           summary="Locations are visible only when your permission scope includes them."
@@ -36,6 +44,10 @@ export default async function LocationsPage({ params }: LocationsPageProps) {
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { href: businessPath(context.business.slug), label: "Overview" },
+          { label: "Locations" },
+        ]}
         eyebrow="Business locations"
         title="Locations"
         summary="Manage reusable location identity and lifecycle without engine-specific fields."

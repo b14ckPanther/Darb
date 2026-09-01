@@ -10,6 +10,7 @@ import {
   setBusinessDomainPrimaryAction,
   verifyBusinessDomainAction,
 } from "../../../../actions/domains";
+import { StatusBadge } from "../../../../_components/status-badge";
 import {
   buildDnsTxtRecordName,
   buildDnsTxtRecordValue,
@@ -89,7 +90,7 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
           </h3>
           <p>{domain.is_primary ? "Primary domain" : "Custom domain claim"}</p>
         </div>
-        <span className={`domain-state domain-state--${domain.status}`}>{domain.status}</span>
+        <StatusBadge className="domain-state" status={domain.status} />
       </div>
 
       {domain.status !== "disabled" ? (
