@@ -1,18 +1,18 @@
 # Security principles
 
 Status: RLS-first database authorization, server-resolved Supabase sessions, protected admin
-routing, and a narrow first-business trust boundary are implemented. Controls tied to future
-business workflows remain deferred until those workflows exist.
+routing, a narrow first-business trust boundary, and a controlled Restaurant domain mutation
+boundary are implemented. Controls tied to future business workflows remain deferred.
 
 ## Data access
 
-Supabase security is RLS-first. Every `core` table and `private.super_admins` has Row Level Security
-enabled with explicit policies. Database policy is the final data boundary; future API handlers and
+Supabase security is RLS-first. Every `core` and `restaurant` tenant table plus
+`private.super_admins` has Row Level Security enabled with explicit policies. Database policy is the final data boundary; future API handlers and
 server actions must also authorize requests server-side to provide clear failures and defense in
 depth.
 
 Table grants are opt-in and column-limited for authenticated mutations. Anonymous users receive no
-access to `core` or `private`. The `private` schema is not exposed through the Data API. Its small
+Restaurant administration access and no access to `core` or `private`. The `private` schema is not exposed through the Data API. Its small
 security-definer helper set uses schema-qualified objects, an empty `search_path`, no dynamic SQL,
 and narrowly granted execution to avoid recursive RLS policies and search-path substitution.
 
@@ -106,6 +106,11 @@ Shared media transitions emit `business.media_registered`, `business.media_updat
 and disabled events. Locale changes emit `business.locales_updated`. Metadata is allowlisted and
 never includes media payloads, raw forms, or DNS verification tokens.
 
+Restaurant mutations emit stable `restaurant.*` events for meaningful configuration, content,
+translation, modifier-assignment, and location-availability changes. They are atomic with the
+mutation and derive the actor from `auth.uid()`. Metadata excludes customer-facing names,
+descriptions, prices, media paths, and full payloads; no-op requests emit no event.
+
 ## Core mutation boundaries
 
 Business and location Server Actions use the normal request-scoped authenticated client and never
@@ -131,6 +136,14 @@ requires business-wide `appearance.manage`, rechecks active tenant and enabled-m
 validates template context, accepts only a closed semantic JSON contract, and rejects critical
 contrast failure. URL/CSS/script-shaped values cannot enter the persisted theme model.
 
+Restaurant administration has no application UI yet, but its database boundary is ready for a
+normal request-scoped authenticated client. Direct table writes are withheld. Narrow RPCs require
+`restaurant.manage`, active tenant lifecycle, and an enabled/available Restaurant module, then
+re-resolve every parent inside the target business. Composite foreign keys prevent cross-tenant
+menu/category/item, media, modifier, translation, and location relationships even for trusted SQL.
+Anonymous and service-role execution of tenant RPCs is revoked. Phase 11 must add an explicit public
+read boundary; administration tables are not anonymously readable.
+
 ## Storage and DNS boundaries
 
 Media upload is a three-step, fail-closed flow: an authenticated RPC reserves a UUID-derived bucket
@@ -152,7 +165,7 @@ boundary, not tenant authorization; token values never enter logs or audit metad
 `core.bootstrap_first_business` is a narrowly granted `security definer` function. It uses an empty
 `search_path`, schema-qualified objects, no dynamic SQL, and `auth.uid()` rather than caller-supplied
 identity. It validates display name, slug, and locale in Postgres; accepts no permission list or
-target user; assigns a fixed ten-permission bundle; and executes only for `authenticated`.
+target user; assigns a fixed twelve-permission bundle; and executes only for `authenticated`.
 Unauthenticated, cross-user, arbitrary-permission, duplicate-slug, concurrency, and tenant-isolation
 behavior is covered at the database layer.
 
@@ -181,6 +194,9 @@ owner-bundle backfill isolation, and Phase 6 audit redaction.
 Phase 7 adds registry/direct-write denial, exact appearance permission and tenant isolation,
 enabled-module/template constraints, arbitrary token/CSS rejection, contrast enforcement,
 suspended/archived denial, audited idempotency, and narrow owner-bundle backfill isolation.
+Phase 9 adds Restaurant RLS/grant checks, tenant-aware foreign-key attacks, money and selection
+constraints, localization ownership, read/manage separation, partial-membership backfill isolation,
+module/lifecycle denial, audited idempotency, transactional failure, and anonymous denial.
 Database fixtures are transaction-scoped and rolled back; browser fixtures are local-only and
 removed after the suite.
 

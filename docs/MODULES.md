@@ -1,7 +1,8 @@
 # Modules and capabilities
 
 Status: the platform registry, per-business state, audited mutation boundary, server-side feature
-gates, and tenant administration surface are implemented locally. No product engine is implemented.
+gates, and tenant administration surface are implemented. The Restaurant domain exists without an
+admin/public runtime; the other product engines remain unimplemented.
 
 ## Vocabulary and ownership
 
@@ -17,8 +18,9 @@ controlled display names, concise descriptions, availability, and sort order sup
 Tenant users cannot create or edit registry rows. Registry changes remain migration-managed until a
 separate platform-super-admin workflow is designed.
 
-The current keys are `restaurant`, `booking`, `pages`, and `commerce`. They are vocabulary only and
-do not claim that their engines, routes, or domain tables exist.
+The current keys are `restaurant`, `booking`, `pages`, and `commerce`. Restaurant now has an
+isolated domain schema, but enablement still creates no data or route. The other keys remain
+capability vocabulary only.
 
 ## Business state
 
@@ -68,9 +70,13 @@ template, grant `appearance.manage`, or create engine data. Disabling a module r
 settings for a possible later re-enable; an unavailable module is excluded from effective
 appearance resolution.
 
+Restaurant mutations require the effective capability and separate `restaurant.manage`
+authorization. Disabled or unavailable state retains domain rows for authorized historical reads.
+See [`RESTAURANT.md`](./RESTAURANT.md).
+
 ## Deferred
 
-- engine-specific schemas, routes, permissions, and configuration;
+- Restaurant admin/public routes and other engine-specific schemas, permissions, and configuration;
 - module dependencies or a dependency graph;
 - billing, plans, subscriptions, and entitlement reconciliation;
 - template dependencies across modules, advanced template composition, and vertical classification;

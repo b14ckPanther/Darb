@@ -2,7 +2,8 @@
 
 Status: the unified authenticated tenant-admin foundation is implemented across business,
 location, capability, appearance, shared media, custom-domain, and business-language surfaces.
-Member, permission, engine, billing, and analytics interfaces remain out of scope.
+Restaurant domain data now exists, but Restaurant Admin, member, permission, billing, and analytics
+interfaces remain out of scope.
 
 ## Current-business routing
 
@@ -103,8 +104,9 @@ touch-sized actions, `aria-current`, reduced-motion handling, and responsive lay
 `AdminEngineContribution` is the lightweight application-level contract for future engine-owned
 navigation. A contribution names its module key and provides typed navigation items with route and
 permission requirements. Composition is static and build-time controlled: there is no runtime code
-injection, marketplace, or plugin loader. A future Restaurant engine can contribute its implemented
-admin routes in one registry entry only after its schema, authorization, and routes exist.
+injection, marketplace, or plugin loader. Phase 10 can contribute implemented Restaurant admin
+routes in one registry entry using the existing `restaurant.*` authorization and mutation boundary;
+Phase 9 adds no route or link.
 
 Platform super administration remains a separate future application boundary. Tenant navigation
 does not expose platform controls, and service-role capability is not treated as a tenant or
@@ -120,4 +122,5 @@ platform-user permission.
 - physical media deletion, transformations, folders, and engine-specific references;
 - production custom-domain routing, provider attachment, and SSL automation;
 - translated engine content and translation-management tooling;
-- all restaurant, booking, commerce, pages engine/runtime, advanced theme, and billing work.
+- Restaurant Admin/public delivery, all ordering, booking, commerce, pages runtime, advanced theme,
+  and billing work.

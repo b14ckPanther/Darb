@@ -8,18 +8,19 @@ implemented product capabilities.
 Darb begins as a modular monorepo managed by pnpm workspaces and Turborepo. Deployable surfaces use
 the Next.js App Router and can be released independently while sharing reviewed platform packages.
 
-| Area                | Responsibility                                             |
-| ------------------- | ---------------------------------------------------------- |
-| `apps/main`         | Public root-domain application for `darb.co.il`            |
-| `apps/admin`        | Platform administration application for `admin.darb.co.il` |
-| `packages/config`   | Shared build, lint, TypeScript, and platform constants     |
-| `packages/types`    | Genuinely platform-wide type contracts                     |
-| `packages/ui`       | Darb platform/admin UI foundation                          |
-| `packages/icons`    | Curated icon and custom-SVG boundary                       |
-| `packages/i18n`     | Locale and direction primitives                            |
-| `packages/theme`    | Typed customer-facing theme contract and resolver          |
-| `packages/database` | Generated DB types and separated Supabase client factories |
-| `supabase`          | Core migrations, RLS policies, local config, and DB tests  |
+| Area                  | Responsibility                                             |
+| --------------------- | ---------------------------------------------------------- |
+| `apps/main`           | Public root-domain application for `darb.co.il`            |
+| `apps/admin`          | Platform administration application for `admin.darb.co.il` |
+| `packages/config`     | Shared build, lint, TypeScript, and platform constants     |
+| `packages/types`      | Genuinely platform-wide type contracts                     |
+| `packages/ui`         | Darb platform/admin UI foundation                          |
+| `packages/icons`      | Curated icon and custom-SVG boundary                       |
+| `packages/i18n`       | Locale and direction primitives                            |
+| `packages/theme`      | Typed customer-facing theme contract and resolver          |
+| `packages/restaurant` | Pure Restaurant Engine types and domain-state helpers      |
+| `packages/database`   | Generated DB types and separated Supabase client factories |
+| `supabase`            | Core migrations, RLS policies, local config, and DB tests  |
 
 Turborepo owns the common `dev`, `build`, `lint`, `typecheck`, and `test` task graph. Each workspace
 keeps an explicit manifest and exposes only intentional entry points.
@@ -45,6 +46,12 @@ schema owns canonical businesses, reusable locations, memberships, permission as
 enablement, platform templates, tenant appearance state, shared media metadata, custom-domain
 claims, business locale state, minimal profiles, and audit events. Non-exposed authorization
 helpers and platform super-admin assignments live in `private`.
+
+The first engine boundary is `restaurant.*`. It owns configuration, menus, categories, items,
+variants, modifier structures, localized content, and location availability overrides while
+referencing canonical `core` businesses, locations, media, locales, currency, permissions, module
+state, and audit events. `@darb/restaurant` contains only generated-type aliases and pure domain
+semantics; Restaurant React/admin/public implementations do not exist yet.
 
 Tenant boundaries are enforced in Postgres through explicit grants, Row Level Security, and
 scope-aware authorization helpers. Applications must repeat authorization server-side for defense
@@ -83,10 +90,10 @@ resolution server-side; only its boolean result crosses one service-key-backed, 
 attestation RPC that rechecks the initiating user's `domains.manage` permission. No provider, SSL,
 or public host routing is connected.
 
-The module/capability registry is a shared platform concern, while future engines remain isolated
+The module/capability registry is a shared platform concern, while engines remain isolated
 implementations. The current-business context loads RLS-visible capability state and provides a
-server-side enablement gate. Capability enablement never replaces engine-specific authorization,
-and no engine route or schema exists yet.
+server-side enablement gate. Capability enablement never replaces engine-specific authorization or
+creates engine data. The Restaurant schema exists, but no Restaurant route or UI exists yet.
 
 The template/theme foundation remains separate from both module enablement and the admin design
 system. Platform-owned templates are scoped to a module rendering context; tenant rows store only a
@@ -108,7 +115,7 @@ Preview and production secrets belong in deployment environment configuration, n
 
 ## Deferred decisions
 
-- engine application names and subdomains;
+- Restaurant Admin and public delivery routes; other engine application names and subdomains;
 - remote migration deployment and operational rollout;
 - registration, invitations, password recovery, MFA, and detailed session policy;
 - locale routing and fallback policy;

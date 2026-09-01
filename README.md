@@ -23,8 +23,9 @@ packages/
   types/      Platform-level TypeScript types
   ui/         Minimal platform/admin UI accessibility foundation
   database/   Generated database types and explicit Supabase client boundaries
+  restaurant/ Restaurant Engine database type aliases and pure domain helpers
   theme/      Closed semantic theme contract and deterministic resolver
-supabase/     Local configuration, versioned core migrations, and database tests
+supabase/     Local configuration, versioned core/engine migrations, and database tests
 docs/         Accepted architecture and engineering direction
 tests/e2e/    Playwright public-shell and authenticated admin workflows
 ```
@@ -97,15 +98,16 @@ pnpm test:e2e
 ## Current status
 
 This repository has completed the monorepo, core database, authentication, platform-resource,
-theme/appearance, and unified tenant-admin foundations. It includes migration-driven tenancy, RLS
+theme/appearance, unified tenant-admin, and Restaurant Engine domain foundations. It includes migration-driven tenancy, RLS
 authorization, atomic first-business bootstrap, protected multi-business routes, audited core
 mutations, shared image/video Storage coordination, DNS-verified domain claims, business locale
 state, generated database types, database isolation tests, typed permission/module-aware navigation,
-real-state setup guidance, and responsive accessible admin interaction patterns.
+real-state setup guidance, responsive accessible admin interaction patterns, and an isolated,
+multilingual, ordering-ready Restaurant menu domain with audited mutation boundaries.
 
-No tenant records or business-specific restaurant, booking, commerce, billing, page, storefront,
-or customer-facing engine runtime has been implemented. The checked-in module, permission, and
-template rows are deterministic platform registries, not tenant content.
+No tenant records, Restaurant Admin or public menu UI, ordering, booking, commerce, billing, page,
+storefront, or customer-facing engine runtime has been implemented. The checked-in module,
+permission, and template rows are deterministic platform registries, not tenant content.
 
 ## Engineering direction
 
@@ -122,6 +124,7 @@ are documented in:
 - [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md)
 - [`docs/DOMAINS.md`](./docs/DOMAINS.md)
 - [`docs/MEDIA.md`](./docs/MEDIA.md)
+- [`docs/RESTAURANT.md`](./docs/RESTAURANT.md)
 - [`docs/TENANCY.md`](./docs/TENANCY.md)
 - [`docs/I18N.md`](./docs/I18N.md)
 - [`docs/SECURITY.md`](./docs/SECURITY.md)

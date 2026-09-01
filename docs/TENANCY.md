@@ -28,6 +28,11 @@ directly to it. `core.templates` is platform-owned reference data, not tenant co
 `core.membership_permissions` carries `business_id` and uses composite foreign keys to guarantee
 that its membership and optional location belong to the same business.
 
+Every `restaurant.*` tenant table also carries `business_id`. Composite foreign keys bind menus,
+categories, items, variants, modifier groups/options, translations, media references, and location
+overrides to that same tenant. Restaurant never duplicates canonical businesses, locations, media,
+locales, or currency. See [`RESTAURANT.md`](./RESTAURANT.md).
+
 `core.profiles` is one-to-one with `auth.users`. An auth trigger creates only the profile identity
 row; it deliberately does not trust or copy user metadata. Deleting an auth user removes its profile
 and memberships while historical creator and audit actor references become null where appropriate.
@@ -77,13 +82,13 @@ accepted only when the permission definition supports location scope.
 
 The initial platform permission registry contains only the keys needed to secure the foundation:
 `business.manage`, `locations.read`, `locations.manage`, `memberships.manage`,
-`permissions.manage`, `modules.manage`, `media.manage`, `domains.manage`, `appearance.manage`, and
-`audit.view`. A grantor must possess both
+`permissions.manage`, `modules.manage`, `media.manage`, `domains.manage`, `appearance.manage`,
+`restaurant.read`, `restaurant.manage`, and `audit.view`. A grantor must possess both
 `permissions.manage` and the permission being delegated at an equal or broader scope. This prevents
 self-escalation and scope escalation. Role templates and richer permission catalogues remain future
 product work.
 
-The trusted first-business function assigns all ten keys above at business scope. The bundle is
+The trusted first-business function assigns all twelve keys above at business scope. The bundle is
 fixed in database code and cannot be chosen by a browser. Future onboarding must not turn that
 bootstrap exception into a general membership or permission management path.
 
@@ -103,6 +108,10 @@ are not broadened.
 The Phase 7 forward migration adds `appearance.manage`. Its idempotent backfill applies only to
 active memberships holding the complete approved nine-key Phase 6 owner bundle; partial or
 arbitrary memberships are not broadened.
+
+The Phase 9 forward migration adds `restaurant.read` and `restaurant.manage`. Its idempotent
+backfill applies only to active memberships holding the complete approved ten-key Phase 8 owner
+bundle; custom and partial memberships are not broadened.
 
 An exact retry returns the existing business. A different request is rejected while the caller has
 an active membership. A suspended membership is not active access, so the user may establish a new
@@ -145,6 +154,12 @@ Appearance state is readable through active membership and mutable only with bus
 `appearance.manage`. It applies only to effectively enabled module contexts. Suspended and archived
 businesses must be returned to active before any template/theme change, including by a super admin.
 
+Restaurant content is readable with `restaurant.read` or `restaurant.manage`, including retained
+data when the capability is disabled or unavailable. Mutation additionally requires
+`restaurant.manage`, an active business, and an enabled and platform-available Restaurant module.
+Suspended and archived businesses cannot mutate Restaurant data, including through super-admin
+authorization, until their lifecycle is restored.
+
 ## Isolation requirements
 
 Strict tenant isolation is mandatory and currently enforced as follows:
@@ -163,7 +178,7 @@ Strict tenant isolation is mandatory and currently enforced as follows:
 - invitation lifecycle and acceptance;
 - product role templates and additional permission keys;
 - super-admin operational tooling;
-- engine-owned schemas and tables;
+- additional engine-owned schemas and tables;
 - member, permission, platform-module-registry, and location-restoration interfaces.
 
 See [`MODULES.md`](./MODULES.md) for capability semantics and the future engine-gating boundary.
