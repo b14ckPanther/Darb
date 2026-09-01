@@ -17,95 +17,53 @@ import {
   MenuIcon,
   ModulesIcon,
   SettingsIcon,
+  ShieldIcon,
 } from "@darb/icons";
 
 import { signOutAction } from "../actions/auth";
 import type { AccessibleBusiness, CurrentUser } from "../../lib/auth";
-import { businessPath, businessSectionPath } from "../../lib/navigation";
+import {
+  isAdminNavigationItemActive,
+  type AdminNavigationIconKey,
+  type ResolvedAdminNavigationGroup,
+} from "../../lib/navigation";
 import { DarbAdminBrand } from "./brand";
+import { BusinessLifecycleNotice } from "./business-lifecycle-notice";
 import { BusinessSwitcher } from "./business-switcher";
+import { StatusBadge } from "./status-badge";
 
 interface AdminShellProps {
   businesses: AccessibleBusiness[];
   children: ReactNode;
   currentBusiness: AccessibleBusiness;
-  showDomains: boolean;
-  showLocations: boolean;
-  showMedia: boolean;
+  navigation: ResolvedAdminNavigationGroup[];
   user: CurrentUser;
 }
+
+const navigationIcons: Record<AdminNavigationIconKey, typeof HomeIcon> = {
+  appearance: AppearanceIcon,
+  audit: ShieldIcon,
+  business: SettingsIcon,
+  domains: DomainIcon,
+  languages: LanguagesSettingsIcon,
+  locations: LocationIcon,
+  media: ImageIcon,
+  modules: ModulesIcon,
+  overview: HomeIcon,
+};
 
 export function AdminShell({
   businesses,
   children,
   currentBusiness,
-  showDomains,
-  showLocations,
-  showMedia,
+  navigation,
   user,
 }: AdminShellProps) {
   const pathname = usePathname();
   const [navigationOpen, setNavigationOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const openButtonRef = useRef<HTMLButtonElement>(null);
-  const basePath = businessPath(currentBusiness.slug);
-  const items = [
-    { href: basePath, icon: HomeIcon, label: "Overview", match: pathname === basePath },
-    {
-      href: businessSectionPath(currentBusiness.slug, "settings"),
-      icon: SettingsIcon,
-      label: "Business settings",
-      match: pathname.startsWith(`${basePath}/settings`),
-    },
-    {
-      href: businessSectionPath(currentBusiness.slug, "modules"),
-      icon: ModulesIcon,
-      label: "Modules",
-      match: pathname.startsWith(`${basePath}/modules`),
-    },
-    {
-      href: businessSectionPath(currentBusiness.slug, "appearance"),
-      icon: AppearanceIcon,
-      label: "Appearance",
-      match: pathname.startsWith(`${basePath}/appearance`),
-    },
-    ...(showMedia
-      ? [
-          {
-            href: businessSectionPath(currentBusiness.slug, "media"),
-            icon: ImageIcon,
-            label: "Media",
-            match: pathname.startsWith(`${basePath}/media`),
-          },
-        ]
-      : []),
-    ...(showDomains
-      ? [
-          {
-            href: businessSectionPath(currentBusiness.slug, "domains"),
-            icon: DomainIcon,
-            label: "Domains",
-            match: pathname.startsWith(`${basePath}/domains`),
-          },
-        ]
-      : []),
-    {
-      href: businessSectionPath(currentBusiness.slug, "languages"),
-      icon: LanguagesSettingsIcon,
-      label: "Languages",
-      match: pathname.startsWith(`${basePath}/languages`),
-    },
-    ...(showLocations
-      ? [
-          {
-            href: businessSectionPath(currentBusiness.slug, "locations"),
-            icon: LocationIcon,
-            label: "Locations",
-            match: pathname.startsWith(`${basePath}/locations`),
-          },
-        ]
-      : []),
-  ];
 
   useEffect(() => {
     if (!navigationOpen) {
@@ -117,6 +75,23 @@ export function AdminShell({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setNavigationOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const focusable = sidebarRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable || focusable.length === 0) return;
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
 
@@ -141,7 +116,13 @@ export function AdminShell({
         onClick={() => setNavigationOpen(false)}
       />
 
-      <aside className={`admin-sidebar${navigationOpen ? " is-open" : ""}`}>
+      <aside
+        ref={sidebarRef}
+        className={`admin-sidebar${navigationOpen ? " is-open" : ""}`}
+        aria-label="Business workspace navigation"
+        aria-modal={navigationOpen || undefined}
+        role={navigationOpen ? "dialog" : undefined}
+      >
         <div className="admin-sidebar__brand">
           <DarbAdminBrand />
           <button
@@ -155,25 +136,37 @@ export function AdminShell({
           </button>
         </div>
 
-        <BusinessSwitcher businesses={businesses} currentBusiness={currentBusiness} />
+        <BusinessSwitcher
+          businesses={businesses}
+          currentBusiness={currentBusiness}
+          onNavigate={() => setNavigationOpen(false)}
+        />
 
         <nav className="admin-navigation" aria-label="Business administration">
-          <p className="admin-navigation__label">Manage</p>
-          <ul>
-            {items.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={item.match ? "page" : undefined}
-                  className={item.match ? "is-active" : undefined}
-                  onClick={() => setNavigationOpen(false)}
-                >
-                  <item.icon size={19} />
-                  <span>{item.label}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {navigation.map((group) => (
+            <section className="admin-navigation__group" key={group.key}>
+              <h2 className="admin-navigation__label">{group.label}</h2>
+              <ul>
+                {group.items.map((item) => {
+                  const Icon = navigationIcons[item.icon];
+                  const active = isAdminNavigationItemActive(pathname, item);
+                  return (
+                    <li key={item.key}>
+                      <Link
+                        href={item.href}
+                        aria-current={active ? "page" : undefined}
+                        className={active ? "is-active" : undefined}
+                        onClick={() => setNavigationOpen(false)}
+                      >
+                        <Icon size={19} />
+                        <span>{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
         </nav>
 
         <div className="admin-sidebar__footer">
@@ -214,9 +207,10 @@ export function AdminShell({
             <small>Current business</small>
             <strong dir="auto">{currentBusiness.display_name}</strong>
           </div>
-          <span className={`status-dot status-dot--${currentBusiness.status}`} aria-hidden="true" />
+          <StatusBadge status={currentBusiness.status} />
         </header>
         <main id="main-content" className="core-admin-content">
+          <BusinessLifecycleNotice status={currentBusiness.status} />
           {children}
         </main>
       </div>

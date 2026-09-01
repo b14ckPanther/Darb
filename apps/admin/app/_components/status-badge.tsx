@@ -1,7 +1,35 @@
+import { AlertCircleIcon, CheckmarkCircleIcon, InformationCircleIcon } from "@darb/icons";
+
+import {
+  getAdminStatusSemantic,
+  type AdminSemanticStatus,
+  type AdminStatusTone,
+} from "../../lib/status";
+
 interface StatusBadgeProps {
-  status: "active" | "archived" | "inactive" | "suspended";
+  className?: string;
+  label?: string;
+  status: AdminSemanticStatus;
 }
 
-export function StatusBadge({ status }: StatusBadgeProps) {
-  return <span className={`status-badge status-badge--${status}`}>{status}</span>;
+const toneIcons: Record<AdminStatusTone, typeof CheckmarkCircleIcon> = {
+  danger: AlertCircleIcon,
+  neutral: InformationCircleIcon,
+  positive: CheckmarkCircleIcon,
+  warning: AlertCircleIcon,
+};
+
+export function StatusBadge({ className, label, status }: StatusBadgeProps) {
+  const semantic = getAdminStatusSemantic(status);
+  const Icon = toneIcons[semantic.tone];
+
+  return (
+    <span
+      className={`status-badge status-badge--${semantic.tone}${className ? ` ${className}` : ""}`}
+      data-status={status}
+    >
+      <Icon size={14} />
+      {label ?? semantic.label}
+    </span>
+  );
 }

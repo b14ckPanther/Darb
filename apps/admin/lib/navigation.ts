@@ -9,6 +9,217 @@ export const adminPaths = {
 export type BusinessSection =
   "appearance" | "domains" | "home" | "languages" | "locations" | "media" | "modules" | "settings";
 
+export type AdminNavigationGroupKey =
+  "business" | "experience" | "governance" | "products" | "workspace";
+
+export type AdminNavigationIconKey =
+  | "appearance"
+  | "audit"
+  | "business"
+  | "domains"
+  | "languages"
+  | "locations"
+  | "media"
+  | "modules"
+  | "overview";
+
+export type AdminNavigationVisibility = "always" | "locations";
+
+export interface AdminNavigationItemDefinition {
+  group: AdminNavigationGroupKey;
+  icon: AdminNavigationIconKey;
+  key: string;
+  label: string;
+  order: number;
+  requiredModule?: string;
+  requiredPermission?: string;
+  section: BusinessSection | string;
+  visibility: AdminNavigationVisibility;
+}
+
+export interface AdminEngineContribution {
+  key: string;
+  moduleKey: string;
+  navigation: readonly AdminNavigationItemDefinition[];
+  routeOwner: string;
+}
+
+export interface AdminNavigationContext {
+  enabledModules: readonly string[];
+  permissionKeys: readonly string[];
+  visibleLocationCount: number;
+  canReadAllLocations: boolean;
+  canManageAllLocations: boolean;
+}
+
+export interface ResolvedAdminNavigationItem extends AdminNavigationItemDefinition {
+  href: string;
+}
+
+export interface ResolvedAdminNavigationGroup {
+  items: ResolvedAdminNavigationItem[];
+  key: AdminNavigationGroupKey;
+  label: string;
+  order: number;
+}
+
+const navigationGroups = [
+  { key: "workspace", label: "Workspace", order: 10 },
+  { key: "business", label: "Business", order: 20 },
+  { key: "experience", label: "Experience", order: 30 },
+  { key: "products", label: "Products", order: 40 },
+  { key: "governance", label: "Governance", order: 50 },
+] as const satisfies readonly Omit<ResolvedAdminNavigationGroup, "items">[];
+
+export const coreAdminNavigation = [
+  {
+    group: "workspace",
+    icon: "overview",
+    key: "overview",
+    label: "Overview",
+    order: 10,
+    section: "home",
+    visibility: "always",
+  },
+  {
+    group: "business",
+    icon: "business",
+    key: "business-settings",
+    label: "Business settings",
+    order: 10,
+    section: "settings",
+    visibility: "always",
+  },
+  {
+    group: "business",
+    icon: "locations",
+    key: "locations",
+    label: "Locations",
+    order: 20,
+    section: "locations",
+    visibility: "locations",
+  },
+  {
+    group: "business",
+    icon: "languages",
+    key: "languages",
+    label: "Languages",
+    order: 30,
+    section: "languages",
+    visibility: "always",
+  },
+  {
+    group: "experience",
+    icon: "appearance",
+    key: "appearance",
+    label: "Appearance",
+    order: 10,
+    section: "appearance",
+    visibility: "always",
+  },
+  {
+    group: "experience",
+    icon: "media",
+    key: "media",
+    label: "Media",
+    order: 20,
+    section: "media",
+    requiredPermission: "media.manage",
+    visibility: "always",
+  },
+  {
+    group: "experience",
+    icon: "domains",
+    key: "domains",
+    label: "Domains",
+    order: 30,
+    section: "domains",
+    requiredPermission: "domains.manage",
+    visibility: "always",
+  },
+  {
+    group: "products",
+    icon: "modules",
+    key: "modules",
+    label: "Modules",
+    order: 10,
+    section: "modules",
+    visibility: "always",
+  },
+] as const satisfies readonly AdminNavigationItemDefinition[];
+
+// Engine contributions are statically composed here. Future engines add a typed contribution,
+// while their routes retain their own server-side module and permission gates.
+export const adminEngineContributions: readonly AdminEngineContribution[] = [];
+
+export function buildAdminNavigation(
+  slug: string,
+  context: AdminNavigationContext,
+  extensions: readonly AdminEngineContribution[] = adminEngineContributions,
+): ResolvedAdminNavigationGroup[] {
+  const enabledModules = new Set(context.enabledModules);
+  const permissionKeys = new Set(context.permissionKeys);
+  const extensionItems = extensions.flatMap((extension) =>
+    extension.navigation.map((item) => ({
+      ...item,
+      requiredModule: item.requiredModule ?? extension.moduleKey,
+    })),
+  );
+  const items = [...coreAdminNavigation, ...extensionItems]
+    .filter((item) => isNavigationItemVisible(item, context, enabledModules, permissionKeys))
+    .map((item): ResolvedAdminNavigationItem => ({
+      ...item,
+      href: resolveAdminNavigationHref(slug, item.section),
+    }));
+
+  return navigationGroups.flatMap((group) => {
+    const groupItems = items
+      .filter((item) => item.group === group.key)
+      .sort((left, right) => left.order - right.order || left.label.localeCompare(right.label));
+
+    return groupItems.length > 0 ? [{ ...group, items: groupItems }] : [];
+  });
+}
+
+export function isAdminNavigationItemActive(
+  pathname: string,
+  item: Pick<ResolvedAdminNavigationItem, "href" | "section">,
+): boolean {
+  return item.section === "home"
+    ? pathname === item.href
+    : pathname.startsWith(`${item.href}/`) || pathname === item.href;
+}
+
+function isNavigationItemVisible(
+  item: AdminNavigationItemDefinition,
+  context: AdminNavigationContext,
+  enabledModules: ReadonlySet<string>,
+  permissionKeys: ReadonlySet<string>,
+): boolean {
+  if (item.requiredModule && !enabledModules.has(item.requiredModule)) {
+    return false;
+  }
+
+  if (item.requiredPermission && !permissionKeys.has(item.requiredPermission)) {
+    return false;
+  }
+
+  switch (item.visibility) {
+    case "locations":
+      return (
+        context.canManageAllLocations ||
+        context.canReadAllLocations ||
+        context.visibleLocationCount > 0
+      );
+    case "always":
+      return true;
+  }
+}
+
+function resolveAdminNavigationHref(slug: string, section: string): string {
+  return section === "home" ? businessPath(slug) : `${businessPath(slug)}/${section}`;
+}
+
 export function businessPath(slug: string): string {
   return `/b/${slug}`;
 }
@@ -33,34 +244,16 @@ export function getBusinessSwitchPath(
   }
 
   const suffix = currentPath.slice(currentBase.length);
+  // Core top-level sections exist for every accessible business. Engine routes fall back to the
+  // target Overview until target-business module/access state can be resolved server-side.
+  const switchableSections = coreAdminNavigation
+    .map((item) => item.section)
+    .filter((section) => section !== "home");
+  const matchingSection = switchableSections.find(
+    (section) => suffix === `/${section}` || suffix.startsWith(`/${section}/`),
+  );
 
-  if (suffix === "/settings" || suffix.startsWith("/settings/")) {
-    return businessSectionPath(nextSlug, "settings");
-  }
-
-  if (suffix === "/locations" || suffix.startsWith("/locations/")) {
-    return businessSectionPath(nextSlug, "locations");
-  }
-
-  if (suffix === "/modules" || suffix.startsWith("/modules/")) {
-    return businessSectionPath(nextSlug, "modules");
-  }
-
-  if (suffix === "/appearance" || suffix.startsWith("/appearance/")) {
-    return businessSectionPath(nextSlug, "appearance");
-  }
-
-  if (suffix === "/media" || suffix.startsWith("/media/")) {
-    return businessSectionPath(nextSlug, "media");
-  }
-
-  if (suffix === "/domains" || suffix.startsWith("/domains/")) {
-    return businessSectionPath(nextSlug, "domains");
-  }
-
-  if (suffix === "/languages" || suffix.startsWith("/languages/")) {
-    return businessSectionPath(nextSlug, "languages");
-  }
+  if (matchingSection) return resolveAdminNavigationHref(nextSlug, matchingSection);
 
   return businessPath(nextSlug);
 }

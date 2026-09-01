@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildAdminNavigation,
   businessLocationPath,
   businessPath,
   businessSectionPath,
@@ -10,8 +11,19 @@ import {
   getOnboardingDestination,
   getPostSignInDestination,
   getProtectedAdminDestination,
+  isAdminNavigationItemActive,
   sanitizeReturnPath,
+  type AdminEngineContribution,
+  type AdminNavigationContext,
 } from "./navigation";
+
+const navigationContext: AdminNavigationContext = {
+  canManageAllLocations: true,
+  canReadAllLocations: true,
+  enabledModules: [],
+  permissionKeys: ["domains.manage", "media.manage"],
+  visibleLocationCount: 2,
+};
 
 describe("tenant-aware business routes", () => {
   it("builds canonical business and location paths", () => {
@@ -45,6 +57,107 @@ describe("tenant-aware business routes", () => {
 
   it("fails back to the target business home for unrelated paths", () => {
     expect(getBusinessSwitchPath("/unexpected", "alpha", "beta")).toBe("/b/beta");
+    expect(getBusinessSwitchPath("/b/alpha/future-engine/items", "alpha", "beta")).toBe("/b/beta");
+  });
+});
+
+describe("admin navigation registry", () => {
+  it("composes ordered conceptual groups from one typed registry", () => {
+    const groups = buildAdminNavigation("darb-core", navigationContext);
+
+    expect(groups.map((group) => group.label)).toEqual([
+      "Workspace",
+      "Business",
+      "Experience",
+      "Products",
+    ]);
+    expect(groups.flatMap((group) => group.items.map((item) => item.label))).toEqual([
+      "Overview",
+      "Business settings",
+      "Locations",
+      "Languages",
+      "Appearance",
+      "Media",
+      "Domains",
+      "Modules",
+    ]);
+  });
+
+  it("filters permission-sensitive links without treating hiding as authorization", () => {
+    const groups = buildAdminNavigation("darb-core", {
+      ...navigationContext,
+      canManageAllLocations: false,
+      canReadAllLocations: false,
+      permissionKeys: [],
+      visibleLocationCount: 0,
+    });
+    const keys = groups.flatMap((group) => group.items.map((item) => item.key));
+
+    expect(keys).not.toContain("domains");
+    expect(keys).not.toContain("media");
+    expect(keys).not.toContain("locations");
+    expect(keys).toContain("business-settings");
+    expect(keys).toContain("modules");
+  });
+
+  it("adds a future engine contribution only when its capability is enabled", () => {
+    const contribution = {
+      key: "sample-engine-admin",
+      moduleKey: "sample-engine",
+      navigation: [
+        {
+          group: "products",
+          icon: "modules",
+          key: "sample-engine-overview",
+          label: "Sample engine",
+          order: 20,
+          requiredPermission: "sample.manage",
+          section: "sample-engine",
+          visibility: "always",
+        },
+      ],
+      routeOwner: "/b/[businessSlug]/sample-engine",
+    } as const satisfies AdminEngineContribution;
+
+    expect(
+      buildAdminNavigation("darb-core", navigationContext, [contribution])
+        .flatMap((group) => group.items)
+        .some((item) => item.key === "sample-engine-overview"),
+    ).toBe(false);
+    expect(
+      buildAdminNavigation(
+        "darb-core",
+        { ...navigationContext, enabledModules: ["sample-engine"] },
+        [contribution],
+      )
+        .flatMap((group) => group.items)
+        .some((item) => item.key === "sample-engine-overview"),
+    ).toBe(false);
+    expect(
+      buildAdminNavigation(
+        "darb-core",
+        {
+          ...navigationContext,
+          enabledModules: ["sample-engine"],
+          permissionKeys: [...navigationContext.permissionKeys, "sample.manage"],
+        },
+        [contribution],
+      )
+        .flatMap((group) => group.items)
+        .find((item) => item.key === "sample-engine-overview")?.href,
+    ).toBe("/b/darb-core/sample-engine");
+  });
+
+  it("marks only the exact overview or matching section as current", () => {
+    const items = buildAdminNavigation("darb-core", navigationContext).flatMap(
+      (group) => group.items,
+    );
+    const overview = items.find((item) => item.key === "overview")!;
+    const locations = items.find((item) => item.key === "locations")!;
+
+    expect(isAdminNavigationItemActive("/b/darb-core", overview)).toBe(true);
+    expect(isAdminNavigationItemActive("/b/darb-core/settings", overview)).toBe(false);
+    expect(isAdminNavigationItemActive("/b/darb-core/locations/123", locations)).toBe(true);
   });
 });
 
