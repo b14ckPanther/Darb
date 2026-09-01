@@ -14,7 +14,8 @@ export type MutationKind =
   | "location-create"
   | "location-update"
   | "media"
-  | "module";
+  | "module"
+  | "restaurant";
 
 export function mapMutationError(error: DatabaseErrorLike, kind: MutationKind): FormState {
   if (error.code === "23505" && kind === "business") {
@@ -29,6 +30,40 @@ export function mapMutationError(error: DatabaseErrorLike, kind: MutationKind): 
       message: "You do not have permission to make this change.",
       status: "error",
     };
+  }
+
+  if (kind === "restaurant") {
+    if (error.message?.includes("RESTAURANT_MODULE_DISABLED")) {
+      return {
+        message: "Enable the Restaurant capability before changing its content.",
+        status: "error",
+      };
+    }
+    if (error.message?.includes("RESTAURANT_MODULE_UNAVAILABLE")) {
+      return { message: "Restaurant is currently unavailable at platform level.", status: "error" };
+    }
+    if (error.message?.includes("RESTAURANT_BUSINESS_NOT_ACTIVE")) {
+      return {
+        message: "Restaurant content is read-only while this business is not active.",
+        status: "error",
+      };
+    }
+    if (error.message?.includes("RESTAURANT_ENTITY_ARCHIVED")) {
+      return {
+        message: "Archived Restaurant content is retained as read-only history.",
+        status: "error",
+      };
+    }
+    if (
+      error.message?.includes("RESTAURANT_") ||
+      error.message?.includes("INVALID_RESTAURANT") ||
+      error.code === "22023"
+    ) {
+      return {
+        message: "Some Restaurant details were not accepted. Review the form and try again.",
+        status: "error",
+      };
+    }
   }
 
   if (error.message?.includes("LOCATION_ARCHIVED")) {
@@ -151,17 +186,19 @@ export function mapMutationError(error: DatabaseErrorLike, kind: MutationKind): 
   const fallback =
     kind === "appearance"
       ? "appearance"
-      : kind === "business"
-        ? "business settings"
-        : kind === "module"
-          ? "capability"
-          : kind === "domain"
-            ? "domain"
-            : kind === "media"
-              ? "media"
-              : kind === "languages"
-                ? "languages"
-                : "location";
+      : kind === "restaurant"
+        ? "Restaurant content"
+        : kind === "business"
+          ? "business settings"
+          : kind === "module"
+            ? "capability"
+            : kind === "domain"
+              ? "domain"
+              : kind === "media"
+                ? "media"
+                : kind === "languages"
+                  ? "languages"
+                  : "location";
   return {
     message: `We could not save the ${fallback}. Please try again.`,
     status: "error",

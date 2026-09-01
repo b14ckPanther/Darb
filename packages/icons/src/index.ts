@@ -6,6 +6,7 @@ import {
   Building03Icon,
   Cancel01Icon,
   CheckmarkCircle02Icon,
+  ChefHatIcon,
   ColorsIcon,
   Copy01Icon,
   Edit02Icon,
@@ -26,6 +27,7 @@ import {
   Settings02Icon,
   Shield01Icon,
   TextFontIcon,
+  TranslateIcon,
   ViewIcon,
   Video01Icon,
 } from "@hugeicons/core-free-icons";
@@ -76,6 +78,10 @@ export function CancelIcon(props: DarbIconProps): ReactElement {
 
 export function CheckmarkCircleIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(CheckmarkCircle02Icon, props);
+}
+
+export function RestaurantIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(ChefHatIcon, props);
 }
 
 export function CopyIcon(props: DarbIconProps): ReactElement {
@@ -156,6 +162,10 @@ export function ShieldIcon(props: DarbIconProps): ReactElement {
 
 export function TypographyIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(TextFontIcon, props);
+}
+
+export function TranslationIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(TranslateIcon, props);
 }
 
 export function VideoIcon(props: DarbIconProps): ReactElement {

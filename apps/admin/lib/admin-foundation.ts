@@ -145,7 +145,10 @@ export function getBusinessLifecyclePresentation(
   }
 }
 
-export function getHonestModuleAvailability(module: BusinessModuleState): {
+export function getHonestModuleAvailability(
+  module: BusinessModuleState,
+  engineAdminAvailable = false,
+): {
   detail: string;
   label: string;
   state: "available" | "disabled" | "enabled" | "unavailable";
@@ -161,6 +164,14 @@ export function getHonestModuleAvailability(module: BusinessModuleState): {
   }
 
   if (module.isEffectivelyEnabled) {
+    if (engineAdminAvailable) {
+      return {
+        detail: "Capability enabled. Its authenticated engine administration is available.",
+        label: "Enabled · admin ready",
+        state: "enabled",
+      };
+    }
+
     return {
       detail: "Capability enabled. Its engine administration is not available yet.",
       label: "Enabled · engine pending",

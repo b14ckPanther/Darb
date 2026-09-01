@@ -16,6 +16,7 @@
     "@darb/database": "workspace:*",
     "@darb/i18n": "workspace:*",
     "@darb/icons": "workspace:*",
+    "@darb/restaurant": "workspace:*",
     "@darb/theme": "workspace:*",
     "@darb/types": "workspace:*",
     "@darb/ui": "workspace:*",

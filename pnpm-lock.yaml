@@ -122,6 +122,9 @@ importers:
       '@darb/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@darb/restaurant':
+        specifier: workspace:*
+        version: link:../../packages/restaurant
       '@darb/theme':
         specifier: workspace:*
         version: link:../../packages/theme

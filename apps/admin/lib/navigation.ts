@@ -7,7 +7,15 @@ export const adminPaths = {
 } as const;
 
 export type BusinessSection =
-  "appearance" | "domains" | "home" | "languages" | "locations" | "media" | "modules" | "settings";
+  | "appearance"
+  | "domains"
+  | "home"
+  | "languages"
+  | "locations"
+  | "media"
+  | "modules"
+  | "restaurant"
+  | "settings";
 
 export type AdminNavigationGroupKey =
   "business" | "experience" | "governance" | "products" | "workspace";
@@ -21,7 +29,8 @@ export type AdminNavigationIconKey =
   | "locations"
   | "media"
   | "modules"
-  | "overview";
+  | "overview"
+  | "restaurant";
 
 export type AdminNavigationVisibility = "always" | "locations";
 
@@ -32,6 +41,7 @@ export interface AdminNavigationItemDefinition {
   label: string;
   order: number;
   requiredModule?: string;
+  requiredAnyPermission?: readonly string[];
   requiredPermission?: string;
   section: BusinessSection | string;
   visibility: AdminNavigationVisibility;
@@ -150,7 +160,27 @@ export const coreAdminNavigation = [
 
 // Engine contributions are statically composed here. Future engines add a typed contribution,
 // while their routes retain their own server-side module and permission gates.
-export const adminEngineContributions: readonly AdminEngineContribution[] = [];
+export const restaurantAdminContribution = {
+  key: "restaurant-admin",
+  moduleKey: "restaurant",
+  navigation: [
+    {
+      group: "products",
+      icon: "restaurant",
+      key: "restaurant-overview",
+      label: "Restaurant",
+      order: 20,
+      requiredAnyPermission: ["restaurant.read", "restaurant.manage"],
+      section: "restaurant",
+      visibility: "always",
+    },
+  ],
+  routeOwner: "/b/[businessSlug]/restaurant",
+} as const satisfies AdminEngineContribution;
+
+export const adminEngineContributions: readonly AdminEngineContribution[] = [
+  restaurantAdminContribution,
+];
 
 export function buildAdminNavigation(
   slug: string,
@@ -204,6 +234,13 @@ function isNavigationItemVisible(
     return false;
   }
 
+  if (
+    item.requiredAnyPermission &&
+    !item.requiredAnyPermission.some((permission) => permissionKeys.has(permission))
+  ) {
+    return false;
+  }
+
   switch (item.visibility) {
     case "locations":
       return (
@@ -244,9 +281,12 @@ export function getBusinessSwitchPath(
   }
 
   const suffix = currentPath.slice(currentBase.length);
-  // Core top-level sections exist for every accessible business. Engine routes fall back to the
-  // target Overview until target-business module/access state can be resolved server-side.
-  const switchableSections = coreAdminNavigation
+  // Registered top-level sections can be preserved without carrying entity IDs across tenants.
+  // The target route still re-resolves module and permission state server-side.
+  const switchableSections = [
+    ...coreAdminNavigation,
+    ...adminEngineContributions.flatMap((engine) => engine.navigation),
+  ]
     .map((item) => item.section)
     .filter((section) => section !== "home");
   const matchingSection = switchableSections.find(

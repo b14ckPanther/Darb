@@ -19,7 +19,7 @@ import { StatusBadge } from "../../../_components/status-badge";
 import { getHonestModuleAvailability } from "../../../../lib/admin-foundation";
 import { loadAdminOverview } from "../../../../lib/admin-overview";
 import { requireBusinessAdminContext } from "../../../../lib/admin-context";
-import { businessSectionPath } from "../../../../lib/navigation";
+import { adminEngineContributions, businessSectionPath } from "../../../../lib/navigation";
 import { createServerComponentSupabaseClient } from "../../../../lib/supabase/server";
 
 interface BusinessHomePageProps {
@@ -161,7 +161,10 @@ export default async function BusinessHomePage({ params }: BusinessHomePageProps
         </div>
         <ul className="overview-module-list">
           {context.modules.map((module) => {
-            const availability = getHonestModuleAvailability(module);
+            const availability = getHonestModuleAvailability(
+              module,
+              adminEngineContributions.some((engine) => engine.moduleKey === module.key),
+            );
             return (
               <li key={module.key}>
                 <span>

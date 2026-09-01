@@ -16,6 +16,7 @@ import {
   LogoutIcon,
   MenuIcon,
   ModulesIcon,
+  RestaurantIcon,
   SettingsIcon,
   ShieldIcon,
 } from "@darb/icons";
@@ -50,6 +51,7 @@ const navigationIcons: Record<AdminNavigationIconKey, typeof HomeIcon> = {
   media: ImageIcon,
   modules: ModulesIcon,
   overview: HomeIcon,
+  restaurant: RestaurantIcon,
 };
 
 export function AdminShell({
