@@ -4,13 +4,19 @@ import type { BusinessAccessSnapshot } from "./auth";
 import {
   canCreateLocation,
   canEditLocation,
+  canManageDomains,
+  canManageMedia,
   canManageModules,
+  canShowDomains,
   canShowLocations,
+  canShowMedia,
 } from "./admin-access";
 
 const noAccess: BusinessAccessSnapshot = {
   canManageAllLocations: false,
   canManageBusiness: false,
+  canManageDomains: false,
+  canManageMedia: false,
   canManageModules: false,
   canReadAllLocations: false,
   canViewAudit: false,
@@ -43,5 +49,24 @@ describe("admin access decisions", () => {
     expect(canManageModules({ ...noAccess, canManageModules: true }, "suspended")).toBe(false);
     expect(canManageModules({ ...noAccess, canManageModules: true }, "archived")).toBe(false);
     expect(canManageModules(noAccess, "active")).toBe(false);
+  });
+
+  it("keeps media and domain navigation scoped to their explicit permissions", () => {
+    expect(canShowMedia({ ...noAccess, canManageMedia: true })).toBe(true);
+    expect(canShowDomains({ ...noAccess, canManageDomains: true })).toBe(true);
+    expect(canShowMedia(noAccess)).toBe(false);
+    expect(canShowDomains(noAccess)).toBe(false);
+  });
+
+  it("blocks media and domain mutations outside an active business", () => {
+    const mediaAccess = { ...noAccess, canManageMedia: true };
+    const domainAccess = { ...noAccess, canManageDomains: true };
+
+    expect(canManageMedia(mediaAccess, "active")).toBe(true);
+    expect(canManageMedia(mediaAccess, "archived")).toBe(false);
+    expect(canManageMedia(mediaAccess, "suspended")).toBe(false);
+    expect(canManageDomains(domainAccess, "active")).toBe(true);
+    expect(canManageDomains(domainAccess, "archived")).toBe(false);
+    expect(canManageDomains(domainAccess, "suspended")).toBe(false);
   });
 });

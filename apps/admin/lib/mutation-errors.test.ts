@@ -45,4 +45,26 @@ describe("safe mutation error mapping", () => {
       status: "error",
     });
   });
+
+  it("maps domain conflicts, lifecycle failures, and media failures without SQL details", () => {
+    expect(mapMutationError({ code: "23505", message: "constraint_name" }, "domain")).toEqual({
+      fieldErrors: { hostname: "That hostname is already claimed on Darb." },
+      status: "error",
+    });
+    expect(
+      mapMutationError({ code: "55000", message: "BUSINESS_DOMAINS_NOT_ACTIVE" }, "domain"),
+    ).toEqual({
+      message: "This setting cannot be changed while the business is not active.",
+      status: "error",
+    });
+    expect(
+      mapMutationError(
+        { code: "55000", message: "MEDIA_UPLOAD_NOT_FOUND private detail" },
+        "media",
+      ),
+    ).toEqual({
+      message: "The media upload could not be verified. Start the upload again.",
+      status: "error",
+    });
+  });
 });
