@@ -284,7 +284,7 @@ select is((
   select count(*)::integer from core.membership_permissions as assignment
   join core.memberships as membership on membership.id = assignment.membership_id
   where membership.user_id = '00000000-0000-0000-0000-0000000007f1' and assignment.location_id is null
-), 10, 'new business owners receive the reviewed ten-permission bundle');
+), 12, 'new business owners receive the current reviewed twelve-permission bundle');
 select ok(exists(
   select 1 from core.membership_permissions as assignment
   join core.memberships as membership on membership.id = assignment.membership_id

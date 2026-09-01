@@ -142,8 +142,10 @@ select set_eq(
       ('media.manage'::text),
       ('domains.manage'::text),
       ('appearance.manage'::text),
+      ('restaurant.read'::text),
+      ('restaurant.manage'::text),
       ('audit.view'::text)$$,
-  'bootstrap grants exactly the current reviewed ten-permission owner bundle'
+  'bootstrap grants exactly the current reviewed twelve-permission owner bundle'
 );
 
 select results_eq(
