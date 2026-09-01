@@ -1,0 +1,35 @@
+{
+  "name": "@darb/rest",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --port 3002",
+    "lint": "eslint .",
+    "start": "next start --port 3002",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@darb/config": "workspace:*",
+    "@darb/database": "workspace:*",
+    "@darb/i18n": "workspace:*",
+    "@darb/icons": "workspace:*",
+    "@darb/restaurant": "workspace:*",
+    "@darb/theme": "workspace:*",
+    "@darb/types": "workspace:*",
+    "@darb/ui": "workspace:*",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

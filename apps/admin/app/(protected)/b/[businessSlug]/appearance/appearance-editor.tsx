@@ -155,10 +155,13 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
       <header className={styles.editorHeader}>
         <div>
           <p className="eyebrow">{appearance.moduleDisplayName} capability</p>
-          <h2 id={`appearance-${appearance.moduleKey}`}>Rendering foundation</h2>
+          <h2 id={`appearance-${appearance.moduleKey}`}>
+            {appearance.moduleDisplayName} rendering foundation
+          </h2>
           <p>
-            Template and theme state are stored now; the customer-facing{" "}
-            {appearance.moduleDisplayName.toLowerCase()} engine remains intentionally unbuilt.
+            {appearance.moduleKey === "restaurant"
+              ? "This composition is used by the published Restaurant experience when its public gates are active."
+              : `Template and theme state are stored now; the customer-facing ${appearance.moduleDisplayName.toLowerCase()} engine remains intentionally unbuilt.`}
           </p>
         </div>
         <span className={styles.contextKey} dir="ltr">
@@ -191,7 +194,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
                 >
                   <input
                     type="radio"
-                    name="template-choice"
+                    name={`${appearance.moduleKey}-template-choice`}
                     value={candidate.key}
                     checked={candidate.key === selectedTemplateKey}
                     disabled={!editable || !candidate.isAvailable}
