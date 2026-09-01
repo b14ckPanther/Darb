@@ -1,8 +1,7 @@
 # Restaurant Engine foundation
 
-Status: the Restaurant Engine database domain, authorization vocabulary, audited mutation boundary,
-generated types, and pure domain helpers are implemented. Restaurant Admin, public menu delivery,
-and ordering remain intentionally absent.
+Status: the Restaurant Engine database domain and its authenticated tenant-admin application are
+implemented. Public menu delivery and ordering remain intentionally absent.
 
 ## Boundary and capability
 
@@ -139,13 +138,50 @@ ordered items, variants, modifiers, item/group assignments, translation locale l
 location overrides. Composite keys support set-based menu loading without speculative
 denormalization or N+1-only access patterns.
 
+## Restaurant Admin
+
+Restaurant Admin is statically contributed to the authenticated business shell when the
+`restaurant` capability is effectively enabled and the caller has `restaurant.read` or
+`restaurant.manage`. Its routes are:
+
+- `/b/[businessSlug]/restaurant` for real content totals, operational configuration, and actionable
+  readiness;
+- `/b/[businessSlug]/restaurant/menus` and `/menus/[menuId]` for multiple-menu structure,
+  publication intent, categories, items, media references, and localized content;
+- `/b/[businessSlug]/restaurant/items/[itemId]` for item details, variants, modifier assignments,
+  and per-location availability;
+- `/b/[businessSlug]/restaurant/modifiers` for the reusable modifier-group and option library.
+
+Pages are Server Components backed by set-based RLS-visible queries. Interactive forms are narrow
+client components whose Server Actions re-resolve the authenticated business and Restaurant access
+before calling the existing audited RPCs. Ordinary tenant administration never uses the privileged
+client or writes Restaurant tables directly. Business switching preserves only the Restaurant
+section root, so resource identifiers from one tenant never carry into another.
+
+`restaurant.read` provides useful read-only administration. Mutation controls require
+`restaurant.manage`, an active business, and an effectively enabled capability. A disabled
+capability redirects its stale admin route to the business Overview; unavailable capabilities and
+retained suspended/archived data remain readable but immutable. The interface distinguishes
+internal operational names from localized customer content and follows each locale's native
+direction.
+
+The Overview uses stored Restaurant state only. It reports real menus, categories, items,
+publication state, languages, images, modifiers, sold-out items, and location overrides. Readiness
+is a deterministic list of required or recommended actions, not a fabricated percentage or engine
+KPI. Public activation remains an operational intent flag and is explicitly labelled as not yet a
+public renderer.
+
 ## Application boundary and deferred work
 
 `@darb/restaurant` exposes generated row/enum aliases and pure helpers for capability effectiveness,
 public activation, location availability inheritance, and modifier selection semantics. It has no
 React or Supabase client abstraction. `@darb/database` remains the generated schema/client boundary.
 
-Phase 10 may build Restaurant Admin against the authenticated RPCs. Phase 11 may design explicit
-public menu queries, publishing, fallback, caching, and presentation. This phase does not include
-admin or public routes, carts, checkout, orders, payments, delivery, tables, kitchen/POS, inventory,
-taxes, coupons, loyalty, tips, schedules, or translation UI.
+`@darb/restaurant` additionally exposes exact major-to-minor money parsing and pure readiness
+derivation. It still has no React or Supabase client abstraction. Admin-specific queries, actions,
+validation, and presentation stay inside `apps/admin`; `@darb/database` remains the generated
+schema/client boundary.
+
+Phase 11 may design explicit public menu queries, locale fallback, caching, and presentation. The
+current product does not include public Restaurant routes, carts, checkout, orders, payments,
+delivery, tables, kitchen/POS, inventory, taxes, coupons, loyalty, tips, or schedules.

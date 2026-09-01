@@ -242,7 +242,7 @@ transactional failure, anonymous denial, and retained-data semantics.
 - member, permission, platform-module-registry, and super-admin administration;
 - module dependencies, engine-specific configuration beyond Restaurant, and billing entitlements;
 - location restoration and hard-deletion workflows;
-- Restaurant Admin/public rendering and other engine-owned tables/runtime behavior;
+- Restaurant public rendering and other engine-owned tables/runtime behavior;
 - comprehensive audit retention and export policy;
 - physical media deletion and transformations;
 - production custom-domain routing/provider automation;

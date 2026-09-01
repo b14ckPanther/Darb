@@ -51,7 +51,8 @@ The first engine boundary is `restaurant.*`. It owns configuration, menus, categ
 variants, modifier structures, localized content, and location availability overrides while
 referencing canonical `core` businesses, locations, media, locales, currency, permissions, module
 state, and audit events. `@darb/restaurant` contains only generated-type aliases and pure domain
-semantics; Restaurant React/admin/public implementations do not exist yet.
+semantics. Its authenticated administration stays in `apps/admin`; no public Restaurant runtime
+exists yet.
 
 Tenant boundaries are enforced in Postgres through explicit grants, Row Level Security, and
 scope-aware authorization helpers. Applications must repeat authorization server-side for defense
@@ -93,7 +94,9 @@ or public host routing is connected.
 The module/capability registry is a shared platform concern, while engines remain isolated
 implementations. The current-business context loads RLS-visible capability state and provides a
 server-side enablement gate. Capability enablement never replaces engine-specific authorization or
-creates engine data. The Restaurant schema exists, but no Restaurant route or UI exists yet.
+creates engine data. Restaurant contributes its authenticated admin route statically when both
+effective capability state and Restaurant permission are present; other enabled engines remain
+honestly unavailable until their implementation phase.
 
 The template/theme foundation remains separate from both module enablement and the admin design
 system. Platform-owned templates are scoped to a module rendering context; tenant rows store only a
@@ -115,7 +118,7 @@ Preview and production secrets belong in deployment environment configuration, n
 
 ## Deferred decisions
 
-- Restaurant Admin and public delivery routes; other engine application names and subdomains;
+- Restaurant public delivery routes; other engine application names and subdomains;
 - remote migration deployment and operational rollout;
 - registration, invitations, password recovery, MFA, and detailed session policy;
 - locale routing and fallback policy;

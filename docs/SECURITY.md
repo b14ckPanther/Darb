@@ -136,8 +136,9 @@ requires business-wide `appearance.manage`, rechecks active tenant and enabled-m
 validates template context, accepts only a closed semantic JSON contract, and rejects critical
 contrast failure. URL/CSS/script-shaped values cannot enter the persisted theme model.
 
-Restaurant administration has no application UI yet, but its database boundary is ready for a
-normal request-scoped authenticated client. Direct table writes are withheld. Narrow RPCs require
+Restaurant administration uses the normal request-scoped authenticated client. Its Server Actions
+re-resolve the RLS-visible business, active lifecycle, module state, and Restaurant permission
+before calling the existing narrow RPCs; direct table writes remain withheld. Those RPCs require
 `restaurant.manage`, active tenant lifecycle, and an enabled/available Restaurant module, then
 re-resolve every parent inside the target business. Composite foreign keys prevent cross-tenant
 menu/category/item, media, modifier, translation, and location relationships even for trusted SQL.

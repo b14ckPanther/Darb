@@ -1,9 +1,9 @@
 # Core administration
 
 Status: the unified authenticated tenant-admin foundation is implemented across business,
-location, capability, appearance, shared media, custom-domain, and business-language surfaces.
-Restaurant domain data now exists, but Restaurant Admin, member, permission, billing, and analytics
-interfaces remain out of scope.
+location, capability, appearance, shared media, custom-domain, business-language, and Restaurant
+content surfaces. Member, permission, billing, public Restaurant, and analytics interfaces remain
+out of scope.
 
 ## Current-business routing
 
@@ -31,6 +31,10 @@ local storage.
 - `/b/[businessSlug]/locations` lists only locations visible through RLS;
 - `/b/[businessSlug]/locations/new` creates a reusable core location;
 - `/b/[businessSlug]/locations/[locationId]` edits or archives one accessible location.
+- `/b/[businessSlug]/restaurant` is the capability- and permission-gated Restaurant workspace;
+- `/b/[businessSlug]/restaurant/menus` manages menus, categories, items, and localized content;
+- `/b/[businessSlug]/restaurant/items/[itemId]` manages variants, modifiers, and location state;
+- `/b/[businessSlug]/restaurant/modifiers` manages the reusable modifier library.
 
 One typed, ordered navigation registry owns the implemented Workspace, Business, Experience,
 Products, and future Governance groups. The protected layout resolves and filters it from the
@@ -48,7 +52,10 @@ are mutation-disabled unless the business is active.
 
 Appearance is broadly visible to authorized members. It lists only effectively enabled modules
 that have platform templates; edit controls require `appearance.manage` and an active business. A
-zero-context state links back to Modules without pretending an engine exists.
+zero-context state links back to Modules without pretending an engine exists. Restaurant appears
+as an engine navigation contribution only when its capability is effectively enabled and the user
+has `restaurant.read` or `restaurant.manage`; all other enabled engine capabilities continue to be
+labelled honestly as pending.
 
 ## Mutation and audit boundary
 
@@ -101,12 +108,12 @@ touch-sized actions, `aria-current`, reduced-motion handling, and responsive lay
 
 ## Static engine extension contract
 
-`AdminEngineContribution` is the lightweight application-level contract for future engine-owned
+`AdminEngineContribution` is the lightweight application-level contract for engine-owned
 navigation. A contribution names its module key and provides typed navigation items with route and
 permission requirements. Composition is static and build-time controlled: there is no runtime code
-injection, marketplace, or plugin loader. Phase 10 can contribute implemented Restaurant admin
-routes in one registry entry using the existing `restaurant.*` authorization and mutation boundary;
-Phase 9 adds no route or link.
+injection, marketplace, or plugin loader. Restaurant is the first implementation: one contribution
+registers its section while route-level access and Server Actions independently repeat
+authorization.
 
 Platform super administration remains a separate future application boundary. Tenant navigation
 does not expose platform controls, and service-role capability is not treated as a tenant or
@@ -121,6 +128,6 @@ platform-user permission.
 - location restoration or hard deletion;
 - physical media deletion, transformations, folders, and engine-specific references;
 - production custom-domain routing, provider attachment, and SSL automation;
-- translated engine content and translation-management tooling;
-- Restaurant Admin/public delivery, all ordering, booking, commerce, pages runtime, advanced theme,
-  and billing work.
+- bulk translation workflows and automated locale fallback;
+- public Restaurant delivery, all ordering, booking, commerce, pages runtime, advanced theme, and
+  billing work.

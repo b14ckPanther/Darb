@@ -3,8 +3,8 @@
 Darb is the foundation of a multi-tenant, multi-product business platform for the Israeli market.
 The repository provides the engineering baseline, RLS-first core tenancy model, secure admin
 authentication/onboarding, and a unified tenant-admin environment for core business, location,
-capability, media, custom-domain, language, and appearance administration. It does not yet
-implement business engines or customer workflows.
+capability, media, custom-domain, language, appearance, and Restaurant content administration. It
+does not yet implement public business-engine or customer workflows.
 
 The platform is organized as a pnpm/Turborepo monorepo with separate Next.js applications for the
 public root domain and platform administration, shared packages for true platform concerns, and a
@@ -98,16 +98,16 @@ pnpm test:e2e
 ## Current status
 
 This repository has completed the monorepo, core database, authentication, platform-resource,
-theme/appearance, unified tenant-admin, and Restaurant Engine domain foundations. It includes migration-driven tenancy, RLS
-authorization, atomic first-business bootstrap, protected multi-business routes, audited core
-mutations, shared image/video Storage coordination, DNS-verified domain claims, business locale
-state, generated database types, database isolation tests, typed permission/module-aware navigation,
-real-state setup guidance, responsive accessible admin interaction patterns, and an isolated,
-multilingual, ordering-ready Restaurant menu domain with audited mutation boundaries.
+theme/appearance, unified tenant-admin, Restaurant Engine domain, and Restaurant Admin foundations.
+It includes migration-driven tenancy, RLS authorization, atomic first-business bootstrap, protected
+multi-business routes, audited core mutations, shared image/video Storage coordination,
+DNS-verified domain claims, business locale state, generated database types, database isolation
+tests, typed permission/module-aware navigation, real-state setup guidance, responsive accessible
+admin interaction patterns, and an isolated multilingual Restaurant menu administration workflow.
 
-No tenant records, Restaurant Admin or public menu UI, ordering, booking, commerce, billing, page,
-storefront, or customer-facing engine runtime has been implemented. The checked-in module,
-permission, and template rows are deterministic platform registries, not tenant content.
+No tenant records, public menu UI, ordering, booking, commerce, billing, page, storefront, or
+customer-facing engine runtime has been implemented. The checked-in module, permission, and
+template rows are deterministic platform registries, not tenant content.
 
 ## Engineering direction
 
