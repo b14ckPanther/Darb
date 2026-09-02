@@ -1245,6 +1245,15 @@ export type Database = {
         Args: { requested_business_slug: string };
         Returns: Json;
       };
+      list_public_restaurant_sitemap: {
+        Args: never;
+        Returns: {
+          business_slug: string;
+          default_locale: Database["core"]["Enums"]["locale_code"];
+          locales: Database["core"]["Enums"]["locale_code"][];
+          primary_hostname: string;
+        }[];
+      };
       resolve_public_domain: {
         Args: { requested_hostname: string };
         Returns: Json;
