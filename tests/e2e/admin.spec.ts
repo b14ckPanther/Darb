@@ -207,6 +207,95 @@ test("updates business settings and redirects a slug change to its canonical rou
   ).toBeVisible();
 });
 
+test("contains long business settings controls across responsive LTR and RTL layouts", async ({
+  page,
+}) => {
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/settings`);
+
+  const displayName = page.getByLabel("Display name");
+  const slug = page.getByLabel("Business slug");
+  const defaultLanguage = page.getByLabel("Default language");
+  const timezone = page.getByLabel("Timezone");
+  const currency = page.getByLabel("Currency");
+  await displayName.fill("A deliberately long Darb business identity ".repeat(3).trim());
+  await slug.fill("darb-business-slug-with-a-deliberately-long-readable-identifier-123");
+
+  expect(await currency.isDisabled()).toBe(true);
+  expect(await currency.evaluate((input) => (input as HTMLInputElement).readOnly)).toBe(true);
+  await expect(currency).toHaveValue("ILS");
+  await expect(defaultLanguage).toHaveValue("he");
+  await expect(timezone).toHaveValue("Asia/Jerusalem");
+
+  for (const viewport of [
+    { height: 844, width: 390 },
+    { height: 1024, width: 768 },
+    { height: 900, width: 1440 },
+    { height: 1080, width: 1920 },
+  ]) {
+    await page.setViewportSize(viewport);
+
+    for (const direction of ["ltr", "rtl"] as const) {
+      await page.locator("html").evaluate((element, dir) => {
+        element.setAttribute("dir", dir);
+      }, direction);
+
+      const layout = await page.evaluate(() => {
+        const measureField = (id: string) => {
+          const input = document.getElementById(id);
+          const control = input?.closest(".field-control");
+          const group = input?.closest(".field-group");
+          const section = input?.closest(".form-section");
+          if (!input || !control || !group || !section) return null;
+
+          const inputRect = input.getBoundingClientRect();
+          const controlRect = control.getBoundingClientRect();
+          const groupRect = group.getBoundingClientRect();
+          const prefix = control.querySelector(".field-prefix");
+          const prefixRect = prefix?.getBoundingClientRect();
+          const sectionRect = section.getBoundingClientRect();
+          return {
+            controlInsideGroup:
+              controlRect.left >= groupRect.left - 1 && controlRect.right <= groupRect.right + 1,
+            groupInsideSection:
+              groupRect.left >= sectionRect.left - 1 && groupRect.right <= sectionRect.right + 1,
+            inputInsideControl:
+              inputRect.left >= controlRect.left - 1 && inputRect.right <= controlRect.right + 1,
+            prefixInsideControl:
+              !prefixRect ||
+              prefixRect.width === 0 ||
+              (prefixRect.left >= controlRect.left - 1 &&
+                prefixRect.right <= controlRect.right + 1),
+          };
+        };
+
+        return {
+          currency: measureField("business-currency"),
+          documentFits:
+            document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+          slug: measureField("business-slug"),
+        };
+      });
+
+      expect(layout, `${viewport.width}x${viewport.height} ${direction}`).toEqual({
+        currency: {
+          controlInsideGroup: true,
+          groupInsideSection: true,
+          inputInsideControl: true,
+          prefixInsideControl: true,
+        },
+        documentFits: true,
+        slug: {
+          controlInsideGroup: true,
+          groupInsideSection: true,
+          inputInsideControl: true,
+          prefixInsideControl: true,
+        },
+      });
+    }
+  }
+});
+
 test("enables Restaurant with persistent multi-business isolation", async ({ page }) => {
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}/modules`);
