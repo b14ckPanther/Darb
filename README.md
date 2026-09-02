@@ -5,7 +5,8 @@ The repository provides the engineering baseline, RLS-first core tenancy model, 
 authentication/onboarding, a unified tenant-admin environment, the Restaurant domain/admin, a
 curated multilingual public Restaurant menu experience, verified custom-domain routing, and
 production foundations for search, security headers, observability, accessibility, performance,
-and provider-neutral analytics. Ordering and other customer workflows are not implemented.
+and provider-neutral analytics. The root domain now serves Darb's cinematic, fully localized public
+brand website and browser/PWA identity. Ordering and other customer workflows are not implemented.
 
 The platform is organized as a pnpm/Turborepo monorepo with separate Next.js applications for the
 public root domain and platform administration, shared packages for true platform concerns, and a
@@ -15,7 +16,7 @@ local Supabase workspace whose approved core model is rebuilt entirely from vers
 
 ```text
 apps/
-  main/       Minimal Next.js shell for darb.co.il
+  main/       Localized public Darb company/product website for darb.co.il
   admin/      Supabase-authenticated admin shell for admin.darb.co.il
   rest/       Server-rendered public Restaurant experience for rest.darb.co.il
 packages/
@@ -106,7 +107,7 @@ no-op analytics boundary are documented in [`docs/PRODUCTION.md`](./docs/PRODUCT
 
 This repository has completed the monorepo, core database, authentication, platform-resource,
 theme/appearance, unified tenant-admin, platform super-admin control plane, Restaurant Engine
-domain, and Restaurant Admin foundations.
+domain, Restaurant Admin foundations, and the Darb public brand website.
 It includes migration-driven tenancy, RLS authorization, atomic first-business bootstrap, protected
 multi-business routes, audited core mutations, shared image/video Storage coordination,
 DNS-verified domain claims with explicit provider-attested Restaurant routing, business locale
@@ -132,6 +133,7 @@ The permanent engineering rules live in [`AGENTS.md`](./AGENTS.md). Accepted fou
 are documented in:
 
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
+- [`docs/BRAND.md`](./docs/BRAND.md)
 - [`docs/AUTH.md`](./docs/AUTH.md)
 - [`docs/DATABASE.md`](./docs/DATABASE.md)
 - [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md)

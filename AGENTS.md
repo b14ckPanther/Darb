@@ -49,6 +49,15 @@ Do not casually substitute random fonts. Every interface must consider hierarchy
 readability, line height, responsive sizing, font loading, and mixed RTL/LTR behavior. Apply the
 correct language and direction metadata to documents and isolated text runs.
 
+## Darb corporate brand
+
+The architectural opening/doorway is Darb's permanent corporate symbol and visual primitive. Reuse
+the approved source and production derivatives under `apps/main/public/brand`; never regenerate,
+redraw, or reinterpret the Darb mark from a text prompt. The approved identity uses deep forest,
+warm ivory, restrained gold, architectural geometry, and light emerging through an opening. See
+`docs/BRAND.md` before changing a Darb-owned public brand surface. Corporate brand tokens are
+separate from tenant-configurable storefront themes.
+
 ## Icons and SVG
 
 Emojis are prohibited in Darb product interfaces, including as fallbacks for missing icons.

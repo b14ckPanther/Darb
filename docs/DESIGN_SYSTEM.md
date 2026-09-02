@@ -17,6 +17,11 @@ Darb will maintain a deliberate separation between:
 These systems may share low-level accessibility knowledge and selected technical primitives, but
 they must not be forced into one visual language or one unrestricted component API.
 
+Darb's **corporate public brand** is a third, explicitly owned application concern. The Main website
+uses the approved doorway symbol, forest/ivory/gold palette, and cinematic architectural artwork. It
+must not inherit tenant theme overrides or turn `@darb/ui` into a marketing component catalogue.
+The permanent asset and derivative rules live in [`BRAND.md`](./BRAND.md).
+
 `@darb/theme` establishes the second system's closed semantic token contract, resolver,
 contrast validation, locale typography, motion intent, and CSS-variable mapping. Platform template
 definitions and tenant overrides are database-driven. These primitives do not move tenant styling

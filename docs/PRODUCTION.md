@@ -32,7 +32,10 @@ whose primary canonical origin is a custom hostname; only that primary host emit
 Unresolved, non-primary, inactive, suspended, module-disabled, module-unavailable, private, or
 draft-only states fail closed.
 
-`darb.co.il` publishes only its real root page. `admin.darb.co.il` is protected by page metadata,
+`darb.co.il` publishes the localized platform-level routes `/ar`, `/he`, and `/en`. Each route is
+self-canonical and declares all three regional language alternates; `/` permanently redirects to
+Arabic and is the `x-default` alternate. Main's sitemap lists only those real localized pages, and
+its health endpoint is excluded from crawling. `admin.darb.co.il` is protected by page metadata,
 `robots.txt`, and `X-Robots-Tag`. The Restaurant application landing is non-indexable, while valid
 published tenant routes can be indexed.
 
@@ -118,6 +121,13 @@ accepted.
 Each application exposes `GET /health`, returning only a service identifier and `status: ok` with
 `Cache-Control: no-store`. This is process/application liveness, not database/provider readiness; it
 does no privileged or tenant-specific work.
+
+Main is a static, database-independent public surface with no runtime environment variables. Its hero
+uses media-aware source selection so clients fetch one optimized WebP composition: the approved
+portrait artwork below the desktop breakpoint and the approved landscape artwork above it. The
+original raster masters remain preserved. Browser and installable-app identity uses deterministic
+derivatives of the approved Darb symbol through a manifest and favicon metadata; no offline service
+worker or deployment cache was introduced.
 
 The public Restaurant path remains RSC-first. A request loads one curated publication graph, and
 React request memoization prevents metadata/layout/page duplication from becoming repeated database

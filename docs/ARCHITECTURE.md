@@ -10,7 +10,7 @@ the Next.js App Router and can be released independently while sharing reviewed 
 
 | Area                  | Responsibility                                              |
 | --------------------- | ----------------------------------------------------------- |
-| `apps/main`           | Public root-domain application for `darb.co.il`             |
+| `apps/main`           | Localized Darb public website for `darb.co.il`              |
 | `apps/admin`          | Platform administration application for `admin.darb.co.il`  |
 | `apps/rest`           | Public Restaurant renderer for `rest.darb.co.il`            |
 | `packages/config`     | Shared tooling, HTTP-security, logging, and platform config |
@@ -74,6 +74,12 @@ an application-specific static security-header baseline, while `@darb/config/obs
 sanitized structured request errors. Application-owned error boundaries and liveness routes stay in
 their deployable surfaces. Restaurant analytics uses a typed engine contract plus an app-owned
 provider adapter; its baseline adapter is intentionally no-op and creates no persistence service.
+
+The Main application is a platform-level public experience with no selected tenant and no Supabase
+dependency. Static `/ar`, `/he`, and `/en` routes own their document language/direction and metadata;
+the root permanently redirects to Arabic. Darb corporate brand assets, their deterministic raster
+derivatives, and the manifest/browser identity remain application-owned. They are not tenant theme
+data and are not shared with the Restaurant template system.
 
 Tenant boundaries are enforced in Postgres through explicit grants, Row Level Security, and
 scope-aware authorization helpers. Applications must repeat authorization server-side for defense
