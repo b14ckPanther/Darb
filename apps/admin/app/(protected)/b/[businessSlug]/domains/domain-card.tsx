@@ -1,13 +1,15 @@
 "use client";
 
 import { useActionState, useState } from "react";
-
 import { CopyIcon, DomainIcon } from "@darb/icons";
-
 import {
+  checkBusinessDomainRoutingAction,
+  connectBusinessDomainAction,
   disableBusinessDomainAction,
+  disconnectBusinessDomainAction,
   restartBusinessDomainVerificationAction,
   setBusinessDomainPrimaryAction,
+  setBusinessDomainTargetAction,
   verifyBusinessDomainAction,
 } from "../../../../actions/domains";
 import { StatusBadge } from "../../../../_components/status-badge";
@@ -27,40 +29,63 @@ interface DomainCardProps {
 
 export function DomainCard({ businessId, businessSlug, domain, editable }: DomainCardProps) {
   const [confirmingDisable, setConfirmingDisable] = useState(false);
+  const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
   const [copied, setCopied] = useState<string>();
-  const verifyAction = verifyBusinessDomainAction.bind(null, businessId, businessSlug, domain.id);
-  const primaryAction = setBusinessDomainPrimaryAction.bind(
-    null,
-    businessId,
-    businessSlug,
-    domain.id,
-  );
-  const disableAction = disableBusinessDomainAction.bind(null, businessId, businessSlug, domain.id);
-  const restartAction = restartBusinessDomainVerificationAction.bind(
-    null,
-    businessId,
-    businessSlug,
-    domain.id,
-  );
-  const [verifyState, verifyFormAction, verifyPending] = useActionState(
-    verifyAction,
+  const args = [businessId, businessSlug, domain.id] as const;
+  const [verifyState, verifyAction, verifyPending] = useActionState(
+    verifyBusinessDomainAction.bind(null, ...args),
     initialFormState,
   );
-  const [primaryState, primaryFormAction, primaryPending] = useActionState(
-    primaryAction,
+  const [targetState, targetAction, targetPending] = useActionState(
+    setBusinessDomainTargetAction.bind(null, ...args),
     initialFormState,
   );
-  const [disableState, disableFormAction, disablePending] = useActionState(
-    disableAction,
+  const [connectState, connectAction, connectPending] = useActionState(
+    connectBusinessDomainAction.bind(null, ...args),
     initialFormState,
   );
-  const [restartState, restartFormAction, restartPending] = useActionState(
-    restartAction,
+  const [checkState, checkAction, checkPending] = useActionState(
+    checkBusinessDomainRoutingAction.bind(null, ...args),
     initialFormState,
   );
+  const [primaryState, primaryAction, primaryPending] = useActionState(
+    setBusinessDomainPrimaryAction.bind(null, ...args),
+    initialFormState,
+  );
+  const [disconnectState, disconnectAction, disconnectPending] = useActionState(
+    disconnectBusinessDomainAction.bind(null, ...args),
+    initialFormState,
+  );
+  const [disableState, disableAction, disablePending] = useActionState(
+    disableBusinessDomainAction.bind(null, ...args),
+    initialFormState,
+  );
+  const [restartState, restartAction, restartPending] = useActionState(
+    restartBusinessDomainVerificationAction.bind(null, ...args),
+    initialFormState,
+  );
+  const pending = [
+    verifyPending,
+    targetPending,
+    connectPending,
+    checkPending,
+    primaryPending,
+    disconnectPending,
+    disablePending,
+    restartPending,
+  ].some(Boolean);
+  const feedback = [
+    verifyState,
+    targetState,
+    connectState,
+    checkState,
+    primaryState,
+    disconnectState,
+    disableState,
+    restartState,
+  ].find((state) => state.message);
   const dnsName = buildDnsTxtRecordName(domain.hostname);
   const dnsValue = buildDnsTxtRecordValue(domain.verification_token);
-  const pending = verifyPending || primaryPending || disablePending || restartPending;
 
   async function copyValue(label: string, value: string) {
     try {
@@ -71,15 +96,8 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
     }
   }
 
-  const feedback = [verifyState, primaryState, disableState, restartState].find(
-    (state) => state.message,
-  );
-
   return (
-    <article
-      className={`domain-card domain-card--${domain.status}`}
-      aria-labelledby={`domain-${domain.id}`}
-    >
+    <article className="domain-card" aria-labelledby={`domain-${domain.id}`}>
       <div className="domain-card__heading">
         <span>
           <DomainIcon size={22} />
@@ -88,14 +106,20 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
           <h3 id={`domain-${domain.id}`} dir="ltr">
             {domain.hostname}
           </h3>
-          <p>{domain.is_primary ? "Primary domain" : "Custom domain claim"}</p>
+          <p>{domain.is_primary ? "Primary Restaurant hostname" : "Custom domain"}</p>
         </div>
-        <StatusBadge className="domain-state" status={domain.status} />
+        <div className="domain-card__statuses" aria-label="Domain states">
+          <StatusBadge label={`Ownership: ${domain.status}`} status={domain.status} />
+          <StatusBadge
+            label={`Routing: ${routingLabel(domain.routing_status)}`}
+            status={domain.routing_status}
+          />
+        </div>
       </div>
 
       {domain.status !== "disabled" ? (
         <div className="dns-instructions">
-          <p>Publish this exact DNS TXT record</p>
+          <p>Ownership TXT record</p>
           <CopyField
             label="Host / name"
             value={dnsName}
@@ -110,8 +134,18 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
           />
         </div>
       ) : (
-        <p className="domain-card__disabled-note">This claim is retained but no longer active.</p>
+        <p className="domain-card__disabled-note">This ownership claim is retained but disabled.</p>
       )}
+
+      {domain.status === "verified" ? (
+        <section className="domain-routing" aria-label="Public routing">
+          <div>
+            <p className="eyebrow">Public destination</p>
+            <h4>{domain.target_module_key === "restaurant" ? "Restaurant" : "Not assigned"}</h4>
+          </div>
+          <p>{routingDescription(domain.routing_status, domain.target_module_key)}</p>
+        </section>
+      ) : null}
 
       {feedback?.message ? (
         <p
@@ -124,29 +158,84 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
 
       {editable ? (
         <div className="domain-card__actions">
-          {domain.status === "pending" || domain.status === "failed" ? (
-            <form action={verifyFormAction}>
+          {(domain.status === "pending" || domain.status === "failed") && (
+            <form action={verifyAction}>
               <button type="submit" className="primary-button" disabled={pending}>
-                {verifyPending ? "Checking DNS…" : "Verify TXT record"}
+                {verifyPending ? "Checking DNS…" : "Verify ownership"}
               </button>
             </form>
-          ) : null}
-          {domain.status === "verified" && !domain.is_primary ? (
-            <form action={primaryFormAction}>
+          )}
+          {domain.status === "verified" && domain.target_module_key !== "restaurant" && (
+            <form action={targetAction}>
+              <input type="hidden" name="moduleKey" value="restaurant" />
+              <button type="submit" className="primary-button" disabled={pending}>
+                {targetPending ? "Assigning…" : "Use for Restaurant"}
+              </button>
+            </form>
+          )}
+          {domain.status === "verified" &&
+            domain.target_module_key === "restaurant" &&
+            ["unconfigured", "disconnected"].includes(domain.routing_status) && (
+              <form action={connectAction}>
+                <button type="submit" className="primary-button" disabled={pending}>
+                  {connectPending ? "Connecting…" : "Connect deployment"}
+                </button>
+              </form>
+            )}
+          {domain.status === "verified" &&
+            domain.target_module_key === "restaurant" &&
+            ["provisioning", "failed"].includes(domain.routing_status) && (
+              <form action={checkAction}>
+                <button type="submit" className="primary-button" disabled={pending}>
+                  {checkPending ? "Checking…" : "Check routing"}
+                </button>
+              </form>
+            )}
+          {domain.routing_status === "live" && !domain.is_primary && (
+            <form action={primaryAction}>
               <button type="submit" className="secondary-button" disabled={pending}>
                 {primaryPending ? "Updating…" : "Make primary"}
               </button>
             </form>
-          ) : null}
+          )}
+          {["live", "provisioning", "failed"].includes(domain.routing_status) &&
+            (confirmingDisconnect ? (
+              <div className="inline-confirmation" role="group" aria-label="Disconnect deployment">
+                <p>Stop Darb routing before removing this hostname from the deployment?</p>
+                <div>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => setConfirmingDisconnect(false)}
+                    disabled={pending}
+                  >
+                    Keep connected
+                  </button>
+                  <form action={disconnectAction}>
+                    <button type="submit" className="danger-button" disabled={pending}>
+                      {disconnectPending ? "Disconnecting…" : "Confirm disconnect"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="text-danger-button"
+                onClick={() => setConfirmingDisconnect(true)}
+              >
+                Disconnect deployment
+              </button>
+            ))}
           {domain.status === "disabled" ? (
-            <form action={restartFormAction}>
+            <form action={restartAction}>
               <button type="submit" className="secondary-button" disabled={pending}>
                 {restartPending ? "Restarting…" : "Restart verification"}
               </button>
             </form>
           ) : confirmingDisable ? (
             <div className="inline-confirmation" role="group" aria-label="Disable domain">
-              <p>Disable this claim and clear primary status?</p>
+              <p>Disable ownership and routing while retaining this domain for history?</p>
               <div>
                 <button
                   type="button"
@@ -156,7 +245,7 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
                 >
                   Keep active
                 </button>
-                <form action={disableFormAction}>
+                <form action={disableAction}>
                   <button type="submit" className="danger-button" disabled={pending}>
                     {disablePending ? "Disabling…" : "Confirm disable"}
                   </button>
@@ -176,6 +265,30 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
       ) : null}
     </article>
   );
+}
+
+function routingLabel(status: AccessibleBusinessDomain["routing_status"]) {
+  return {
+    disconnected: "disconnected",
+    failed: "needs attention",
+    live: "live",
+    provisioning: "provisioning",
+    unconfigured: "not configured",
+  }[status];
+}
+
+function routingDescription(
+  status: AccessibleBusinessDomain["routing_status"],
+  target: string | null,
+) {
+  if (!target) return "Choose an implemented public capability before connecting this hostname.";
+  return {
+    disconnected: "Darb no longer resolves this hostname. The ownership claim is retained.",
+    failed: "The provider could not attest a safe live deployment. Review and check again.",
+    live: "The deployment provider attested this hostname ready for secure Restaurant routing.",
+    provisioning: "The hostname is attached, but DNS or TLS configuration is still pending.",
+    unconfigured: "Ownership is verified. Connect the hostname to start deployment provisioning.",
+  }[status];
 }
 
 function CopyField({

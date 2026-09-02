@@ -5,12 +5,20 @@ import { revalidatePath } from "next/cache";
 import { requireActionBusiness } from "../../lib/action-context";
 import { hasBusinessPermission } from "../../lib/auth";
 import { normalizeHostname } from "../../lib/domain-validation";
+import {
+  createDomainDeploymentProvider,
+  DomainProviderError,
+  type DomainDeploymentStatus,
+} from "../../lib/domain-deployment-provider";
 import { verifyDomainDnsTxt } from "../../lib/domain-verification";
 import { resolveBusinessDomain } from "../../lib/domains";
 import type { FormState } from "../../lib/forms";
 import { mapMutationError } from "../../lib/mutation-errors";
 import { businessSectionPath } from "../../lib/navigation";
-import { createDomainAttestationSupabaseClient } from "../../lib/supabase/privileged";
+import {
+  createDomainAttestationSupabaseClient,
+  createDomainRoutingAttestationSupabaseClient,
+} from "../../lib/supabase/privileged";
 import { createServerActionSupabaseClient } from "../../lib/supabase/server";
 import { resolveCurrentUser } from "../../lib/auth";
 
@@ -157,6 +165,99 @@ export async function setBusinessDomainPrimaryAction(
   );
 }
 
+export async function setBusinessDomainTargetAction(
+  businessId: string,
+  businessSlug: string,
+  domainId: string,
+  _previousState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const moduleKey = formData.get("moduleKey");
+  if (moduleKey !== "restaurant") {
+    return { message: "That public capability is not implemented yet.", status: "error" };
+  }
+
+  const supabase = await createServerActionSupabaseClient();
+  const business = await requireActionBusiness(supabase, businessId);
+  if (!(await hasBusinessPermission(supabase, business.id, "domains.manage"))) {
+    return mapMutationError({ code: "42501" }, "domain");
+  }
+
+  const { error } = await supabase.schema("core").rpc("set_business_domain_target", {
+    requested_module_key: moduleKey,
+    target_business_id: business.id,
+    target_domain_id: domainId,
+  });
+  if (error) return mapMutationError(error, "domain");
+
+  revalidatePath(businessSectionPath(businessSlug, "domains"));
+  return { message: "Restaurant selected. Connect the deployment when ready.", status: "success" };
+}
+
+export async function connectBusinessDomainAction(
+  businessId: string,
+  businessSlug: string,
+  domainId: string,
+  _previousState: FormState,
+  _formData: FormData,
+): Promise<FormState> {
+  void _previousState;
+  void _formData;
+  return runDomainProviderMutation(businessId, businessSlug, domainId, "connect");
+}
+
+export async function checkBusinessDomainRoutingAction(
+  businessId: string,
+  businessSlug: string,
+  domainId: string,
+  _previousState: FormState,
+  _formData: FormData,
+): Promise<FormState> {
+  void _previousState;
+  void _formData;
+  return runDomainProviderMutation(businessId, businessSlug, domainId, "status");
+}
+
+export async function disconnectBusinessDomainAction(
+  businessId: string,
+  businessSlug: string,
+  domainId: string,
+  _previousState: FormState,
+  _formData: FormData,
+): Promise<FormState> {
+  void _previousState;
+  void _formData;
+  const supabase = await createServerActionSupabaseClient();
+  const business = await requireActionBusiness(supabase, businessId);
+  if (!(await hasBusinessPermission(supabase, business.id, "domains.manage"))) {
+    return mapMutationError({ code: "42501" }, "domain");
+  }
+  const domain = await resolveBusinessDomain(supabase, business.id, domainId);
+  if (!domain) return mapMutationError({ code: "42501" }, "domain");
+
+  const { error } = await supabase.schema("core").rpc("disconnect_business_domain_routing", {
+    target_business_id: business.id,
+    target_domain_id: domain.id,
+  });
+  if (error) return mapMutationError(error, "domain");
+
+  let cleanupFailed = false;
+  try {
+    await createDomainDeploymentProvider().disconnect(domain.hostname);
+  } catch {
+    cleanupFailed = true;
+  }
+
+  revalidatePath(businessSectionPath(businessSlug, "domains"));
+  return cleanupFailed
+    ? {
+        message:
+          "Darb routing is disabled. Provider cleanup could not be confirmed and needs an operator check.",
+        status: "error",
+      }
+    : { message: "Domain disconnected from the Restaurant deployment.", status: "success" };
+}
+
 export async function disableBusinessDomainAction(
   businessId: string,
   businessSlug: string,
@@ -205,4 +306,97 @@ async function runDomainMutation(
 
   revalidatePath(businessSectionPath(businessSlug, "domains"));
   return { message: successMessage, status: "success" };
+}
+
+async function runDomainProviderMutation(
+  businessId: string,
+  businessSlug: string,
+  domainId: string,
+  operation: "connect" | "status",
+): Promise<FormState> {
+  const supabase = await createServerActionSupabaseClient();
+  const business = await requireActionBusiness(supabase, businessId);
+  if (!(await hasBusinessPermission(supabase, business.id, "domains.manage"))) {
+    return mapMutationError({ code: "42501" }, "domain");
+  }
+  const domain = await resolveBusinessDomain(supabase, business.id, domainId);
+  if (!domain || domain.status !== "verified" || domain.target_module_key !== "restaurant") {
+    return mapMutationError({ message: "DOMAIN_ROUTING_NOT_ALLOWED" }, "domain");
+  }
+  const user = await resolveCurrentUser(supabase);
+  if (!user) return mapMutationError({ code: "42501" }, "domain");
+
+  if (operation === "connect") {
+    const { error } = await supabase.schema("core").rpc("begin_business_domain_routing", {
+      target_business_id: business.id,
+      target_domain_id: domain.id,
+    });
+    if (error) return mapMutationError(error, "domain");
+  }
+
+  let deployment: DomainDeploymentStatus;
+  try {
+    const provider = createDomainDeploymentProvider();
+    deployment = await provider[operation](domain.hostname);
+  } catch (error) {
+    const safeCode = error instanceof DomainProviderError ? error.safeCode : "provider-unavailable";
+    console.error("Domain deployment provider operation failed", {
+      hostname: domain.hostname,
+      moduleKey: domain.target_module_key,
+      operation,
+      safeCode,
+    });
+    await attestDomainRouting(domain.id, user.id, "failed");
+    return {
+      message:
+        safeCode === "configuration"
+          ? "The trusted domain deployment service is not configured for this environment."
+          : "The deployment provider could not complete this check. Darb will not route the domain.",
+      status: "error",
+    };
+  }
+
+  const attestation = deployment.state === "live" ? "live" : "provisioning";
+  const attestationError = await attestDomainRouting(domain.id, user.id, attestation);
+  if (attestationError) return attestationError;
+
+  revalidatePath(businessSectionPath(businessSlug, "domains"));
+  if (deployment.state === "live") {
+    return {
+      message: `${domain.hostname} is live on the Restaurant deployment.`,
+      status: "success",
+    };
+  }
+  const records = deployment.dnsRecords
+    .map((record) => `${record.type} ${record.name} → ${record.value}`)
+    .join(" · ");
+  return {
+    message: records
+      ? `Provider configuration is still required: ${records}`
+      : "Provider configuration is still pending. Check again after DNS and TLS provisioning complete.",
+    status: "error",
+  };
+}
+
+async function attestDomainRouting(
+  domainId: string,
+  userId: string,
+  status: "failed" | "live" | "provisioning",
+): Promise<FormState | null> {
+  try {
+    const attestationClient = createDomainRoutingAttestationSupabaseClient();
+    const { error } = await attestationClient
+      .schema("core")
+      .rpc("record_business_domain_routing_attestation", {
+        attested_status: status,
+        requesting_user_id: userId,
+        target_domain_id: domainId,
+      });
+    return error ? mapMutationError(error, "domain") : null;
+  } catch {
+    return {
+      message: "The trusted domain routing attestation service is not configured.",
+      status: "error",
+    };
+  }
 }

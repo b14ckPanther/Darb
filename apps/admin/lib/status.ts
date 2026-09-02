@@ -8,9 +8,13 @@ export type AdminSemanticStatus =
   | "inactive"
   | "optional"
   | "pending"
+  | "provisioning"
   | "recommended"
   | "required"
   | "suspended"
+  | "unconfigured"
+  | "live"
+  | "disconnected"
   | "unavailable"
   | "verified";
 
@@ -31,9 +35,13 @@ const statusSemantics: Record<AdminSemanticStatus, AdminStatusSemantic> = {
   inactive: { label: "Inactive", tone: "warning" },
   optional: { label: "Optional", tone: "neutral" },
   pending: { label: "Pending", tone: "warning" },
+  provisioning: { label: "Provisioning", tone: "warning" },
   recommended: { label: "Recommended", tone: "warning" },
   required: { label: "Required", tone: "danger" },
   suspended: { label: "Suspended", tone: "warning" },
+  unconfigured: { label: "Not configured", tone: "neutral" },
+  live: { label: "Live", tone: "positive" },
+  disconnected: { label: "Disconnected", tone: "neutral" },
   unavailable: { label: "Unavailable", tone: "neutral" },
   verified: { label: "Verified", tone: "positive" },
 };

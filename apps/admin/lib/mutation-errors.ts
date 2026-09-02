@@ -134,6 +134,23 @@ export function mapMutationError(error: DatabaseErrorLike, kind: MutationKind): 
     };
   }
 
+  if (error.message?.includes("DOMAIN_MUST_BE_LIVE")) {
+    return {
+      message: "Connect the verified domain to Darb before making it primary.",
+      status: "error",
+    };
+  }
+
+  if (
+    error.message?.includes("DOMAIN_TARGET_UNAVAILABLE") ||
+    error.message?.includes("DOMAIN_ROUTING_NOT_ALLOWED")
+  ) {
+    return {
+      message: "This domain cannot be connected to that public capability right now.",
+      status: "error",
+    };
+  }
+
   if (
     error.message?.includes("DOMAIN_HOSTNAME_RESERVED") ||
     error.message?.includes("INVALID_DOMAIN_HOSTNAME")

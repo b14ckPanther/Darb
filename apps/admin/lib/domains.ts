@@ -11,7 +11,11 @@ export type AccessibleBusinessDomain = Pick<
   | "hostname"
   | "id"
   | "is_primary"
+  | "routing_checked_at"
+  | "routing_live_at"
+  | "routing_status"
   | "status"
+  | "target_module_key"
   | "updated_at"
   | "verification_checked_at"
   | "verification_method"
@@ -20,7 +24,7 @@ export type AccessibleBusinessDomain = Pick<
 >;
 
 const domainColumns =
-  "id, hostname, status, verification_token, verification_method, verification_checked_at, verified_at, is_primary, created_at, updated_at" as const;
+  "id, hostname, status, verification_token, verification_method, verification_checked_at, verified_at, target_module_key, routing_status, routing_checked_at, routing_live_at, is_primary, created_at, updated_at" as const;
 
 export async function listBusinessDomains(
   supabase: DarbServerSupabaseClient,
@@ -62,7 +66,12 @@ export async function resolveBusinessDomain(
 }
 
 export function findPrimaryDomain(domains: readonly AccessibleBusinessDomain[]) {
-  return domains.find((domain) => domain.is_primary && domain.status === "verified") ?? null;
+  return (
+    domains.find(
+      (domain) =>
+        domain.is_primary && domain.status === "verified" && domain.routing_status === "live",
+    ) ?? null
+  );
 }
 
 export function resolveVerifiedHostname(

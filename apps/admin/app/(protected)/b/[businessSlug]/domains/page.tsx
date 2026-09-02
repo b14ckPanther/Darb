@@ -28,9 +28,9 @@ export default async function DomainsPage({ params }: DomainsPageProps) {
           { href: businessPath(context.business.slug), label: "Overview" },
           { label: "Domains" },
         ]}
-        eyebrow="Domain ownership"
+        eyebrow="Ownership and routing"
         title="Domains"
-        summary="Claim a hostname with DNS TXT proof. Verification records ownership only; production routing and SSL automation remain separate."
+        summary="Verify ownership, choose an implemented public capability, and connect the hostname through a separately attested deployment lifecycle."
       />
 
       {!editable ? (
@@ -57,8 +57,8 @@ export default async function DomainsPage({ params }: DomainsPageProps) {
         <section className="domain-list-section" aria-labelledby="domain-list-heading">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Verified ownership</p>
-              <h2 id="domain-list-heading">Domain claims</h2>
+              <p className="eyebrow">Tenant hostnames</p>
+              <h2 id="domain-list-heading">Domain claims and routing</h2>
             </div>
             <span className="count-badge" aria-label={`${domains.length} domains`}>
               {domains.length}
