@@ -10,6 +10,7 @@ const runId = randomUUID().slice(0, 8);
 const fixturePrefix = `darb-e2e-${runId}`;
 const ownerEmail = `owner-${runId}@example.test`;
 const scopedEmail = `scoped-${runId}@example.test`;
+const platformEmail = `platform-${runId}@example.test`;
 const password = `Darb-${runId}-secure-password`;
 const initialBusinessName = `Darb E2E ${runId}`;
 const initialBusinessSlug = fixturePrefix;
@@ -17,6 +18,8 @@ const updatedBusinessName = `${initialBusinessName} Core`;
 const updatedBusinessSlug = `${fixturePrefix}-core`;
 const secondBusinessName = `Darb E2E Regional Services and Operations Workspace ${runId}`;
 const secondBusinessSlug = `${fixturePrefix}-second`;
+const platformBusinessName = `Darb Platform Inspection Workspace With A Deliberately Long Name ${runId}`;
+const platformBusinessSlug = `${fixturePrefix}-platform`;
 const assignedLocationName = `Central Studio ${runId}`;
 const otherLocationName = `North Office ${runId}`;
 const mediaFilename = `phase6-${runId}.png`;
@@ -41,7 +44,9 @@ const ownerPermissionBundle = [
 let adminClient: SupabaseClient;
 let ownerUserId: string | undefined;
 let scopedUserId: string | undefined;
+let platformUserId: string | undefined;
 let primaryBusinessId: string | undefined;
+let platformBusinessId: string | undefined;
 let assignedLocationId: string | undefined;
 let otherLocationId: string | undefined;
 
@@ -60,11 +65,14 @@ test.beforeAll(async () => {
 
   ownerUserId = await createTestUser(ownerEmail);
   scopedUserId = await createTestUser(scopedEmail);
+  platformUserId = await createTestUser(platformEmail);
+  promoteLocalSuperAdmin(platformUserId);
+  await provisionPlatformBusinessFixture();
 });
 
 test.afterAll(async () => {
   await cleanLocalStorageFixtures();
-  cleanLocalDatabaseFixtures([ownerUserId, scopedUserId].filter(isPresent));
+  cleanLocalDatabaseFixtures([ownerUserId, scopedUserId, platformUserId].filter(isPresent));
 });
 
 test("redirects an unauthenticated admin request to login", async ({ page }) => {
@@ -983,6 +991,197 @@ test("keeps mobile navigation and the business switcher keyboard-operable", asyn
   await expect(mobileRestaurant.getByText("Restaurant disabled.")).toBeVisible();
 });
 
+test("denies platform routes to tenant administrators", async ({ page }) => {
+  await signIn(page, ownerEmail);
+  await page.goto("/platform");
+
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("link", { name: "Darb Platform Administration" })).toHaveCount(0);
+});
+
+test("operates the separate platform context and enters a tenant as the real operator", async ({
+  page,
+}) => {
+  if (!platformBusinessId) throw new Error("The platform inspection business was not prepared.");
+
+  await signIn(page, platformEmail);
+  await expect(page.getByRole("heading", { name: "Choose your operating context." })).toBeVisible();
+  await page.getByRole("link", { name: /Darb Platform Administration/ }).click();
+
+  await expect(page).toHaveURL(/\/platform$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Platform overview" })).toBeVisible();
+  await expect(page.getByText("Darb Platform", { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Platform administration" })).toBeVisible();
+
+  await page.getByRole("link", { exact: true, name: "Businesses" }).click();
+  await page.getByLabel("Name or slug").fill(platformBusinessSlug);
+  await page.getByRole("button", { name: "Apply filters" }).click();
+  await expect(page.locator("strong", { hasText: platformBusinessName })).toBeVisible();
+  await page.getByRole("link", { name: `Inspect ${platformBusinessName}` }).click();
+  await expect(page).toHaveURL(new RegExp(`/platform/businesses/${platformBusinessId}$`));
+  await expect(page.getByRole("heading", { level: 1, name: platformBusinessName })).toBeVisible();
+
+  await page.getByRole("link", { name: "Open business workspace" }).click();
+  await expect(page).toHaveURL(new RegExp(`/b/${platformBusinessSlug}$`));
+  await expect(page.getByText("Platform access", { exact: true })).toBeVisible();
+  await expect(page.getByText("operating this tenant as yourself", { exact: false })).toBeVisible();
+  await page.getByRole("link", { exact: true, name: "Platform Admin" }).click();
+  await expect(page).toHaveURL(/\/platform$/);
+
+  for (const destination of ["Users", "Modules", "Templates", "Domains", "Audit"] as const) {
+    await page.getByRole("link", { exact: true, name: destination }).click();
+    await expect(
+      page.getByRole("heading", { exact: true, level: 1, name: destination }),
+    ).toBeVisible();
+  }
+});
+
+test("keeps the platform control plane responsive and keyboard-safe at exact QA viewports", async ({
+  page,
+}) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+
+  await signIn(page, platformEmail);
+  await page.goto("/platform/businesses");
+
+  for (const viewport of [
+    { height: 844, width: 390 },
+    { height: 1024, width: 768 },
+    { height: 900, width: 1440 },
+    { height: 1080, width: 1920 },
+  ]) {
+    await page.setViewportSize(viewport);
+    const layout = await page.evaluate(() => ({
+      containers: [".admin-workspace", ".core-admin-content", ".platform-table-shell"].map(
+        (selector) => {
+          const element = document.querySelector<HTMLElement>(selector);
+          const rect = element?.getBoundingClientRect();
+          return {
+            clientWidth: element?.clientWidth,
+            overflowX: element ? getComputedStyle(element).overflowX : null,
+            rect: rect ? { left: rect.left, right: rect.right, width: rect.width } : null,
+            scrollWidth: element?.scrollWidth,
+            selector,
+          };
+        },
+      ),
+      documentWidth: document.documentElement.scrollWidth,
+      offenders: [...document.querySelectorAll<HTMLElement>("body *")]
+        .map((element) => {
+          const rect = element.getBoundingClientRect();
+          return {
+            className: element.className,
+            left: rect.left,
+            right: rect.right,
+            tag: element.tagName,
+          };
+        })
+        .filter((item) => item.right > window.innerWidth + 1)
+        .slice(0, 8),
+    }));
+    expect(
+      layout.documentWidth,
+      JSON.stringify({ containers: layout.containers, offenders: layout.offenders }),
+    ).toBeLessThanOrEqual(viewport.width + 1);
+
+    const openNavigation = page.getByRole("button", { name: "Open platform navigation" });
+    if (viewport.width <= 1024) {
+      await expect(openNavigation).toBeVisible();
+      await openNavigation.click();
+      await expect(page.locator(".platform-sidebar .admin-sidebar__close")).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(openNavigation).toBeFocused();
+    } else {
+      await expect(openNavigation).not.toBeVisible();
+      await expect(page.getByRole("navigation", { name: "Platform administration" })).toBeVisible();
+    }
+  }
+
+  await page.setViewportSize({ height: 844, width: 390 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const reducedMotionNavigation = page.getByRole("button", {
+    name: "Open platform navigation",
+  });
+  await reducedMotionNavigation.click();
+  await expect(page.locator(".platform-sidebar .admin-sidebar__close")).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(reducedMotionNavigation).toBeFocused();
+  await expect
+    .poll(() =>
+      page
+        .locator(".admin-sidebar")
+        .evaluate((element) => Number.parseFloat(getComputedStyle(element).transitionDuration)),
+    )
+    .toBeLessThanOrEqual(0.00001);
+
+  await page.locator("html").evaluate((element) => {
+    element.setAttribute("dir", "rtl");
+  });
+  await page.getByRole("button", { name: "Open platform navigation" }).click();
+  await expect
+    .poll(async () => {
+      const drawer = await page.locator(".platform-sidebar").boundingBox();
+      return drawer ? drawer.x + drawer.width : 0;
+    })
+    .toBeGreaterThan(380);
+  await page.keyboard.press("Escape");
+
+  await page.locator("html").evaluate((element) => {
+    element.setAttribute("dir", "ltr");
+    element.style.fontSize = "200%";
+  });
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+    .toBe(true);
+  await page.locator("html").evaluate((element) => {
+    element.style.removeProperty("font-size");
+  });
+
+  expect(consoleProblems).toEqual([]);
+});
+
+test("applies audited platform lifecycle actions with deliberate confirmation", async ({
+  page,
+}) => {
+  if (!platformBusinessId) throw new Error("The platform inspection business was not prepared.");
+
+  await signIn(page, platformEmail);
+  await page.goto(`/platform/businesses/${platformBusinessId}`);
+
+  const suspend = page.getByRole("button", { name: "Suspend business", exact: true });
+  await suspend.click();
+  const confirmation = page.getByRole("dialog", { name: "Suspend business" });
+  await expect(confirmation).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(confirmation).not.toBeVisible();
+  await expect(suspend).toBeFocused();
+
+  await suspend.click();
+  await confirmation.getByRole("button", { name: "Suspend business", exact: true }).click();
+  await expect(page.getByText("Business suspended by the platform.")).toBeVisible();
+  await expect(page.getByText("Suspended", { exact: true }).first()).toBeVisible();
+
+  const reactivate = page.getByRole("button", { name: "Reactivate business", exact: true });
+  await reactivate.click();
+  const restoreConfirmation = page.getByRole("dialog", { name: "Reactivate business" });
+  await restoreConfirmation
+    .getByRole("button", { name: "Reactivate business", exact: true })
+    .click();
+  await expect(page.getByText("Business reactivated.")).toBeVisible();
+  await expect(page.getByText("Active", { exact: true }).first()).toBeVisible();
+
+  await page.getByRole("link", { exact: true, name: "Audit" }).click();
+  await page.getByLabel("Action", { exact: true }).fill("platform.business_");
+  await page.getByRole("button", { name: "Apply filters" }).click();
+  await expect(page.getByText("platform.business_suspended", { exact: true })).toBeVisible();
+  await expect(page.getByText("platform.business_reactivated", { exact: true })).toBeVisible();
+});
+
 test("presents suspended and archived lifecycle restrictions consistently", async ({ page }) => {
   if (!primaryBusinessId) throw new Error("The primary business fixture was not prepared.");
 
@@ -1076,7 +1275,7 @@ async function cleanLocalStorageFixtures(): Promise<void> {
 }
 
 async function provisionMultiBusinessFixture(): Promise<void> {
-  if (!ownerUserId || !scopedUserId || !primaryBusinessId) {
+  if (!ownerUserId || !scopedUserId || !platformUserId || !primaryBusinessId) {
     throw new Error("User and primary business fixtures must exist first.");
   }
 
@@ -1140,6 +1339,27 @@ async function provisionMultiBusinessFixture(): Promise<void> {
   if (permissionError) {
     throw permissionError;
   }
+}
+
+async function provisionPlatformBusinessFixture(): Promise<void> {
+  if (!platformUserId) throw new Error("The platform operator fixture must exist first.");
+
+  const { data: business, error } = await adminClient
+    .schema("core")
+    .from("businesses")
+    .insert({
+      created_by: platformUserId,
+      default_locale: "en",
+      display_name: platformBusinessName,
+      slug: platformBusinessSlug,
+    })
+    .select("id")
+    .single();
+
+  if (error || !business) {
+    throw error ?? new Error("Unable to create the platform inspection fixture.");
+  }
+  platformBusinessId = business.id;
 }
 
 async function provisionLocationScopeFixture(): Promise<void> {
@@ -1217,6 +1437,36 @@ function requiredEnvironment(name: string): string {
   }
 
   return value;
+}
+
+function promoteLocalSuperAdmin(userId: string): void {
+  const databaseUrl = requiredEnvironment("SUPABASE_TEST_DATABASE_URL");
+  const hostname = new URL(databaseUrl).hostname;
+
+  if (!["127.0.0.1", "localhost", "[::1]"].includes(hostname)) {
+    throw new Error("Super-admin E2E promotion is restricted to a local Supabase database.");
+  }
+
+  const promotion = spawnSync(
+    "psql",
+    [databaseUrl, "--no-psqlrc", "--set", "ON_ERROR_STOP=1", "--set", `fixture_user_id=${userId}`],
+    {
+      encoding: "utf8",
+      input: `
+        insert into private.super_admins (user_id, granted_by, reason)
+        values (
+          :'fixture_user_id'::uuid,
+          :'fixture_user_id'::uuid,
+          'Local-only Phase 14 browser fixture'
+        )
+        on conflict (user_id) do update set revoked_at = null;
+      `,
+    },
+  );
+
+  if (promotion.status !== 0) {
+    throw new Error(promotion.stderr || promotion.stdout || "Unable to promote the E2E operator.");
+  }
 }
 
 function cleanLocalDatabaseFixtures(fixtureUserIds: string[]): void {
