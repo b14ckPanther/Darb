@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useMemo, useState, type CSSProperties, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   AlertCircleIcon,
@@ -26,7 +27,7 @@ import {
   saveBusinessAppearanceAction,
 } from "../../../../actions/appearance";
 import type { ResolvedBusinessAppearance } from "../../../../../lib/appearance";
-import { initialFormState } from "../../../../../lib/forms";
+import { initialFormState, type FormState } from "../../../../../lib/forms";
 import styles from "./appearance.module.css";
 
 interface AppearanceEditorProps {
@@ -35,7 +36,6 @@ interface AppearanceEditorProps {
     defaultLocale: DarbThemeLocale;
     displayName: string;
     id: string;
-    slug: string;
   };
   editable: boolean;
 }
@@ -82,14 +82,23 @@ const previewCopy = {
 } as const;
 
 export function AppearanceEditor({ appearance, business, editable }: AppearanceEditorProps) {
+  const router = useRouter();
   const [selectedTemplateKey, setSelectedTemplateKey] = useState(appearance.template.key);
   const [overrides, setOverrides] = useState<ThemeOverrides>(appearance.overrides);
   const [previewLocale, setPreviewLocale] = useState<DarbThemeLocale>(business.defaultLocale);
   const [confirmReset, setConfirmReset] = useState(false);
-  const saveAction = saveBusinessAppearanceAction.bind(null, business.id, business.slug);
-  const resetAction = resetBusinessThemeAction.bind(null, business.id, business.slug);
-  const [saveState, saveFormAction, savePending] = useActionState(saveAction, initialFormState);
-  const [resetState, resetFormAction, resetPending] = useActionState(resetAction, initialFormState);
+  const [saveState, setSaveState] = useState<FormState>(initialFormState);
+  const [savePending, setSavePending] = useState(false);
+  const [resetState, setResetState] = useState<FormState>(initialFormState);
+  const [resetPending, setResetPending] = useState(false);
+  const saveAction = useMemo(
+    () => saveBusinessAppearanceAction.bind(null, business.id),
+    [business.id],
+  );
+  const resetAction = useMemo(
+    () => resetBusinessThemeAction.bind(null, business.id),
+    [business.id],
+  );
   const template =
     appearance.templates.find((candidate) => candidate.key === selectedTemplateKey) ??
     appearance.template;
@@ -102,6 +111,56 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
   const previewStyle = themeToCssVariables(resolvedTheme, previewLocale) as CSSProperties;
   const copy = previewCopy[previewLocale];
   const direction = previewLocale === "en" ? "ltr" : "rtl";
+
+  const submitSave = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (savePending) return;
+
+      setSavePending(true);
+      setSaveState(initialFormState);
+      try {
+        const result = await saveAction(new FormData(event.currentTarget));
+        setSaveState(result);
+        if (result.status === "success") router.refresh();
+      } catch {
+        setSaveState({
+          message: "The appearance request did not complete. Check your connection and try again.",
+          status: "error",
+        });
+      } finally {
+        setSavePending(false);
+      }
+    },
+    [router, saveAction, savePending],
+  );
+
+  const submitReset = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (resetPending) return;
+
+      setResetPending(true);
+      setResetState(initialFormState);
+      try {
+        const result = await resetAction(new FormData(event.currentTarget));
+        setResetState(result);
+        if (result.status === "success") {
+          setOverrides({});
+          setConfirmReset(false);
+          router.refresh();
+        }
+      } catch {
+        setResetState({
+          message: "The reset request did not complete. Check your connection and try again.",
+          status: "error",
+        });
+      } finally {
+        setResetPending(false);
+      }
+    },
+    [resetAction, resetPending, router],
+  );
 
   function updateColor(key: ThemeColorKey, value: string): void {
     setOverrides((current) => ({
@@ -403,7 +462,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
 
           {editable ? (
             <div className={styles.actions}>
-              <form action={saveFormAction}>
+              <form onSubmit={submitSave}>
                 <input type="hidden" name="moduleKey" value={appearance.moduleKey} />
                 <input type="hidden" name="templateKey" value={template.key} />
                 <input type="hidden" name="themeOverrides" value={JSON.stringify(overrides)} />
@@ -438,16 +497,9 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
                   >
                     Keep changes
                   </button>
-                  <form action={resetFormAction}>
+                  <form onSubmit={submitReset}>
                     <input type="hidden" name="moduleKey" value={appearance.moduleKey} />
-                    <button
-                      className="danger-button"
-                      type="submit"
-                      disabled={resetPending}
-                      onClick={() => {
-                        setOverrides({});
-                      }}
-                    >
+                    <button className="danger-button" type="submit" disabled={resetPending}>
                       {resetPending ? "Resetting…" : "Confirm reset"}
                     </button>
                   </form>

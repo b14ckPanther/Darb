@@ -279,13 +279,72 @@ test("selects, customizes, previews, isolates, and resets an appearance foundati
   await expect(
     page.locator('[aria-label="Live appearance preview"] [lang="ar"][dir="rtl"]'),
   ).toBeVisible();
-  await pagesAppearance.getByRole("button", { name: "Save appearance" }).click();
+  const saveAppearance = pagesAppearance.getByRole("button", { name: "Save appearance" });
+  let delayedSaveRequest = false;
+  await page.route(`**/b/${updatedBusinessSlug}/appearance`, async (route) => {
+    const request = route.request();
+    if (!delayedSaveRequest && request.method() === "POST" && request.headers()["next-action"]) {
+      delayedSaveRequest = true;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    await route.continue();
+  });
+  const saveResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().endsWith(`/b/${updatedBusinessSlug}/appearance`),
+  );
+  await saveAppearance.click();
+  await expect(pagesAppearance.getByRole("button", { name: "Saving appearance…" })).toBeDisabled();
+  const completedSaveResponse = await saveResponse;
+  expect(completedSaveResponse.ok()).toBe(true);
+  expect(completedSaveResponse.headers()["x-action-revalidated"]).toBeUndefined();
   await expect(page.getByText("Appearance saved and ready for future rendering.")).toBeVisible();
+  await expect(saveAppearance).toBeEnabled();
+  await page.unroute(`**/b/${updatedBusinessSlug}/appearance`);
 
   await page.reload();
   await expect(pagesAppearance.getByRole("radio", { name: /Editorial/ })).toBeChecked();
   await expect(pagesAppearance.getByLabel("Primary color", { exact: true })).toHaveValue("#3A2140");
   await expect(pagesAppearance.getByLabel("Corners", { exact: true })).toHaveValue("bold");
+
+  const saveForm = saveAppearance.locator("xpath=ancestor::form");
+  await saveForm.locator('input[name="themeOverrides"]').evaluate((input) => {
+    (input as HTMLInputElement).value = JSON.stringify({ css: "position: fixed" });
+  });
+  await saveAppearance.click();
+  await expect(
+    pagesAppearance.getByText(
+      "Some appearance values were not accepted. Review the controls and try again.",
+    ),
+  ).toBeVisible();
+  await expect(saveAppearance).toBeEnabled();
+
+  let interruptedSaveRequest = false;
+  await page.route(`**/b/${updatedBusinessSlug}/appearance`, async (route) => {
+    const request = route.request();
+    if (
+      !interruptedSaveRequest &&
+      request.method() === "POST" &&
+      request.headers()["next-action"]
+    ) {
+      interruptedSaveRequest = true;
+      await route.abort("connectionfailed");
+      return;
+    }
+    await route.continue();
+  });
+  await saveAppearance.click();
+  await expect(
+    pagesAppearance.getByText(
+      "The appearance request did not complete. Check your connection and try again.",
+    ),
+  ).toBeVisible();
+  await expect(saveAppearance).toBeEnabled();
+  await page.unroute(`**/b/${updatedBusinessSlug}/appearance`);
+
+  await page.reload();
+  await expect(pagesAppearance.getByLabel("Primary color", { exact: true })).toHaveValue("#3A2140");
 
   await page.getByLabel("Current business").selectOption(secondBusinessSlug);
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/appearance$`));

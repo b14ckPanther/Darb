@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import type { Json } from "@darb/database/types";
 
 import { requireActionBusiness } from "../../lib/action-context";
@@ -11,13 +9,10 @@ import { hasBusinessPermission } from "../../lib/auth";
 import type { FormState } from "../../lib/forms";
 import { listBusinessModuleStates } from "../../lib/modules";
 import { mapMutationError } from "../../lib/mutation-errors";
-import { businessSectionPath } from "../../lib/navigation";
 import { createServerActionSupabaseClient } from "../../lib/supabase/server";
 
 export async function saveBusinessAppearanceAction(
   businessId: string,
-  businessSlug: string,
-  _previousState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   const supabase = await createServerActionSupabaseClient();
@@ -39,7 +34,9 @@ export async function saveBusinessAppearanceAction(
   if (!parsed.success) {
     return {
       fieldErrors: parsed.errors,
-      ...(parsed.message ? { message: parsed.message } : {}),
+      message:
+        parsed.message ??
+        "Some appearance values were not accepted. Review the controls and try again.",
       status: "error",
     };
   }
@@ -64,7 +61,8 @@ export async function saveBusinessAppearanceAction(
     .single();
   if (error || !data) return mapMutationError(error ?? {}, "appearance");
 
-  revalidatePath(businessSectionPath(businessSlug, "appearance"));
+  // Keep the mutation response separate from the subsequent route refresh. In-action path
+  // revalidation couples this result to a second Appearance RSC tree in one Flight response.
   return {
     message: data.changed
       ? "Appearance saved and ready for future rendering."
@@ -75,8 +73,6 @@ export async function saveBusinessAppearanceAction(
 
 export async function resetBusinessThemeAction(
   businessId: string,
-  businessSlug: string,
-  _previousState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   const moduleKey = parseAppearanceResetInput(formData);
@@ -100,7 +96,7 @@ export async function resetBusinessThemeAction(
     })
     .single();
   if (error || !data) return mapMutationError(error ?? {}, "appearance");
-  revalidatePath(businessSectionPath(businessSlug, "appearance"));
+  // The client refreshes only after it has committed this result and released pending UI.
   return {
     message: data.changed
       ? "Theme overrides reset to the template defaults."

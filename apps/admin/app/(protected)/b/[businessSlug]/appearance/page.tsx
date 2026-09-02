@@ -86,7 +86,6 @@ export default async function AppearancePage({ params }: AppearancePageProps) {
                 defaultLocale: context.business.default_locale,
                 displayName: context.business.display_name,
                 id: context.business.id,
-                slug: context.business.slug,
               }}
               editable={editable}
             />
