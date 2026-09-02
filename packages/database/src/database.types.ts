@@ -892,6 +892,59 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      get_platform_business_detail: {
+        Args: { target_business_id: string };
+        Returns: Json;
+      };
+      get_platform_overview: { Args: never; Returns: Json };
+      list_platform_audit_events: {
+        Args: {
+          requested_action_query?: string;
+          requested_actor_query?: string;
+          requested_business_id?: string;
+          requested_from?: string;
+          requested_page?: number;
+          requested_page_size?: number;
+          requested_resource_category?: string;
+          requested_to?: string;
+        };
+        Returns: Json;
+      };
+      list_platform_businesses: {
+        Args: {
+          requested_domain_status?: string;
+          requested_locale?: string;
+          requested_module_key?: string;
+          requested_page?: number;
+          requested_page_size?: number;
+          requested_query?: string;
+          requested_status?: string;
+        };
+        Returns: Json;
+      };
+      list_platform_domains: {
+        Args: {
+          requested_module_key?: string;
+          requested_ownership_status?: string;
+          requested_page?: number;
+          requested_page_size?: number;
+          requested_primary?: boolean;
+          requested_query?: string;
+          requested_routing_status?: string;
+        };
+        Returns: Json;
+      };
+      list_platform_modules: { Args: never; Returns: Json };
+      list_platform_super_admins: { Args: never; Returns: Json };
+      list_platform_templates: { Args: never; Returns: Json };
+      list_platform_users: {
+        Args: {
+          requested_page?: number;
+          requested_page_size?: number;
+          requested_query?: string;
+        };
+        Returns: Json;
+      };
       record_business_domain_routing_attestation: {
         Args: {
           attested_status: Database["core"]["Enums"]["domain_routing_status"];
@@ -1110,6 +1163,10 @@ export type Database = {
           is_enabled: boolean;
           module_key: string;
         }[];
+      };
+      set_platform_business_status: {
+        Args: { requested_status: string; target_business_id: string };
+        Returns: Json;
       };
       update_business_locales: {
         Args: {
