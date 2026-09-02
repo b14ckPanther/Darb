@@ -450,9 +450,9 @@ test("presents provider routing failure safely and permits a trusted recheck", a
 });
 
 test("keeps domain routing administration composed at the exact QA viewports", async ({ page }) => {
-  const consoleErrors: string[] = [];
+  const consoleIssues: string[] = [];
   page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
+    if (["error", "warning"].includes(message.type())) consoleIssues.push(message.text());
   });
   await signIn(page, ownerEmail);
   for (const viewport of [
@@ -472,7 +472,16 @@ test("keeps domain routing administration composed at the exact QA viewports", a
     }));
     expect(dimensions.scrollWidth).toBe(dimensions.clientWidth);
   }
-  expect(consoleErrors).toEqual([]);
+  await page.setViewportSize({ height: 844, width: 390 });
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = "200%";
+  });
+  const reflow = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(reflow.scrollWidth).toBe(reflow.clientWidth);
+  expect(consoleIssues).toEqual([]);
 });
 
 test("persists enabled languages and an atomic default-locale change", async ({ page }) => {

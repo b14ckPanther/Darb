@@ -21,7 +21,7 @@
 }
 
 html {
-  min-width: 20rem;
+  min-width: 320px;
   background: var(--canvas);
 }
 

@@ -389,9 +389,9 @@ test("respects reduced motion and remains usable with enlarged text", async ({ p
 });
 
 test("passes exact custom-host responsive QA in RTL and LTR", async ({ page }) => {
-  const consoleErrors: string[] = [];
+  const consoleIssues: string[] = [];
   page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
+    if (["error", "warning"].includes(message.type())) consoleIssues.push(message.text());
   });
   const viewports = [
     { width: 390, height: 844 },
@@ -409,8 +409,18 @@ test("passes exact custom-host responsive QA in RTL and LTR", async ({ page }) =
       scrollWidth: document.documentElement.scrollWidth,
     }));
     expect(dimensions.scrollWidth).toBe(dimensions.clientWidth);
+    if (index === 1) {
+      const trigger = page.getByRole("button", { name: /View details: Darb signature/ });
+      await trigger.focus();
+      await trigger.press("Enter");
+      const dialog = page.getByRole("dialog", { name: /Darb signature plate/ });
+      await expect(dialog).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+      await expect(trigger).toBeFocused();
+    }
   }
-  expect(consoleErrors).toEqual([]);
+  expect(consoleIssues).toEqual([]);
 });
 
 test("fails closed when the module is disabled after publication", async ({ page }) => {
