@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import {
   AppearanceIcon,
+  AuditIcon,
   BuildingIcon,
   CancelIcon,
   DomainIcon,
@@ -37,6 +38,7 @@ interface AdminShellProps {
   businesses: AccessibleBusiness[];
   children: ReactNode;
   currentBusiness: AccessibleBusiness;
+  isPlatformAdmin?: boolean;
   navigation: ResolvedAdminNavigationGroup[];
   user: CurrentUser;
 }
@@ -58,6 +60,7 @@ export function AdminShell({
   businesses,
   children,
   currentBusiness,
+  isPlatformAdmin = false,
   navigation,
   user,
 }: AdminShellProps) {
@@ -99,14 +102,21 @@ export function AdminShell({
 
     document.body.style.overflow = "hidden";
     document.addEventListener("keydown", handleKeyDown);
-    closeButtonRef.current?.focus();
-
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
       openButton?.focus();
     };
   }, [navigationOpen]);
+
+  function openNavigation() {
+    setNavigationOpen(true);
+    window.setTimeout(() => {
+      if (sidebarRef.current?.classList.contains("is-open")) {
+        closeButtonRef.current?.focus();
+      }
+    }, 50);
+  }
 
   return (
     <div className="core-admin-shell">
@@ -172,6 +182,16 @@ export function AdminShell({
         </nav>
 
         <div className="admin-sidebar__footer">
+          {isPlatformAdmin ? (
+            <Link
+              className="platform-entry-link"
+              href="/platform"
+              onClick={() => setNavigationOpen(false)}
+            >
+              <AuditIcon size={18} />
+              Platform Admin
+            </Link>
+          ) : null}
           <Link className="all-businesses-link" href="/" onClick={() => setNavigationOpen(false)}>
             <BuildingIcon size={18} />
             All businesses
@@ -201,7 +221,7 @@ export function AdminShell({
             className="icon-button"
             aria-label="Open navigation"
             aria-expanded={navigationOpen}
-            onClick={() => setNavigationOpen(true)}
+            onClick={openNavigation}
           >
             <MenuIcon size={21} />
           </button>
@@ -212,6 +232,16 @@ export function AdminShell({
           <StatusBadge status={currentBusiness.status} />
         </header>
         <main id="main-content" className="core-admin-content">
+          {isPlatformAdmin ? (
+            <div className="platform-access-notice" role="status">
+              <AuditIcon size={18} />
+              <p>
+                <strong>Platform access</strong> You are operating this tenant as yourself through
+                explicit Darb super-admin authority.
+              </p>
+              <Link href="/platform">Return to Platform Admin</Link>
+            </div>
+          ) : null}
           <BusinessLifecycleNotice status={currentBusiness.status} />
           {children}
         </main>

@@ -41,6 +41,7 @@ export default async function BusinessLayout({ children, params }: BusinessLayou
     <AdminShell
       businesses={context.businesses}
       currentBusiness={context.business}
+      isPlatformAdmin={context.access.isSuperAdmin}
       navigation={navigation}
       user={context.user}
     >

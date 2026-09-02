@@ -1,16 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { ArrowRightIcon, BuildingIcon, LogoutIcon } from "@darb/icons";
+import { ArrowRightIcon, AuditIcon, BuildingIcon, LogoutIcon } from "@darb/icons";
 
 import { signOutAction } from "../actions/auth";
 import { DarbAdminBrand } from "../_components/brand";
 import { StatusBadge } from "../_components/status-badge";
 import { getAdminAccessSnapshot } from "../../lib/auth";
 import { businessPath, getProtectedAdminDestination } from "../../lib/navigation";
+import { getPlatformAdminContext } from "../../lib/platform";
 
 export default async function BusinessChooserPage() {
-  const snapshot = await getAdminAccessSnapshot();
+  const [snapshot, platformContext] = await Promise.all([
+    getAdminAccessSnapshot(),
+    getPlatformAdminContext(),
+  ]);
   const destination = getProtectedAdminDestination(
     {
       accessibleBusinessCount: snapshot.businesses.length,
@@ -23,7 +27,7 @@ export default async function BusinessChooserPage() {
     redirect(destination);
   }
 
-  if (snapshot.businesses.length === 1) {
+  if (snapshot.businesses.length === 1 && !platformContext) {
     redirect(businessPath(snapshot.businesses[0]!.slug));
   }
 
@@ -43,14 +47,33 @@ export default async function BusinessChooserPage() {
         <header className="page-header page-header--chooser">
           <div>
             <p className="eyebrow">Authorized workspaces</p>
-            <h1>Choose a business to manage.</h1>
+            <h1>
+              {platformContext ? "Choose your operating context." : "Choose a business to manage."}
+            </h1>
             <p className="page-header__summary">
-              Each workspace keeps its own settings, locations, permissions, and audit history.
+              {platformContext
+                ? "Platform operations and tenant workspaces stay visibly separate, while your real identity remains unchanged."
+                : "Each workspace keeps its own settings, locations, permissions, and audit history."}
             </p>
           </div>
         </header>
 
         <ul className="chooser-grid" aria-label="Accessible businesses">
+          {platformContext ? (
+            <li className="chooser-card--platform">
+              <Link href="/platform">
+                <span className="chooser-card__icon">
+                  <AuditIcon size={23} />
+                </span>
+                <span className="chooser-card__body">
+                  <strong>Darb Platform Administration</strong>
+                  <small>Cross-tenant operations</small>
+                </span>
+                <StatusBadge status="available" label="Platform" />
+                <ArrowRightIcon className="chooser-card__arrow" size={19} />
+              </Link>
+            </li>
+          ) : null}
           {snapshot.businesses.map((business) => (
             <li key={business.id}>
               <Link href={businessPath(business.slug)}>

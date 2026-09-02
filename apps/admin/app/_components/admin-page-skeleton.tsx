@@ -1,4 +1,4 @@
-export function AdminPageSkeleton() {
+export function AdminPageSkeleton({ label = "Loading business workspace" }: { label?: string }) {
   return (
     <div className="admin-page-skeleton" role="status" aria-live="polite" aria-busy="true">
       <div className="admin-page-skeleton__header">
@@ -11,7 +11,7 @@ export function AdminPageSkeleton() {
         <span />
         <span />
       </div>
-      <span className="visually-hidden">Loading business workspace…</span>
+      <span className="visually-hidden">{label}…</span>
     </div>
   );
 }

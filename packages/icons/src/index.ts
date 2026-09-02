@@ -1,6 +1,7 @@
 import {
   AlertCircleIcon as AlertCircleHugeicon,
   Archive03Icon,
+  Audit02Icon,
   ArrowDown01Icon,
   ArrowRight01Icon,
   Building03Icon,
@@ -11,6 +12,7 @@ import {
   Copy01Icon,
   Edit02Icon,
   Globe02Icon,
+  Grid2X2Icon,
   Home04Icon,
   Image01Icon,
   ImageUpload01Icon,
@@ -28,6 +30,7 @@ import {
   Shield01Icon,
   TextFontIcon,
   TranslateIcon,
+  UserGroupIcon,
   ViewIcon,
   Video01Icon,
 } from "@hugeicons/core-free-icons";
@@ -58,6 +61,10 @@ export function AlertCircleIcon(props: DarbIconProps): ReactElement {
 
 export function ArchiveIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Archive03Icon, props);
+}
+
+export function AuditIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(Audit02Icon, props);
 }
 
 export function AppearanceIcon(props: DarbIconProps): ReactElement {
@@ -94,6 +101,10 @@ export function EditIcon(props: DarbIconProps): ReactElement {
 
 export function HomeIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Home04Icon, props);
+}
+
+export function TemplatesIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(Grid2X2Icon, props);
 }
 
 export function DomainIcon(props: DarbIconProps): ReactElement {
@@ -166,6 +177,10 @@ export function TypographyIcon(props: DarbIconProps): ReactElement {
 
 export function TranslationIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(TranslateIcon, props);
+}
+
+export function UsersIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(UserGroupIcon, props);
 }
 
 export function VideoIcon(props: DarbIconProps): ReactElement {
