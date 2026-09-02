@@ -2,8 +2,7 @@
 
 Status: the unified authenticated tenant-admin foundation is implemented across business,
 location, capability, appearance, shared media, custom-domain, business-language, and Restaurant
-content surfaces. Member, permission, billing, public Restaurant, and analytics interfaces remain
-out of scope.
+content surfaces. Member, permission, billing, and analytics interfaces remain out of scope.
 
 ## Current-business routing
 
@@ -123,6 +122,11 @@ Platform super administration remains a separate future application boundary. Te
 does not expose platform controls, and service-role capability is not treated as a tenant or
 platform-user permission.
 
+Admin publishes layered `noindex` controls, a non-privileged liveness route, application/root error
+states, and shared production security headers. Request errors and domain-provider failures use
+sanitized structured logging. Public Supabase variables remain distinct from conditional,
+server-only DNS/provider attestation credentials; details are in [`PRODUCTION.md`](./PRODUCTION.md).
+
 ## Intentionally deferred
 
 - engine KPIs, analytics dashboards, and configurable dashboard widgets;
@@ -133,5 +137,4 @@ platform-user permission.
 - physical media deletion, transformations, folders, and engine-specific references;
 - domain wildcards, provider webhooks/background reconciliation, and DNS mutation automation;
 - bulk translation workflows and automated locale fallback;
-- public Restaurant delivery, all ordering, booking, commerce, pages runtime, advanced theme, and
-  billing work.
+- all ordering, booking, commerce, pages runtime, advanced theme, and billing work.

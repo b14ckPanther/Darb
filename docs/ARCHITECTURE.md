@@ -8,20 +8,20 @@ implemented product capabilities.
 Darb begins as a modular monorepo managed by pnpm workspaces and Turborepo. Deployable surfaces use
 the Next.js App Router and can be released independently while sharing reviewed platform packages.
 
-| Area                  | Responsibility                                             |
-| --------------------- | ---------------------------------------------------------- |
-| `apps/main`           | Public root-domain application for `darb.co.il`            |
-| `apps/admin`          | Platform administration application for `admin.darb.co.il` |
-| `apps/rest`           | Public Restaurant renderer for `rest.darb.co.il`           |
-| `packages/config`     | Shared build, lint, TypeScript, and platform constants     |
-| `packages/types`      | Genuinely platform-wide type contracts                     |
-| `packages/ui`         | Darb platform/admin UI foundation                          |
-| `packages/icons`      | Curated icon and custom-SVG boundary                       |
-| `packages/i18n`       | Locale and direction primitives                            |
-| `packages/theme`      | Typed customer-facing theme contract and resolver          |
-| `packages/restaurant` | Pure Restaurant Engine types and domain-state helpers      |
-| `packages/database`   | Generated DB types and separated Supabase client factories |
-| `supabase`            | Core migrations, RLS policies, local config, and DB tests  |
+| Area                  | Responsibility                                              |
+| --------------------- | ----------------------------------------------------------- |
+| `apps/main`           | Public root-domain application for `darb.co.il`             |
+| `apps/admin`          | Platform administration application for `admin.darb.co.il`  |
+| `apps/rest`           | Public Restaurant renderer for `rest.darb.co.il`            |
+| `packages/config`     | Shared tooling, HTTP-security, logging, and platform config |
+| `packages/types`      | Genuinely platform-wide type contracts                      |
+| `packages/ui`         | Darb platform/admin UI foundation                           |
+| `packages/icons`      | Curated icon and custom-SVG boundary                        |
+| `packages/i18n`       | Locale and direction primitives                             |
+| `packages/theme`      | Typed customer-facing theme contract and resolver           |
+| `packages/restaurant` | Pure Restaurant Engine types and domain-state helpers       |
+| `packages/database`   | Generated DB types and separated Supabase client factories  |
+| `supabase`            | Core migrations, RLS policies, local config, and DB tests   |
 
 Turborepo owns the common `dev`, `build`, `lint`, `typecheck`, and `test` task graph. Each workspace
 keeps an explicit manifest and exposes only intentional entry points.
@@ -63,6 +63,17 @@ template/theme, published menu graph, safe media fields, modifiers, and location
 projection fails closed. Host routing uses an anonymous-safe exact-host resolver and an internal
 Next.js rewrite; custom and platform routes share one renderer. Canonical origin prefers the
 primary live Restaurant hostname and otherwise falls back to `rest.darb.co.il`.
+
+Search discovery uses a second narrow anonymous projection rather than raw table access. It returns
+only indexable Restaurant slugs, locales, and trusted primary hostnames. Metadata, language
+alternates, structured-data URLs, robots, and sitemaps share the canonical-origin resolver. The
+public app remains RSC-first and loads a complete publication graph without N+1 reads.
+
+Cross-application production concerns remain small shared contracts: `@darb/config/http` constructs
+an application-specific static security-header baseline, while `@darb/config/observability` emits
+sanitized structured request errors. Application-owned error boundaries and liveness routes stay in
+their deployable surfaces. Restaurant analytics uses a typed engine contract plus an app-owned
+provider adapter; its baseline adapter is intentionally no-op and creates no persistence service.
 
 Tenant boundaries are enforced in Postgres through explicit grants, Row Level Security, and
 scope-aware authorization helpers. Applications must repeat authorization server-side for defense
@@ -135,7 +146,7 @@ Preview and production secrets belong in deployment environment configuration, n
 - controlled physical media cleanup and image transformation;
 - member, permission, platform-module-registry, and super-admin management interfaces;
 - customer-facing rendering for engines beyond Restaurant and advanced cache invalidation;
-- observability, queues, and background processing needs.
+- external observability vendors, queues, and background processing needs.
 
 These decisions should be made when their requirements are concrete. No premature microservices or
 empty engine applications should be introduced.

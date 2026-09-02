@@ -32,6 +32,11 @@ and kept out of browser code.
 The project reference `xtuhwpyqxgmsthgumktk` is a non-secret identifier. Its presence does not grant
 database access.
 
+Public Supabase configuration is accepted only as a credential-free HTTP(S) origin and publishable
+key. Admin-only provider and Supabase secrets are validated at the trusted operation boundary and
+use the `DARB_*` namespace where app-owned. Main and Restaurant do not read them. Repository tests
+retain the rejected legacy Vercel names solely as negative regression fixtures.
+
 ## Privileged boundaries
 
 `private.super_admins` holds explicit, revocable platform authorization and is separate from tenant
@@ -73,6 +78,25 @@ client for ordinary auth, tenant reads, permission checks, or onboarding.
 
 Dependency updates, framework configuration, redirects, uploads, webhooks, and future integrations
 require security review proportional to their risk.
+
+## HTTP, host, and error hardening
+
+All applications share a restrictive CSP/header builder, while each application supplies only its
+actual resource origins and indexing policy. Frames and objects are denied; referrer, content-type,
+permissions, and platform HSTS policy are explicit. Restaurant omits response-owned HSTS because
+the deployment also serves tenant domains. Inline script/style support is a documented Next.js and
+theme-runtime constraint; production never enables `unsafe-eval`.
+
+The public proxy normalizes IDNs to ASCII, rejects IP/localhost production hosts, Darb-reserved
+hosts, malformed/multi-value input, and any conflict between `Host` and forwarded host. It removes
+forged internal-route headers and rejects direct internal routes. Neither canonical URLs nor
+sitemaps trust request hosts without exact database resolution. Request-scoped React memoization
+does not create a cross-tenant cache.
+
+Structured logging allowlists low-cardinality context and normalized public identifiers. Original
+errors, headers, cookies, tokens, credentials, request/publication payloads, and provider response
+bodies are never serialized. Error boundaries expose only safe recovery language. See
+[`PRODUCTION.md`](./PRODUCTION.md) for the exact policy and environment ownership.
 
 ## Audit foundation
 
@@ -147,7 +171,9 @@ uses only `public.get_restaurant_publication(text)`, a separate stable security-
 with an empty `search_path`, fully qualified reads, no dynamic SQL, and a narrow execute grant. It
 returns `null` unless all lifecycle/module/configuration/publication/template gates pass and exposes
 only a reviewed render-safe projection. Administration tables remain anonymously unreadable; the
-public application uses a stateless publishable-key client and has no privileged client.
+public application uses a stateless publishable-key client and has no privileged client. Public
+discovery is a separate narrow function returning only eligible slugs, locales, and trusted primary
+hostnames; it does not broaden raw table grants.
 
 ## Storage and DNS boundaries
 

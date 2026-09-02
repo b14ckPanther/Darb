@@ -169,8 +169,8 @@ direction.
 The Overview uses stored Restaurant state only. It reports real menus, categories, items,
 publication state, languages, images, modifiers, sold-out items, and location overrides. Readiness
 is a deterministic list of required or recommended actions, not a fabricated percentage or engine
-KPI. Public activation remains an operational intent flag and is explicitly labelled as not yet a
-public renderer.
+KPI. Public activation remains an operational intent flag and is clearly distinguished from menu
+publication, capability enablement, and public-route eligibility.
 
 ## Public Restaurant experience
 
@@ -200,8 +200,16 @@ does not issue per-category/item queries.
 
 Customer presentation separates base price, absolute variant prices, non-negative modifier deltas,
 and sold-out availability without implying cart selection. JSON-LD describes only factual
-Restaurant/Menu/MenuItem/Offer state, and canonical/alternate metadata follows platform-slug locale
-routes. Search hardening beyond this foundation remains a later concern.
+Restaurant/Menu/MenuItem/Offer state. Canonical, Open Graph, language-alternate, JSON-LD, and
+sitemap URLs use the trusted primary live custom hostname or the platform slug fallback; location
+query state never creates a canonical duplicate. A narrow public sitemap projection discovers only
+effective, published Restaurants without opening raw tenant tables.
+
+The interactive controller emits a small typed event taxonomy through an application-owned
+provider adapter. The current adapter is deliberately no-op, sends no network request, and stores
+no analytics. Event payloads contain only public context plus fixed booleans or entity UUIDs—not
+names, descriptions, URLs, queries, identity, or credentials. See
+[`PRODUCTION.md`](./PRODUCTION.md).
 
 ## Application boundary and deferred work
 

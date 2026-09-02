@@ -1,7 +1,7 @@
 # Design system direction
 
-Status: accepted admin principles and the first controlled customer-facing theme contract are
-implemented; neither the complete design system nor a customer-facing renderer is implemented.
+Status: accepted admin principles, the first controlled customer-facing theme contract, and the
+Restaurant customer-facing renderer are implemented. The complete design system is not.
 
 ## Two distinct systems
 
@@ -17,10 +17,10 @@ Darb will maintain a deliberate separation between:
 These systems may share low-level accessibility knowledge and selected technical primitives, but
 they must not be forced into one visual language or one unrestricted component API.
 
-`@darb/theme` now establishes the second system's closed semantic token contract, resolver,
+`@darb/theme` establishes the second system's closed semantic token contract, resolver,
 contrast validation, locale typography, motion intent, and CSS-variable mapping. Platform template
 definitions and tenant overrides are database-driven. These primitives do not move tenant styling
-into `@darb/ui` and do not constitute a page builder or storefront renderer.
+into `@darb/ui` and do not constitute a page builder.
 
 ## Product quality bar
 
@@ -68,6 +68,7 @@ prematurely promoted to `@darb/ui`.
 The Overview presents real RLS-visible platform state and actionable readiness categories; it does
 not manufacture engine metrics, charts, or completion percentages. This is a scoped operational
 foundation, not an analytics dashboard or a complete component catalogue.
-The admin Appearance surface is a scoped editor/preview for the implemented contract. No
-customer-facing engine route, publishing workflow, analytics experience, advanced template engine,
-or page builder exists. See [`THEMES.md`](./THEMES.md).
+The admin Appearance surface is a scoped editor/preview for the implemented contract. The public
+Restaurant renderer consumes it with server-resolved locale direction, responsive media, reduced
+motion, and 200% text-reflow behavior. No analytics dashboard, advanced template engine, or page
+builder exists. See [`THEMES.md`](./THEMES.md) and [`PRODUCTION.md`](./PRODUCTION.md).

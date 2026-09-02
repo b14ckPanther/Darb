@@ -3,8 +3,9 @@
 Darb is the foundation of a multi-tenant, multi-product business platform for the Israeli market.
 The repository provides the engineering baseline, RLS-first core tenancy model, secure admin
 authentication/onboarding, a unified tenant-admin environment, the Restaurant domain/admin, a
-curated multilingual public Restaurant menu experience, and verified custom-domain routing for that
-experience. Ordering and other customer workflows are not implemented.
+curated multilingual public Restaurant menu experience, verified custom-domain routing, and
+production foundations for search, security headers, observability, accessibility, performance,
+and provider-neutral analytics. Ordering and other customer workflows are not implemented.
 
 The platform is organized as a pnpm/Turborepo monorepo with separate Next.js applications for the
 public root domain and platform administration, shared packages for true platform concerns, and a
@@ -18,7 +19,7 @@ apps/
   admin/      Supabase-authenticated admin shell for admin.darb.co.il
   rest/       Server-rendered public Restaurant experience for rest.darb.co.il
 packages/
-  config/     Shared TypeScript, ESLint, and platform configuration
+  config/     Shared tooling, HTTP-security, logging, and platform configuration
   i18n/       Supported-locale and text-direction primitives
   icons/      Governed icon and custom-SVG boundary
   types/      Platform-level TypeScript types
@@ -97,6 +98,10 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
+Each app also exposes a non-privileged `/health` liveness response. Exact deployment variables,
+canonical URL rules, robots/sitemap policy, security headers, logging redaction, and the current
+no-op analytics boundary are documented in [`docs/PRODUCTION.md`](./docs/PRODUCTION.md).
+
 ## Current status
 
 This repository has completed the monorepo, core database, authentication, platform-resource,
@@ -108,7 +113,9 @@ state, generated database types, database isolation
 tests, typed permission/module-aware navigation, real-state setup guidance, responsive accessible
 admin interaction patterns, an isolated multilingual Restaurant menu administration workflow, and
 a server-rendered public menu with locale, location, media, variants, modifiers, availability,
-theme, metadata, and fail-closed publication behavior.
+theme, trusted canonical metadata, hreflang, curated structured data, canonical-only sitemaps,
+security headers, typed analytics events, sanitized request-error logging, and fail-closed
+publication behavior.
 
 No tenant records are seeded. Ordering, booking, commerce, billing, page-builder, or other engine
 customer runtimes have been implemented. The checked-in module, permission, and template rows are
@@ -129,6 +136,7 @@ are documented in:
 - [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md)
 - [`docs/DOMAINS.md`](./docs/DOMAINS.md)
 - [`docs/MEDIA.md`](./docs/MEDIA.md)
+- [`docs/PRODUCTION.md`](./docs/PRODUCTION.md)
 - [`docs/RESTAURANT.md`](./docs/RESTAURANT.md)
 - [`docs/TENANCY.md`](./docs/TENANCY.md)
 - [`docs/I18N.md`](./docs/I18N.md)

@@ -26,6 +26,10 @@ Only an active, verified, live domain may be primary. The invariant is one prima
 business and target module. Non-primary live hostnames remain accessible but canonicalize to the
 primary hostname; without a primary, canonical URLs fall back to `rest.darb.co.il/{businessSlug}`.
 
+That same decision controls Open Graph, language-alternate, JSON-LD, robots-sitemap, and sitemap
+URLs. A live alias emits no duplicate sitemap. Location query state is non-canonical, and arbitrary
+Host/forwarded-host input is never promoted without an exact public resolver result.
+
 ## Trusted mutations and provider boundary
 
 Normal target, connect-request, disconnect, and primary actions use the request-scoped authenticated

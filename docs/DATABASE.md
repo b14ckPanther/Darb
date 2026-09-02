@@ -126,8 +126,9 @@ no-ops. The API uses no dynamic SQL or generic JSON command.
 Phase 11 adds `public.get_restaurant_publication(requested_business_slug)`. This stable,
 security-definer read boundary returns one curated JSON projection and `null` when tenant,
 capability, lifecycle, configuration, publication, or template gates fail. It is the only anonymous
-Restaurant data function: direct table reads remain denied. The migration also registers the
-platform-owned `restaurant-signature` default template; it creates no tenant appearance or content.
+function exposing Restaurant content: direct table reads remain denied. The migration also
+registers the platform-owned `restaurant-signature` default template; it creates no tenant
+appearance or content.
 
 Phase 12 separates domain ownership from deployment routing. `core.business_domains` stores a
 nullable canonical module target and a closed routing lifecycle; legacy claims remain unassigned.
@@ -137,6 +138,11 @@ is service-only and rechecks the initiating user's authorization and all tenant/
 `public.resolve_public_domain(hostname)` exposes the minimal exact-host Restaurant route, while
 `public.resolve_public_restaurant_primary_domain(slug)` provides canonical-origin selection. Both
 fail closed without exposing tenant IDs, ownership proof, or provider state.
+
+Phase 13 adds `public.list_public_restaurant_sitemap()`. This separate anonymous-safe discovery
+projection returns only canonical business slug, default locale, enabled locale array, and optional
+trusted primary hostname for publicly effective Restaurants with published content. It uses an
+empty `search_path`, a narrow execute grant, and no anonymous raw-table grant.
 
 Domain ownership and routing attestation are the only service-only application RPCs. They accept
 minimal evidence from trusted DNS or deployment-provider runtime, recheck that the initiating user
@@ -256,6 +262,8 @@ transactional failure, anonymous denial, and retained-data semantics.
 Phase 11 adds curated-publication coverage. Phase 12 adds exact-host routing, conservative legacy
 state, target/module/lifecycle gates, cross-tenant and anonymous denial, service-only attestation,
 primary-host invariants, immediate disconnect revocation, and redacted domain audit assertions.
+Phase 13 adds discovery grant, definer/search-path, lifecycle/module/publication eligibility,
+locale, canonical-host, and raw-table-denial coverage. The full suite contains 503 assertions.
 
 ## Intentionally deferred
 
