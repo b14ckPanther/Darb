@@ -51,9 +51,11 @@ The Main application owns the current corporate CSS tokens:
 | Ink         | `#10241C` |
 | Muted       | `#66716B` |
 
-Arabic uses Cairo, Hebrew uses Heebo, and English uses Ubuntu. The corporate token set must not be
-merged with tenant-controlled theme values; Darb branding and a business's storefront branding are
-different trust and product boundaries.
+Typography follows rendered script rather than page locale: Arabic glyphs use Cairo, Hebrew glyphs
+use Heebo, and Latin glyphs use Ubuntu. Main's base font stack resolves unsupported scripts in that
+order, while meaningful mixed-script elements use explicit `lang` attributes. The corporate token
+set must not be merged with tenant-controlled theme values; Darb branding and a business's
+storefront branding are different trust and product boundaries.
 
 ## Public application
 

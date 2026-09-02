@@ -13,6 +13,9 @@
   --line-dark: rgb(255 253 246 / 14%);
   --line-light: rgb(16 36 28 / 14%);
   --shadow-deep: 0 28px 80px rgb(1 13 9 / 28%);
+  --font-script-arabic: "Cairo";
+  --font-script-hebrew: "Heebo";
+  --font-script-latin: "Ubuntu";
 }
 
 * {
@@ -34,17 +37,22 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--ivory);
-  font-family: var(--font-english), system-ui, sans-serif;
+  font-family:
+    var(--font-script-latin), var(--font-script-arabic), var(--font-script-hebrew), sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
 
-html[lang="ar"] body {
-  font-family: var(--font-arabic), sans-serif;
+:where([lang="ar"]:not(html)) {
+  font-family: var(--font-script-arabic), var(--font-script-latin), sans-serif;
 }
 
-html[lang="he"] body {
-  font-family: var(--font-hebrew), sans-serif;
+:where([lang="he"]:not(html)) {
+  font-family: var(--font-script-hebrew), var(--font-script-latin), sans-serif;
+}
+
+:where([lang="en"]:not(html)) {
+  font-family: var(--font-script-latin), sans-serif;
 }
 
 button,
@@ -214,7 +222,6 @@ svg {
 }
 
 .public-brand__names [lang="ar"] {
-  font-family: var(--font-arabic), sans-serif;
   font-size: 1.18em;
   letter-spacing: 0;
 }
@@ -432,7 +439,7 @@ svg {
 
 .mobile-navigation__links a span {
   color: var(--gold);
-  font-family: var(--font-english), sans-serif;
+  font-family: var(--font-script-latin), sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.08em;
 }
@@ -525,25 +532,22 @@ svg {
   line-height: 0.9;
 }
 
-[lang="ar"] .hero h1,
-[lang="he"] .hero h1 {
+html[lang="ar"] .hero h1,
+html[lang="he"] .hero h1 {
   letter-spacing: -0.035em;
   line-height: 0.98;
 }
 
 .hero h1 em {
   color: var(--gold);
-  font-family: var(--font-english), sans-serif;
   font-weight: 500;
 }
 
-[lang="ar"] .hero h1 em {
-  font-family: var(--font-arabic), sans-serif;
+html[lang="ar"] .hero h1 em {
   font-weight: 600;
 }
 
-[lang="he"] .hero h1 em {
-  font-family: var(--font-hebrew), sans-serif;
+html[lang="he"] .hero h1 em {
   font-weight: 600;
 }
 
@@ -619,7 +623,7 @@ svg {
   position: absolute;
   inset: 2.4rem auto auto 0;
   color: #8e7d5c;
-  font-family: var(--font-english), sans-serif;
+  font-family: var(--font-script-latin), sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.16em;
 }
@@ -656,16 +660,16 @@ svg {
   overflow-wrap: anywhere;
 }
 
-[lang="ar"] .story-section h2,
-[lang="ar"] .section-heading h2,
-[lang="ar"] .foundation-section h2,
-[lang="ar"] .language-section h2,
-[lang="ar"] .final-cta h2,
-[lang="he"] .story-section h2,
-[lang="he"] .section-heading h2,
-[lang="he"] .foundation-section h2,
-[lang="he"] .language-section h2,
-[lang="he"] .final-cta h2 {
+html[lang="ar"] .story-section h2,
+html[lang="ar"] .section-heading h2,
+html[lang="ar"] .foundation-section h2,
+html[lang="ar"] .language-section h2,
+html[lang="ar"] .final-cta h2,
+html[lang="he"] .story-section h2,
+html[lang="he"] .section-heading h2,
+html[lang="he"] .foundation-section h2,
+html[lang="he"] .language-section h2,
+html[lang="he"] .final-cta h2 {
   letter-spacing: -0.03em;
   line-height: 1.08;
 }
@@ -730,7 +734,7 @@ svg {
 
 .path-list__number {
   color: #8e7d5c;
-  font-family: var(--font-english), sans-serif;
+  font-family: var(--font-script-latin), sans-serif;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
@@ -824,7 +828,6 @@ svg {
   justify-content: space-between;
   gap: 1rem;
   color: rgb(255 253 246 / 54%);
-  font-family: var(--font-english), sans-serif;
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -844,7 +847,7 @@ svg {
   border: 1px solid var(--line-dark);
   border-radius: 1.2rem 1.2rem 1.2rem 0.25rem;
   color: var(--gold);
-  font-family: var(--font-english), sans-serif;
+  font-family: var(--font-script-latin), sans-serif;
   font-size: 1.7rem;
 }
 
@@ -976,7 +979,7 @@ svg {
 
 .language-samples article > span {
   color: var(--gold);
-  font-family: var(--font-english), sans-serif;
+  font-family: var(--font-script-latin), sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;

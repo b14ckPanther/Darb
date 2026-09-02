@@ -75,6 +75,35 @@ test("switches locale through stable public routes", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("selects typography by rendered script instead of page locale", async ({ page }) => {
+  await page.goto("/en");
+
+  const baseFontStack = await page.locator("body").evaluate((element) => {
+    return getComputedStyle(element).fontFamily;
+  });
+  expect(baseFontStack).toContain("Ubuntu");
+  expect(baseFontStack).toContain("Cairo");
+  expect(baseFontStack).toContain("Heebo");
+  expect(baseFontStack).not.toContain("Fallback");
+
+  const arabicBrand = page.locator('.public-header .public-brand [lang="ar"]');
+  const hebrewSample = page.locator('.language-samples article[lang="he"] h3');
+  await expect(arabicBrand).toHaveText("درب");
+  await expect
+    .poll(() => arabicBrand.evaluate((element) => getComputedStyle(element).fontFamily))
+    .toContain("Cairo");
+  await expect
+    .poll(() => hebrewSample.evaluate((element) => getComputedStyle(element).fontFamily))
+    .toContain("Heebo");
+
+  await page.goto("/ar");
+  const latinBrand = page.locator('.public-header .public-brand [lang="en"]');
+  await expect(latinBrand).toHaveText("Darb");
+  await expect
+    .poll(() => latinBrand.evaluate((element) => getComputedStyle(element).fontFamily))
+    .toContain("Ubuntu");
+});
+
 test("provides a focus-managed mobile navigation", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/en");
