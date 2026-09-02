@@ -16,6 +16,17 @@ export function normalizePublicSupabaseConfig(config: PublicSupabaseConfig): Pub
   if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
     throw new Error("Supabase URL must use HTTP or HTTPS.");
   }
+  if (
+    parsedUrl.username ||
+    parsedUrl.password ||
+    parsedUrl.search ||
+    parsedUrl.hash ||
+    (parsedUrl.pathname !== "/" && parsedUrl.pathname !== "")
+  ) {
+    throw new Error(
+      "Supabase URL must be an origin without credentials, path, query, or fragment.",
+    );
+  }
 
   if (!publishableKey) {
     throw new Error("Supabase publishable key is required.");
@@ -25,5 +36,5 @@ export function normalizePublicSupabaseConfig(config: PublicSupabaseConfig): Pub
     throw new Error("A Supabase secret key cannot be used in a public client.");
   }
 
-  return { publishableKey, url };
+  return { publishableKey, url: parsedUrl.origin };
 }

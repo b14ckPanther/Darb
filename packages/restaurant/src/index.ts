@@ -1,9 +1,18 @@
 import type { Database } from "@darb/database/types";
 
+export { noOpRestaurantAnalyticsAdapter, trackRestaurantAnalytics } from "./analytics";
+export type {
+  RestaurantAnalyticsAdapter,
+  RestaurantAnalyticsContext,
+  RestaurantAnalyticsEvent,
+  RestaurantAnalyticsEventInput,
+} from "./analytics";
+
 export {
   formatRestaurantMoney,
   localizeRestaurantPublication,
   parsePublicRestaurantPublication,
+  parsePublicRestaurantSitemapEntries,
   restaurantMoneyToDecimalString,
   resolvePublicRestaurantLocale,
   resolvePublicRestaurantLocation,
@@ -21,6 +30,7 @@ export type {
   PublicRestaurantImage,
   PublicRestaurantLocation,
   PublicRestaurantPublication,
+  PublicRestaurantSitemapEntry,
   PublicRestaurantTranslation,
   PublicRestaurantTranslationWithoutDescription,
 } from "./public";

@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { localizeRestaurantPublication, resolvePublicRestaurantLocale } from "@darb/restaurant";
 import { RestaurantExperience } from "../../../../../components/restaurant-experience";
+import { getPublicSupabaseConfig } from "../../../../../lib/config";
 import { resolvePublicDomain } from "../../../../../lib/domains";
 import { getPublicRestaurantPublication } from "../../../../../lib/publication";
 import {
@@ -46,6 +47,7 @@ export async function generateMetadata({ params }: CustomRestaurantPageProps): P
         loaded.publication,
         localizeRestaurantPublication(loaded.publication, loaded.locale),
         loaded.route,
+        getPublicSupabaseConfig().url,
       )
     : {};
 }

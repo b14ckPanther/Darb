@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { localizeRestaurantPublication, resolvePublicRestaurantLocale } from "@darb/restaurant";
 import { RestaurantExperience } from "../../../../components/restaurant-experience";
 import { resolvePrimaryRestaurantHostname } from "../../../../lib/domains";
+import { getPublicSupabaseConfig } from "../../../../lib/config";
 import { getPublicRestaurantPublication } from "../../../../lib/publication";
 import {
   parseLocaleSegments,
@@ -43,6 +44,7 @@ export async function generateMetadata({ params }: RestaurantPageProps): Promise
         loaded.publication,
         localizeRestaurantPublication(loaded.publication, loaded.locale),
         loaded.route,
+        getPublicSupabaseConfig().url,
       )
     : {};
 }

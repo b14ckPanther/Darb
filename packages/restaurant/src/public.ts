@@ -105,6 +105,13 @@ export interface PublicRestaurantPublication {
   version: 1;
 }
 
+export interface PublicRestaurantSitemapEntry {
+  businessSlug: string;
+  defaultLocale: SupportedLocale;
+  locales: SupportedLocale[];
+  primaryHostname: string | null;
+}
+
 interface LocalizedRestaurantText {
   description: string | null;
   locale: SupportedLocale;
@@ -173,6 +180,12 @@ export function parsePublicRestaurantPublication(
   if (!locales.includes(business.defaultLocale)) return null;
 
   return { appearance, business, locales, locations, menus, version: 1 };
+}
+
+export function parsePublicRestaurantSitemapEntries(
+  value: unknown,
+): PublicRestaurantSitemapEntry[] | null {
+  return parseArray(value, parseSitemapEntry);
 }
 
 export function resolvePublicRestaurantLocale(
@@ -429,6 +442,29 @@ function parseBusiness(value: unknown): PublicRestaurantPublication["business"] 
     displayName: value.displayName,
     slug: value.slug,
     timezone: value.timezone,
+  };
+}
+
+function parseSitemapEntry(value: unknown): PublicRestaurantSitemapEntry | null {
+  if (!isRecord(value) || !isNonemptyString(value.business_slug)) return null;
+  const defaultLocale = parseLocale(value.default_locale);
+  const locales = parseArray(value.locales, parseLocale);
+  const primaryHostname = parseNullableString(value.primary_hostname);
+  if (!defaultLocale || !locales || primaryHostname === undefined) return null;
+  if (!locales.includes(defaultLocale)) return null;
+  if (
+    primaryHostname !== null &&
+    !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(
+      primaryHostname,
+    )
+  ) {
+    return null;
+  }
+  return {
+    businessSlug: value.business_slug,
+    defaultLocale,
+    locales,
+    primaryHostname,
   };
 }
 

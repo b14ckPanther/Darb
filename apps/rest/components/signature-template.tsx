@@ -14,6 +14,7 @@ import {
   type LocalizedRestaurantPublication,
   type PublicRestaurantImage,
 } from "@darb/restaurant";
+import { getTextDirection } from "@darb/i18n";
 
 import { getRestaurantCopy } from "../lib/copy";
 import { getPublicSupabaseConfig } from "../lib/config";
@@ -38,7 +39,14 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
 
   return (
     <>
-      <ItemDialogController />
+      <ItemDialogController
+        context={{
+          businessSlug: publication.business.slug,
+          locale: publication.locale,
+          routeKind: route.kind,
+        }}
+        hasLocation={currentLocationId !== null}
+      />
       <header className="site-header">
         <Link
           href={restaurantPath(
@@ -53,18 +61,22 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
           <span className="brand-symbol" aria-hidden="true">
             <RestaurantIcon size={20} />
           </span>
-          <span>{publication.business.displayName}</span>
+          <span dir="auto">{publication.business.displayName}</span>
         </Link>
         <div className="header-tools">
           {publication.locations.length > 0 ? (
             <details className="locale-menu location-menu">
               <summary>
                 <LocationIcon size={18} />
-                <span>{publication.selectedLocation?.displayName ?? copy.allLocations}</span>
+                <span dir="auto">
+                  {publication.selectedLocation?.displayName ?? copy.allLocations}
+                </span>
               </summary>
               <div className="popover-list">
                 <Link
                   aria-current={currentLocationId === null ? "page" : undefined}
+                  data-analytics-event="location-changed"
+                  data-analytics-has-location="false"
                   href={restaurantPath(
                     publication.business.slug,
                     publication.locale,
@@ -79,6 +91,8 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
                   <Link
                     key={location.id}
                     aria-current={location.id === currentLocationId ? "page" : undefined}
+                    data-analytics-event="location-changed"
+                    data-analytics-has-location="true"
                     href={restaurantPath(
                       publication.business.slug,
                       publication.locale,
@@ -87,8 +101,8 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
                       route,
                     )}
                   >
-                    <span>{location.displayName}</span>
-                    {location.locality ? <small>{location.locality}</small> : null}
+                    <span dir="auto">{location.displayName}</span>
+                    {location.locality ? <small dir="auto">{location.locality}</small> : null}
                   </Link>
                 ))}
               </div>
@@ -105,7 +119,10 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
                   <Link
                     key={locale}
                     lang={locale}
+                    dir={getTextDirection(locale)}
                     aria-current={locale === publication.locale ? "page" : undefined}
+                    data-analytics-event="locale-changed"
+                    data-analytics-locale={locale}
                     href={restaurantPath(
                       publication.business.slug,
                       locale,
@@ -127,14 +144,14 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
         <section className={`hero ${heroImage ? "hero--with-image" : "hero--without-image"}`}>
           <div className="hero-copy">
             <p className="eyebrow">{copy.menu}</p>
-            <h1>{publication.business.displayName}</h1>
+            <h1 dir="auto">{publication.business.displayName}</h1>
             {publication.menus[0]?.description ? (
               <p className="hero-description">{publication.menus[0].description}</p>
             ) : null}
             {publication.selectedLocation ? (
               <p className="hero-location">
                 <LocationIcon size={19} />
-                <span>{formatLocation(publication.selectedLocation)}</span>
+                <span dir="auto">{formatLocation(publication.selectedLocation)}</span>
               </p>
             ) : null}
           </div>
@@ -161,8 +178,15 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
             <div className="category-rail__inner">
               {publication.menus.flatMap((menu) =>
                 menu.categories.map((category) => (
-                  <a key={category.id} href={`#category-${category.id}`}>
-                    {category.name}
+                  <a
+                    key={category.id}
+                    href={`#category-${category.id}`}
+                    data-analytics-event="category-selected"
+                    data-analytics-category-id={category.id}
+                  >
+                    <span lang={category.locale} dir={getTextDirection(category.locale)}>
+                      {category.name}
+                    </span>
                   </a>
                 )),
               )}
@@ -179,7 +203,13 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
             </section>
           ) : (
             publication.menus.map((menu) => (
-              <section className="menu" key={menu.id} aria-labelledby={`menu-${menu.id}`}>
+              <section
+                className="menu"
+                key={menu.id}
+                lang={menu.locale}
+                dir={getTextDirection(menu.locale)}
+                aria-labelledby={`menu-${menu.id}`}
+              >
                 <div className="menu-heading">
                   <p className="eyebrow">{copy.menu}</p>
                   <h2 id={`menu-${menu.id}`}>{menu.name}</h2>
@@ -193,7 +223,7 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
                     aria-labelledby={`category-title-${category.id}`}
                   >
                     <div className="category-heading">
-                      <div>
+                      <div lang={category.locale} dir={getTextDirection(category.locale)}>
                         <h3 id={`category-title-${category.id}`}>{category.name}</h3>
                         {category.description ? <p>{category.description}</p> : null}
                       </div>
@@ -223,8 +253,8 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
       </main>
 
       <footer className="site-footer">
-        <span>{publication.business.displayName}</span>
-        <a href="https://darb.co.il" lang="en">
+        <span dir="auto">{publication.business.displayName}</span>
+        <a href="https://darb.co.il" lang="en" data-analytics-event="outbound-darb">
           {copy.poweredBy}
           <ArrowRightIcon size={16} />
         </a>
@@ -245,11 +275,16 @@ function ItemCard({ currencyCode, imageBaseUrl, item, locale }: ItemCardProps) {
   const dialogId = `item-${item.id}`;
 
   return (
-    <article className={`item-card ${item.image ? "item-card--with-image" : ""}`}>
+    <article
+      className={`item-card ${item.image ? "item-card--with-image" : ""}`}
+      lang={item.locale}
+      dir={getTextDirection(item.locale)}
+    >
       <button
         type="button"
         className="item-card__button"
         data-item-dialog-open={dialogId}
+        data-analytics-item-id={item.id}
         aria-label={`${copy.viewDetails}: ${item.name}`}
       >
         <div className="item-card__copy">
@@ -334,7 +369,9 @@ function ItemDialog({
                     key={variant.id}
                     className={variant.availabilityStatus === "sold_out" ? "is-unavailable" : ""}
                   >
-                    <span>{variant.name}</span>
+                    <span lang={variant.locale} dir={getTextDirection(variant.locale)}>
+                      {variant.name}
+                    </span>
                     <strong>
                       {formatRestaurantMoney(variant.priceMinor, currencyCode, locale)}
                     </strong>
@@ -344,7 +381,12 @@ function ItemDialog({
             </section>
           ) : null}
           {item.modifierGroups.map((group) => (
-            <section className="option-section" key={group.id}>
+            <section
+              className="option-section"
+              key={group.id}
+              lang={group.locale}
+              dir={getTextDirection(group.locale)}
+            >
               <div className="option-section__heading">
                 <div>
                   <h3>{group.name}</h3>
@@ -363,7 +405,9 @@ function ItemDialog({
                     key={modifier.id}
                     className={modifier.availabilityStatus === "sold_out" ? "is-unavailable" : ""}
                   >
-                    <span>{modifier.name}</span>
+                    <span lang={modifier.locale} dir={getTextDirection(modifier.locale)}>
+                      {modifier.name}
+                    </span>
                     {modifier.priceDeltaMinor > 0 ? (
                       <strong>
                         {formatRestaurantMoney(

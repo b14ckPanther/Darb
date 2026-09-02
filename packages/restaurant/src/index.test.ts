@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   deriveRestaurantReadiness,
@@ -10,10 +10,13 @@ import {
   localizeRestaurantPublication,
   parseMajorMoneyToMinor,
   parsePublicRestaurantPublication,
+  parsePublicRestaurantSitemapEntries,
+  noOpRestaurantAnalyticsAdapter,
   restaurantMoneyToDecimalString,
   resolvePublicRestaurantLocale,
   resolvePublicRestaurantTranslation,
   resolveRestaurantItemAvailability,
+  trackRestaurantAnalytics,
 } from "./index";
 import type { PublicRestaurantPublication } from "./public";
 
@@ -182,6 +185,87 @@ describe("Restaurant Engine domain helpers", () => {
     expect(formatRestaurantMoney(500, "ILS", "en", true)).toContain("+");
     expect(formatRestaurantMoney(4500, "ILS", "ar")).toContain("٤٥");
     expect(() => formatRestaurantMoney(-1, "ILS", "en")).toThrow(RangeError);
+  });
+
+  it("validates and normalizes the anonymous-safe sitemap projection", () => {
+    expect(
+      parsePublicRestaurantSitemapEntries([
+        {
+          business_slug: "public-fixture",
+          default_locale: "ar",
+          locales: ["ar", "en"],
+          primary_hostname: "menu.example",
+        },
+      ]),
+    ).toEqual([
+      {
+        businessSlug: "public-fixture",
+        defaultLocale: "ar",
+        locales: ["ar", "en"],
+        primaryHostname: "menu.example",
+      },
+    ]);
+    expect(
+      parsePublicRestaurantSitemapEntries([
+        {
+          business_slug: "public-fixture",
+          default_locale: "he",
+          locales: ["ar", "en"],
+          primary_hostname: null,
+        },
+      ]),
+    ).toBeNull();
+    expect(
+      parsePublicRestaurantSitemapEntries([
+        {
+          business_slug: "public-fixture",
+          default_locale: "ar",
+          locales: ["ar"],
+          primary_hostname: "attacker.example/path",
+        },
+      ]),
+    ).toBeNull();
+  });
+
+  it("dispatches only typed minimal analytics events", () => {
+    const track = vi.fn();
+    trackRestaurantAnalytics(
+      { track },
+      {
+        context: { businessSlug: "public-fixture", locale: "en", routeKind: "platform" },
+        name: "restaurant.menu_item_opened",
+        payload: { itemId: "item-a" },
+      },
+    );
+    expect(track).toHaveBeenCalledOnce();
+    expect(track.mock.calls[0]?.[0]).toEqual({
+      context: { businessSlug: "public-fixture", locale: "en", routeKind: "platform" },
+      name: "restaurant.menu_item_opened",
+      payload: { itemId: "item-a" },
+    });
+  });
+
+  it("keeps no-op, throwing, and rejecting analytics adapters isolated", async () => {
+    const event = {
+      context: { businessSlug: "public-fixture", locale: "ar", routeKind: "custom" },
+      name: "restaurant.page_viewed",
+      payload: { hasLocation: false },
+    } as const;
+    expect(() => trackRestaurantAnalytics(noOpRestaurantAnalyticsAdapter, event)).not.toThrow();
+    expect(() =>
+      trackRestaurantAnalytics(
+        {
+          track() {
+            throw new Error("provider");
+          },
+        },
+        event,
+      ),
+    ).not.toThrow();
+    expect(() =>
+      trackRestaurantAnalytics({ track: () => Promise.reject(new Error("provider")) }, event),
+    ).not.toThrow();
+    await Promise.resolve();
   });
 });
 
