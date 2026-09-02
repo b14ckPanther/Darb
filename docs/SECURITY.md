@@ -41,9 +41,9 @@ be limited to audited, trusted server paths.
 
 `@darb/database/browser` and `@darb/database/server` accept publishable keys. The privileged factory
 is a separate `server-only` export, disables session persistence and refresh behavior, and requires
-its secret explicitly. The admin app uses it only after server-side DNS resolution to call the
-service-only domain verification attestation RPC. Ordinary tenant reads, writes, media uploads, and
-permission checks never use it.
+its secret explicitly. The admin app uses it only after server-side DNS or deployment-provider
+checks to call the service-only domain attestation RPCs. Ordinary tenant reads, writes, media
+uploads, and permission checks never use it.
 
 ## Application boundaries
 
@@ -165,6 +165,21 @@ result reaches a service-key RPC, which rechecks the initiating authenticated us
 `domains.manage` assignment and business lifecycle. The service key is an evidence-transport
 boundary, not tenant authorization; token values never enter logs or audit metadata.
 
+Deployment routing is a separate attestation boundary. The server-only provider adapter attaches or
+inspects an exact hostname and forwards only a reviewed `live` or `failed` outcome to Postgres.
+Postgres rechecks the initiating user's current permission, verified ownership, target capability,
+module availability, and active business before accepting it. Provider tokens and raw payloads
+never enter the database or browser-visible error state; a curated list of provider-recommended DNS
+records may be returned as operator guidance. Disconnect revokes database routing before
+best-effort provider cleanup.
+
+The public host resolver is an exact-match, anonymous-safe projection. It returns no business UUID,
+ownership token, provider state, or admin metadata and only resolves verified, live Restaurant
+targets for active businesses with an effective capability. Next.js Proxy rejects malformed,
+multi-valued, conflicting-forwarded, IP/local production, internal, and reserved Darb hosts before
+the internal rewrite. Restaurant publication gates are independently rechecked by the Phase 11
+projection; raw `core` and `restaurant` tables remain unavailable anonymously.
+
 ## Bootstrap security
 
 `core.bootstrap_first_business` is a narrowly granted `security definer` function. It uses an empty
@@ -202,6 +217,10 @@ suspended/archived denial, audited idempotency, and narrow owner-bundle backfill
 Phase 9 adds Restaurant RLS/grant checks, tenant-aware foreign-key attacks, money and selection
 constraints, localization ownership, read/manage separation, partial-membership backfill isolation,
 module/lifecycle denial, audited idempotency, transactional failure, and anonymous denial.
+Phase 11 proves the curated public Restaurant projection exposes only published render-safe state.
+Phase 12 adds exact-host resolution, verified/live/capability/lifecycle fail-closed gates,
+permission and cross-tenant denial, service-only routing attestation, idempotent disconnect,
+primary-domain invariants, and credential-free audit coverage.
 Database fixtures are transaction-scoped and rolled back; browser fixtures are local-only and
 removed after the suite.
 

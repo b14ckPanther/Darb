@@ -33,7 +33,7 @@ to the hosted project's exposed-schema allowlist before clients can address them
 | `core.templates`                | Platform-owned template compositions and validated default semantic themes         |
 | `core.business_visual_settings` | Tenant template selection and partial theme overrides per module context           |
 | `core.media_assets`             | Shared business media metadata and immutable Storage object identity               |
-| `core.business_domains`         | Retained, globally unique DNS-verified custom-domain claims                        |
+| `core.business_domains`         | Retained ownership claims plus explicit engine-target routing lifecycle            |
 | `core.business_locales`         | Per-business enabled locale set; business default remains canonical                |
 | `core.audit_events`             | Append-oriented sensitive-operation event foundation                               |
 | `private.super_admins`          | Revocable platform-wide administrators, separate from tenant access                |
@@ -129,11 +129,20 @@ capability, lifecycle, configuration, publication, or template gates fail. It is
 Restaurant data function: direct table reads remain denied. The migration also registers the
 platform-owned `restaurant-signature` default template; it creates no tenant appearance or content.
 
-`core.record_business_domain_verification(domain_id, requesting_user_id, succeeded)` is the sole
-service-only application RPC. It accepts evidence only from trusted server runtime after Node DNS
-resolution, rechecks that the initiating user still holds `domains.manage` (or explicit platform
-super-admin status), and records only the boolean outcome. It cannot be executed by normal or
-anonymous clients and no token is accepted or audited.
+Phase 12 separates domain ownership from deployment routing. `core.business_domains` stores a
+nullable canonical module target and a closed routing lifecycle; legacy claims remain unassigned.
+Normal authenticated RPCs set a verified claim's target, begin provisioning, disconnect routing,
+and select a primary only after live attestation. `core.record_business_domain_routing_attestation`
+is service-only and rechecks the initiating user's authorization and all tenant/capability gates.
+`public.resolve_public_domain(hostname)` exposes the minimal exact-host Restaurant route, while
+`public.resolve_public_restaurant_primary_domain(slug)` provides canonical-origin selection. Both
+fail closed without exposing tenant IDs, ownership proof, or provider state.
+
+Domain ownership and routing attestation are the only service-only application RPCs. They accept
+minimal evidence from trusted DNS or deployment-provider runtime, recheck that the initiating user
+still holds `domains.manage` (or explicit platform super-admin status), and record only reviewed
+outcomes. Normal and anonymous clients cannot execute them; tokens and provider payloads are never
+accepted or audited.
 
 `private.is_valid_timezone(text)` checks submitted values against Postgres' IANA timezone catalog.
 Ordinary tenant mutation functions derive the actor with `auth.uid()`, fully qualify objects, use an
@@ -244,6 +253,9 @@ Phase 9 adds 124 assertions for Restaurant schema/grants/RLS, safe money and sel
 multiple-menu structure, tenant-aware media/location/parent relationships, localization,
 permission backfill isolation, lifecycle and module gates, mutation idempotency, audit redaction,
 transactional failure, anonymous denial, and retained-data semantics.
+Phase 11 adds curated-publication coverage. Phase 12 adds exact-host routing, conservative legacy
+state, target/module/lifecycle gates, cross-tenant and anonymous denial, service-only attestation,
+primary-host invariants, immediate disconnect revocation, and redacted domain audit assertions.
 
 ## Intentionally deferred
 
@@ -252,9 +264,9 @@ transactional failure, anonymous denial, and retained-data semantics.
 - member, permission, platform-module-registry, and super-admin administration;
 - module dependencies, engine-specific configuration beyond Restaurant, and billing entitlements;
 - location restoration and hard-deletion workflows;
-- Restaurant public rendering and other engine-owned tables/runtime behavior;
+- public rendering for engines beyond Restaurant;
 - comprehensive audit retention and export policy;
 - physical media deletion and transformations;
-- production custom-domain routing/provider automation;
+- wildcard domains, provider webhooks, background reconciliation, and DNS automation;
 - translation management and other engine-localized content tables;
 - billing and remote deployment.

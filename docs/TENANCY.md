@@ -150,6 +150,12 @@ Media, domain, and locale mutations are also active-business operations. Media a
 are retained when archived or disabled, and platform-suspended businesses cannot advance DNS
 verification. Business locale changes keep the new default enabled in the same transaction.
 
+Domain ownership does not imply public routing. A verified claim must also name a canonical module
+target and receive trusted deployment-provider attestation before its routing state becomes live.
+Only live claims can be primary, with one primary hostname per business and target. Public exact-host
+resolution independently requires an active business and an enabled, available implemented module;
+disconnect or ownership disable revokes resolution while retaining tenant history.
+
 Appearance state is readable through active membership and mutable only with business-wide
 `appearance.manage`. It applies only to effectively enabled module contexts. Suspended and archived
 businesses must be returned to active before any template/theme change, including by a super admin.

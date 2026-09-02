@@ -2,9 +2,9 @@
 
 Darb is the foundation of a multi-tenant, multi-product business platform for the Israeli market.
 The repository provides the engineering baseline, RLS-first core tenancy model, secure admin
-authentication/onboarding, a unified tenant-admin environment, the Restaurant domain/admin, and a
-curated multilingual public Restaurant menu experience. Ordering and other customer workflows are
-not implemented.
+authentication/onboarding, a unified tenant-admin environment, the Restaurant domain/admin, a
+curated multilingual public Restaurant menu experience, and verified custom-domain routing for that
+experience. Ordering and other customer workflows are not implemented.
 
 The platform is organized as a pnpm/Turborepo monorepo with separate Next.js applications for the
 public root domain and platform administration, shared packages for true platform concerns, and a
@@ -103,7 +103,8 @@ This repository has completed the monorepo, core database, authentication, platf
 theme/appearance, unified tenant-admin, Restaurant Engine domain, and Restaurant Admin foundations.
 It includes migration-driven tenancy, RLS authorization, atomic first-business bootstrap, protected
 multi-business routes, audited core mutations, shared image/video Storage coordination,
-DNS-verified domain claims, business locale state, generated database types, database isolation
+DNS-verified domain claims with explicit provider-attested Restaurant routing, business locale
+state, generated database types, database isolation
 tests, typed permission/module-aware navigation, real-state setup guidance, responsive accessible
 admin interaction patterns, an isolated multilingual Restaurant menu administration workflow, and
 a server-rendered public menu with locale, location, media, variants, modifiers, availability,

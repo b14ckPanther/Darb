@@ -55,12 +55,14 @@ state, and audit events. `@darb/restaurant` contains only generated-type aliases
 semantics. Its authenticated administration stays in `apps/admin`; its customer-facing renderer
 lives in the dedicated `apps/rest` deployment.
 
-`apps/rest` resolves platform-slug routes server-side through one curated anonymous projection. It
-never reads Restaurant administration tables directly. The projection combines the active tenant,
+`apps/rest` resolves platform-slug and verified live custom-host routes server-side through one
+curated anonymous projection. It never reads Restaurant administration tables directly. The
+projection combines the active tenant,
 effective Restaurant capability, public configuration, enabled locales, active locations, resolved
 template/theme, published menu graph, safe media fields, modifiers, and location overrides. A null
-projection fails closed. The canonical host is `rest.darb.co.il`; custom-host resolution is deferred
-without coupling tenant identity to browser state.
+projection fails closed. Host routing uses an anonymous-safe exact-host resolver and an internal
+Next.js rewrite; custom and platform routes share one renderer. Canonical origin prefers the
+primary live Restaurant hostname and otherwise falls back to `rest.darb.co.il`.
 
 Tenant boundaries are enforced in Postgres through explicit grants, Row Level Security, and
 scope-aware authorization helpers. Applications must repeat authorization server-side for defense
@@ -93,11 +95,10 @@ the reviewed size/MIME ceilings, and completion rechecks stored metadata before 
 read is deliberate for future QR-heavy delivery, while all writes remain authenticated and
 permission-bound.
 
-Custom-domain ownership is stored independently of routing infrastructure. Ordinary claim,
-lifecycle, and primary mutations use the request-scoped authenticated client. Node DNS performs TXT
-resolution server-side; only its boolean result crosses one service-key-backed, server-only
-attestation RPC that rechecks the initiating user's `domains.manage` permission. No provider, SSL,
-or public host routing is connected.
+Custom-domain ownership remains independent from routing infrastructure. An explicit module target
+and provider-attested routing lifecycle prevent a verified ownership claim from implying a live
+site. Node DNS and Vercel checks each cross a narrow service-only attestation boundary that rechecks
+the initiating user's `domains.manage` permission. Only Restaurant is an implemented public target.
 
 The module/capability registry is a shared platform concern, while engines remain isolated
 implementations. The current-business context loads RLS-visible capability state and provides a
@@ -130,7 +131,7 @@ Preview and production secrets belong in deployment environment configuration, n
 - remote migration deployment and operational rollout;
 - registration, invitations, password recovery, MFA, and detailed session policy;
 - locale negotiation beyond the explicit Restaurant platform-slug route contract;
-- public custom-host routing, Vercel domain attachment, and SSL automation;
+- public engines beyond Restaurant, wildcard domains, and background provider reconciliation;
 - controlled physical media cleanup and image transformation;
 - member, permission, platform-module-registry, and super-admin management interfaces;
 - customer-facing rendering for engines beyond Restaurant and advanced cache invalidation;

@@ -178,7 +178,9 @@ public renderer.
 `rest.darb.co.il`. Platform-slug routes are `/{businessSlug}` for the business default locale and
 `/{businessSlug}/{locale}` for another enabled locale. An optional, validated `location` query
 selects one projected active location; unknown tenant, locale, or location contexts fail closed.
-Phase 12 may add custom-host resolution without changing this canonical path contract.
+Verified live custom domains resolve by exact host through an anonymous-safe routing projection and
+reuse this same renderer. Platform-slug routes remain available; canonical origin prefers the
+primary live Restaurant hostname and otherwise remains on `rest.darb.co.il`.
 
 The server makes one anonymous request to `public.get_restaurant_publication`. The security-definer
 function has an empty `search_path`, a narrow `anon`/`authenticated` execute grant, and returns
@@ -215,5 +217,5 @@ validation, and presentation stay inside `apps/admin`; `@darb/database` remains 
 schema/client boundary.
 
 The current product does not include carts, checkout, orders, payments, delivery, tables,
-kitchen/POS, inventory, taxes, coupons, loyalty, tips, schedules, custom-domain routing, or a public
-template marketplace.
+kitchen/POS, inventory, taxes, coupons, loyalty, tips, schedules, custom-domain routing for engines
+beyond Restaurant, or a public template marketplace.

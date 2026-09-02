@@ -26,7 +26,8 @@ local storage.
 - `/b/[businessSlug]/modules` reads the platform registry and current business capability state;
 - `/b/[businessSlug]/appearance` resolves enabled template contexts and controlled theme state;
 - `/b/[businessSlug]/media` uploads, describes, lists, and archives shared business assets;
-- `/b/[businessSlug]/domains` manages retained DNS-verified hostname claims;
+- `/b/[businessSlug]/domains` manages ownership verification, Restaurant targeting, provider
+  connection state, primary host selection, and disconnect;
 - `/b/[businessSlug]/languages` manages the enabled locale set and canonical default;
 - `/b/[businessSlug]/locations` lists only locations visible through RLS;
 - `/b/[businessSlug]/locations/new` creates a reusable core location;
@@ -73,7 +74,10 @@ Media registration reserves a database-derived path before the browser uploads d
 Storage RLS. Completion, alt-text updates, and archive use normal authenticated RPCs. Domain claims
 use normal authenticated RPCs except for DNS verification evidence: Node resolves TXT records and a
 server-only client attests only the boolean outcome through a service-only RPC that repeats the
-initiating user's permission check. Language updates use one atomic `business.manage` RPC.
+initiating user's permission check. Deployment connection uses the same trust shape: a server-only
+provider adapter forwards only a reviewed routing outcome through a separate service-only RPC, while
+target, connect request, primary, and disconnect remain normal authenticated operations. Language
+updates use one atomic `business.manage` RPC.
 
 Appearance uses normal authenticated reads plus narrow save/reset RPCs. Template selection and
 semantic overrides commit with redacted audit events. The live preview uses `@darb/theme`, the same
@@ -127,7 +131,7 @@ platform-user permission.
 - platform module-registry and super-admin interfaces;
 - location restoration or hard deletion;
 - physical media deletion, transformations, folders, and engine-specific references;
-- production custom-domain routing, provider attachment, and SSL automation;
+- domain wildcards, provider webhooks/background reconciliation, and DNS mutation automation;
 - bulk translation workflows and automated locale fallback;
 - public Restaurant delivery, all ordering, booking, commerce, pages runtime, advanced theme, and
   billing work.
