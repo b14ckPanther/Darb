@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 
+import { reportOperationalError } from "@darb/config/observability";
 import { ResetIcon } from "@darb/icons";
 
 import { AdminState } from "../../../_components/admin-state";
@@ -13,7 +14,11 @@ interface BusinessErrorProps {
 
 export default function BusinessError({ error, retry }: BusinessErrorProps) {
   useEffect(() => {
-    console.error("Business workspace render failed", error.digest ?? "no-digest");
+    reportOperationalError({
+      application: "admin",
+      digest: error.digest,
+      event: "admin.business_workspace_failed",
+    });
   }, [error.digest]);
 
   return (

@@ -14,8 +14,9 @@ const application = darbApplications[surface];
 const documentLocale = "en" satisfies SupportedLocale;
 
 export const metadata: Metadata = {
-  title: application.name,
   description: "Secure Darb business administration.",
+  robots: { follow: false, index: false, nocache: true },
+  title: application.name,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

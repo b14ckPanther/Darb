@@ -278,6 +278,9 @@ importers:
       typescript-eslint:
         specifier: 'catalog:'
         version: 8.68.0(eslint@10.9.1(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(vite@8.2.2(@types/node@26.4.0))
 
   packages/database:
     dependencies:

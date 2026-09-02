@@ -6,6 +6,8 @@
   "exports": {
     "./eslint/base": "./eslint/base.mjs",
     "./eslint/next": "./eslint/next.mjs",
+    "./http": "./src/http.ts",
+    "./observability": "./src/observability.ts",
     "./platform": "./src/platform.ts",
     "./typescript/base.json": "./typescript/base.json",
     "./typescript/library.json": "./typescript/library.json",
@@ -13,6 +15,7 @@
   },
   "scripts": {
     "lint": "eslint .",
+    "test": "vitest run",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "devDependencies": {
@@ -21,6 +24,7 @@
     "eslint": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
   }
 }

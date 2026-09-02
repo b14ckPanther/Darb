@@ -14,8 +14,23 @@ const application = darbApplications[surface];
 const documentLocale = "en" satisfies SupportedLocale;
 
 export const metadata: Metadata = {
-  title: application.name,
+  alternates: { canonical: `https://${application.productionHost}` },
   description: "Darb public application foundation.",
+  metadataBase: new URL(`https://${application.productionHost}`),
+  openGraph: {
+    description: "Darb public application foundation.",
+    siteName: application.name,
+    title: application.name,
+    type: "website",
+    url: `https://${application.productionHost}`,
+  },
+  robots: { follow: true, index: true },
+  title: application.name,
+  twitter: {
+    card: "summary",
+    description: "Darb public application foundation.",
+    title: application.name,
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

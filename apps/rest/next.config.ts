@@ -1,7 +1,21 @@
 import type { NextConfig } from "next";
 
+import { createDarbSecurityHeaders } from "@darb/config/http";
+
 const nextConfig: NextConfig = {
   agentRules: false,
+  async headers() {
+    return [
+      {
+        headers: createDarbSecurityHeaders({
+          allowIndexing: true,
+          environment: runtimeEnvironment(),
+          resourceOrigins: [process.env.NEXT_PUBLIC_SUPABASE_URL],
+        }),
+        source: "/:path*",
+      },
+    ];
+  },
   images: {
     dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
     maximumRedirects: 0,
@@ -41,5 +55,13 @@ const nextConfig: NextConfig = {
     "@darb/ui",
   ],
 };
+
+function runtimeEnvironment(): "development" | "production" | "test" {
+  return process.env.NODE_ENV === "production"
+    ? "production"
+    : process.env.NODE_ENV === "test"
+      ? "test"
+      : "development";
+}
 
 export default nextConfig;

@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
+import { reportOperationalError } from "@darb/config/observability";
+
 import { requireActionBusiness } from "../../lib/action-context";
 import { hasBusinessPermission } from "../../lib/auth";
 import { normalizeHostname } from "../../lib/domain-validation";
@@ -340,11 +342,15 @@ async function runDomainProviderMutation(
     deployment = await provider[operation](domain.hostname);
   } catch (error) {
     const safeCode = error instanceof DomainProviderError ? error.safeCode : "provider-unavailable";
-    console.error("Domain deployment provider operation failed", {
-      hostname: domain.hostname,
-      moduleKey: domain.target_module_key,
-      operation,
-      safeCode,
+    reportOperationalError({
+      application: "admin",
+      context: {
+        hostname: domain.hostname,
+        moduleKey: domain.target_module_key,
+        operation,
+        safeCode,
+      },
+      event: "domain.provider_failed",
     });
     await attestDomainRouting(domain.id, user.id, "failed");
     return {

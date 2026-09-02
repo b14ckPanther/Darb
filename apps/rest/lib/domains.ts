@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { reportOperationalError } from "@darb/config/observability";
 import { createDarbAnonymousSupabaseClient } from "@darb/database/anonymous";
 import { getPublicSupabaseConfig } from "./config";
 
@@ -19,7 +20,11 @@ export const resolvePublicDomain = cache(
       requested_hostname: hostname,
     });
     if (error) {
-      console.error("Public custom-domain resolution failed", { hostname });
+      reportOperationalError({
+        application: "rest",
+        context: { hostname, operation: "domain-resolution" },
+        event: "restaurant.public_domain_failed",
+      });
       throw new Error("The public hostname could not be resolved.");
     }
     return parsePublicDomainResolution(data);
@@ -33,7 +38,11 @@ export const resolvePrimaryRestaurantHostname = cache(
       requested_business_slug: businessSlug,
     });
     if (error) {
-      console.error("Public Restaurant primary-domain resolution failed", { businessSlug });
+      reportOperationalError({
+        application: "rest",
+        context: { businessSlug, operation: "primary-domain-resolution" },
+        event: "restaurant.primary_domain_failed",
+      });
       throw new Error("The canonical Restaurant hostname could not be resolved.");
     }
     return typeof data === "string" ? data : null;

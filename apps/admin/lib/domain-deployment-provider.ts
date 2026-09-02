@@ -1,5 +1,7 @@
 import "server-only";
 
+import { readDomainProviderEnvironment } from "./environment";
+
 export type DomainDnsRecord = Readonly<{
   name: string;
   type: "A" | "CNAME" | "TXT";
@@ -166,15 +168,14 @@ export function createDomainDeploymentProvider(
     );
   }
 
-  const apiToken = environment.DARB_VERCEL_API_TOKEN;
-  const projectId = environment.DARB_VERCEL_RESTAURANT_PROJECT_ID;
-  if (!apiToken || !projectId) throw new DomainProviderError("configuration");
+  let config: VercelProviderConfig;
+  try {
+    config = readDomainProviderEnvironment(environment);
+  } catch {
+    throw new DomainProviderError("configuration");
+  }
 
-  return new VercelDomainDeploymentProvider({
-    apiToken,
-    projectId,
-    ...(environment.DARB_VERCEL_TEAM_ID ? { teamId: environment.DARB_VERCEL_TEAM_ID } : {}),
-  });
+  return new VercelDomainDeploymentProvider(config);
 }
 
 function collectDnsRecords(

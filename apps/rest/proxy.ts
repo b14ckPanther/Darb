@@ -5,13 +5,17 @@ const internalPrefix = "/darb-host-internal";
 const customHostHeader = "x-darb-custom-host";
 
 export function proxy(request: NextRequest) {
+  const requestId = crypto.randomUUID();
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete(customHostHeader);
+  requestHeaders.set("x-request-id", requestId);
 
   if (request.nextUrl.pathname.startsWith(internalPrefix)) {
-    return NextResponse.rewrite(new URL("/__darb-private-route", request.url), {
+    const response = NextResponse.rewrite(new URL("/__darb-private-route", request.url), {
       request: { headers: requestHeaders },
     });
+    response.headers.set("x-request-id", requestId);
+    return response;
   }
 
   const routing = resolveHostRouting(
@@ -20,18 +24,24 @@ export function proxy(request: NextRequest) {
     process.env,
   );
   if (routing.kind === "invalid") {
-    return NextResponse.rewrite(new URL("/__darb-invalid-host", request.url), {
+    const response = NextResponse.rewrite(new URL("/__darb-invalid-host", request.url), {
       request: { headers: requestHeaders },
     });
+    response.headers.set("x-request-id", requestId);
+    return response;
   }
   if (routing.kind === "platform") {
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    response.headers.set("x-request-id", requestId);
+    return response;
   }
 
   requestHeaders.set(customHostHeader, routing.hostname);
   const target = request.nextUrl.clone();
   target.pathname = `${internalPrefix}/${routing.hostname}${request.nextUrl.pathname}`;
-  return NextResponse.rewrite(target, { request: { headers: requestHeaders } });
+  const response = NextResponse.rewrite(target, { request: { headers: requestHeaders } });
+  response.headers.set("x-request-id", requestId);
+  return response;
 }
 
 export const config = {
