@@ -4,7 +4,12 @@ import { darbApplications } from "@darb/config/platform";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { allow: "/", userAgent: "*" },
+    host: `https://${darbApplications.main.productionHost}`,
+    rules: {
+      allow: ["/ar", "/he", "/en"],
+      disallow: "/health",
+      userAgent: "*",
+    },
     sitemap: `https://${darbApplications.main.productionHost}/sitemap.xml`,
   };
 }

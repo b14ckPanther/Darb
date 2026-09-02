@@ -7,11 +7,14 @@
     "dev": "next dev --port 3000",
     "lint": "eslint .",
     "start": "next start --port 3000",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
     "@darb/config": "workspace:*",
     "@darb/i18n": "workspace:*",
+    "@darb/icons": "workspace:*",
     "@darb/types": "workspace:*",
     "@darb/ui": "workspace:*",
     "next": "catalog:",
@@ -23,6 +26,7 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "eslint": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

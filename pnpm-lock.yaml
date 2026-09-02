@@ -171,6 +171,9 @@ importers:
       '@darb/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@darb/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@darb/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -202,6 +205,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(vite@8.2.2(@types/node@26.4.0))
 
   apps/rest:
     dependencies:
