@@ -23,6 +23,7 @@ export default async function PublicLocaleLayout({
     <html
       lang={locale}
       dir={getPublicLocaleDirection(locale)}
+      data-scroll-behavior="smooth"
       className={`${cairo.variable} ${heebo.variable} ${ubuntu.variable}`}
     >
       <body>

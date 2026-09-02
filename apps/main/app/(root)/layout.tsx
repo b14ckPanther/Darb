@@ -14,6 +14,7 @@ export default function RootRedirectLayout({ children }: Readonly<{ children: Re
     <html
       lang={locale}
       dir={getTextDirection(locale)}
+      data-scroll-behavior="smooth"
       className={`${cairo.variable} ${heebo.variable} ${ubuntu.variable}`}
     >
       <body>

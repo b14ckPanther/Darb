@@ -13,7 +13,6 @@ export function HeroArt({ alt }: { alt: string }) {
     src: "/brand/hero/darb-hero-desktop.webp",
     width: 1672,
     height: 941,
-    quality: 86,
   });
   const {
     props: { srcSet: mobileSource, ...imageProps },
@@ -22,7 +21,6 @@ export function HeroArt({ alt }: { alt: string }) {
     src: "/brand/hero/darb-hero-mobile.webp",
     width: 853,
     height: 1844,
-    quality: 84,
   });
 
   return (
