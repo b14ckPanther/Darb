@@ -4,8 +4,8 @@ const localeCases = [
   {
     locale: "ar",
     direction: "rtl",
-    heading: "عملك. بطريقك.",
-    title: "درب — أساس رقمي بطريق عملك",
+    heading: "شغلك. بطريقك.",
+    title: "درب — الأساس الرقمي اللي بمشي مع شغلك",
   },
   {
     locale: "he",
@@ -27,7 +27,7 @@ test("resolves the root intentionally to the Arabic public experience", async ({
   await expect(page).toHaveURL(/\/ar$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-  await expect(page.getByRole("heading", { level: 1, name: "عملك. بطريقك." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "شغلك. بطريقك." })).toBeVisible();
 });
 
 for (const localeCase of localeCases) {
