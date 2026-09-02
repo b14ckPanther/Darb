@@ -144,6 +144,22 @@ projection returns only canonical business slug, default locale, enabled locale 
 trusted primary hostname for publicly effective Restaurants with published content. It uses an
 empty `search_path`, a narrow execute grant, and no anonymous raw-table grant.
 
+Phase 14 adds authenticated, super-admin-only control-plane projections:
+
+- `core.get_platform_overview()`;
+- `core.list_platform_businesses(...)` and `core.get_platform_business_detail(...)`;
+- `core.list_platform_users(...)` and `core.list_platform_super_admins()`;
+- `core.list_platform_modules()` and `core.list_platform_templates()`;
+- `core.list_platform_domains(...)`;
+- `core.list_platform_audit_events(...)`.
+
+The list functions bound page size and execute filtering/pagination in Postgres. Auth fields,
+domain proof/provider details, theme documents, and audit metadata are deliberately absent. The
+same migration adds `core.set_platform_business_status(...)`, an authenticated super-admin-only,
+row-locking lifecycle transition that derives its actor and writes one redacted audit event in the
+same transaction. All functions revoke `public`, `anon`, and service-role execution and grant only
+`authenticated`; each still checks `private.is_super_admin()` internally.
+
 Domain ownership and routing attestation are the only service-only application RPCs. They accept
 minimal evidence from trusted DNS or deployment-provider runtime, recheck that the initiating user
 still holds `domains.manage` (or explicit platform super-admin status), and record only reviewed

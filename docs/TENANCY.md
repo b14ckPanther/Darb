@@ -128,6 +128,13 @@ technical database bypass and is not conceptually promoted to super admin.
 Super-admin provisioning and revocation require a separately controlled operational process. They
 must never be implemented as a normal self-service client write.
 
+The `/platform/*` control plane reads bounded projections guarded by that active assignment. Tenant
+permissions cannot substitute for it. Super admins can inspect every tenant and enter the existing
+business workspace through explicit RLS authority without creating a membership or impersonating a
+user. The business shell marks platform access, while platform and tenant navigation stay visibly
+separate. Phase 14 exposes only audited business lifecycle transitions; platform registries and the
+super-admin roster remain read-only.
+
 ## Lifecycle semantics
 
 Business `active` and `archived` states are tenant-controlled through the audited settings
@@ -183,7 +190,7 @@ Strict tenant isolation is mandatory and currently enforced as follows:
 - general additional-business creation workflows;
 - invitation lifecycle and acceptance;
 - product role templates and additional permission keys;
-- super-admin operational tooling;
+- super-admin promotion/revocation and platform-registry mutation workflows;
 - additional engine-owned schemas and tables;
 - member, permission, platform-module-registry, and location-restoration interfaces.
 

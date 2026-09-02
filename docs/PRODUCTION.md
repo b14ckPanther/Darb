@@ -133,6 +133,11 @@ Escape behavior, semantic landmarks/headings, touch-sized controls, Arabic/Hebre
 reduced motion, 200% text reflow, long content, image alternatives, and horizontal overflow. These
 checks are engineering validation, not a claim of formal certification.
 
+Platform operator lists are Server Component views backed by bounded database projections.
+Businesses, users, domains, and audit use 25-row pages, deterministic ordering, and server-side
+filters; the browser never downloads the full estate. The platform shell reuses the existing
+focus-managed responsive drawer and does not introduce a chart or client data-grid dependency.
+
 ## Deferred operations
 
 - production analytics provider selection, consent policy, and analytics reporting;

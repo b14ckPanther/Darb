@@ -98,7 +98,13 @@ future engine contributions share the same item contract, but the server-resolve
 effective-module snapshot filters every business instance before rendering. This is build-time
 application composition, not runtime plugin loading. The Overview parallelizes ordinary
 RLS-visible platform reads and derives honest setup guidance without persisting dashboard state.
-Platform super administration remains a separate future route/application concern.
+
+Platform administration is a separate `/platform/*` context within `apps/admin`, not a mode hidden
+inside a tenant route. Its Server Components use bounded super-admin-only projections for factual
+cross-tenant operations. The only Phase 14 platform mutation is an audited business lifecycle RPC.
+Super admins may enter a normal business workspace through the existing explicit database
+authority without membership fabrication or identity impersonation; the tenant shell marks that
+context. See [`PLATFORM_ADMIN.md`](./PLATFORM_ADMIN.md).
 
 Shared media uses two platform buckets—images and videos—rather than tenant or engine buckets. UUID-
 derived paths and Storage RLS bind uploads to a database reservation; kind-specific buckets enforce
@@ -144,7 +150,8 @@ Preview and production secrets belong in deployment environment configuration, n
 - locale negotiation beyond the explicit Restaurant platform-slug route contract;
 - public engines beyond Restaurant, wildcard domains, and background provider reconciliation;
 - controlled physical media cleanup and image transformation;
-- member, permission, platform-module-registry, and super-admin management interfaces;
+- member and permission interfaces, plus mutation workflows for platform registries and
+  super-admin assignments;
 - customer-facing rendering for engines beyond Restaurant and advanced cache invalidation;
 - external observability vendors, queues, and background processing needs.
 

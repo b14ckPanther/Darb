@@ -1,6 +1,7 @@
 # Core administration
 
-Status: the unified authenticated tenant-admin foundation is implemented across business,
+Status: the unified authenticated tenant-admin foundation and the separate super-admin control
+plane are implemented across business,
 location, capability, appearance, shared media, custom-domain, business-language, and Restaurant
 content surfaces. Member, permission, billing, and analytics interfaces remain out of scope.
 
@@ -118,9 +119,23 @@ injection, marketplace, or plugin loader. Restaurant is the first implementation
 registers its section while route-level access and Server Actions independently repeat
 authorization.
 
-Platform super administration remains a separate future application boundary. Tenant navigation
-does not expose platform controls, and service-role capability is not treated as a tenant or
-platform-user permission.
+## Platform control plane
+
+`/platform` is an explicit Darb operator context available only after a server/database
+super-admin check. It has its own shell and Overview, Businesses, Users, Modules, Templates,
+Domains, and Audit sections. Tenant administrators never receive its navigation or data. Large
+directories are database-filtered and paginated rather than loaded into client memory.
+
+The business directory supports safe inspection and audited suspend/archive/reactivate actions.
+The user directory is an allow-listed Auth projection; super-admin assignment management is
+read-only. Module and template registries are also read-only in this phase. Global domain and audit
+views exclude verification proof, provider payloads, and audit metadata. Full contracts and
+deferrals are in [`PLATFORM_ADMIN.md`](./PLATFORM_ADMIN.md).
+
+A super admin may open a tenant workspace without a fabricated membership because existing RLS
+helpers intentionally recognize platform authority. The business shell identifies this access and
+retains the operator's real session identity. Platform Admin and Business Workspace links make the
+context switch explicit.
 
 Admin publishes layered `noindex` controls, a non-privileged liveness route, application/root error
 states, and shared production security headers. Request errors and domain-provider failures use
@@ -132,7 +147,7 @@ server-only DNS/provider attestation credentials; details are in [`PRODUCTION.md
 - engine KPIs, analytics dashboards, and configurable dashboard widgets;
 - additional-business creation beyond first-business bootstrap;
 - member invitations, membership, role, and permission editors;
-- platform module-registry and super-admin interfaces;
+- mutation workflows for platform module/template registries and super-admin assignments;
 - location restoration or hard deletion;
 - physical media deletion, transformations, folders, and engine-specific references;
 - domain wildcards, provider webhooks/background reconciliation, and DNS mutation automation;

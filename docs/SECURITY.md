@@ -72,6 +72,14 @@ snapshot to avoid misleading UI, but it is never an authorization boundary. Dire
 mutations retain their existing server/database checks. The Overview uses only ordinary
 request-scoped, RLS-visible reads and stores no dashboard or activity state.
 
+`/platform/*` adds a distinct super-admin route boundary. Both the layout and each data loader
+require the database-backed super-admin decision before a platform projection is attempted, so a
+concurrently rendered child cannot race the parent redirect. Platform RPCs repeat the active
+`private.super_admins` check, expose execution only to `authenticated`, and project allow-listed
+fields rather than granting raw browser access to `auth`, `private`, or tenant tables. The Auth user
+projection omits hashes, sessions, identities, providers, and metadata; domains omit verification
+proof and provider payloads; platform audit omits event metadata.
+
 Return paths are accepted only as same-origin relative paths. Sign-in errors remain generic to avoid
 account enumeration. Sign-out is local to the current session. The app never uses the privileged
 client for ordinary auth, tenant reads, permission checks, or onboarding.
@@ -134,6 +142,11 @@ Restaurant mutations emit stable `restaurant.*` events for meaningful configurat
 translation, modifier-assignment, and location-availability changes. They are atomic with the
 mutation and derive the actor from `auth.uid()`. Metadata excludes customer-facing names,
 descriptions, prices, media paths, and full payloads; no-op requests emit no event.
+
+Platform business lifecycle changes emit `platform.business_suspended`,
+`platform.business_archived`, or `platform.business_reactivated` in the same transaction as the
+status update. The authenticated actor is derived from `auth.uid()`, metadata contains only previous
+and new lifecycle state, and a no-op produces no event.
 
 ## Core mutation boundaries
 

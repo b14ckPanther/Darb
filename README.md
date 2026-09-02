@@ -105,7 +105,8 @@ no-op analytics boundary are documented in [`docs/PRODUCTION.md`](./docs/PRODUCT
 ## Current status
 
 This repository has completed the monorepo, core database, authentication, platform-resource,
-theme/appearance, unified tenant-admin, Restaurant Engine domain, and Restaurant Admin foundations.
+theme/appearance, unified tenant-admin, platform super-admin control plane, Restaurant Engine
+domain, and Restaurant Admin foundations.
 It includes migration-driven tenancy, RLS authorization, atomic first-business bootstrap, protected
 multi-business routes, audited core mutations, shared image/video Storage coordination,
 DNS-verified domain claims with explicit provider-attested Restaurant routing, business locale
@@ -136,6 +137,7 @@ are documented in:
 - [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md)
 - [`docs/DOMAINS.md`](./docs/DOMAINS.md)
 - [`docs/MEDIA.md`](./docs/MEDIA.md)
+- [`docs/PLATFORM_ADMIN.md`](./docs/PLATFORM_ADMIN.md)
 - [`docs/PRODUCTION.md`](./docs/PRODUCTION.md)
 - [`docs/RESTAURANT.md`](./docs/RESTAURANT.md)
 - [`docs/TENANCY.md`](./docs/TENANCY.md)
