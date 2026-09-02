@@ -444,7 +444,7 @@ test("presents provider routing failure safely and permits a trusted recheck", a
   const domain = page.getByRole("article", { name: new RegExp(routableHostname, "i") });
   await expect(domain.getByText("Routing: needs attention", { exact: true })).toBeVisible();
   await expect(domain.getByText("provider could not attest", { exact: false })).toBeVisible();
-  await expect(domain).not.toContainText("VERCEL_API_TOKEN");
+  await expect(domain).not.toContainText("DARB_VERCEL_API_TOKEN");
   await domain.getByRole("button", { name: "Check routing" }).click();
   await expect(domain.getByText("Routing: live", { exact: true })).toBeVisible();
 });

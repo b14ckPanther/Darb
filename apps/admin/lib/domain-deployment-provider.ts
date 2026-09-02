@@ -166,7 +166,7 @@ export function createDomainDeploymentProvider(
     );
   }
 
-  const apiToken = environment.VERCEL_API_TOKEN;
+  const apiToken = environment.DARB_VERCEL_API_TOKEN;
   const projectId = environment.VERCEL_RESTAURANT_PROJECT_ID;
   if (!apiToken || !projectId) throw new DomainProviderError("configuration");
 

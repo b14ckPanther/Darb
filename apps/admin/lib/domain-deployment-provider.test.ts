@@ -178,6 +178,23 @@ describe("VercelDomainDeploymentProvider", () => {
 });
 
 describe("createDomainDeploymentProvider", () => {
+  it("reads the app-owned API token variable", () => {
+    expect(
+      createDomainDeploymentProvider({
+        DARB_VERCEL_API_TOKEN: "secret",
+        NODE_ENV: "production",
+        VERCEL_RESTAURANT_PROJECT_ID: "prj_rest",
+      }),
+    ).toBeInstanceOf(VercelDomainDeploymentProvider);
+    expect(() =>
+      createDomainDeploymentProvider({
+        NODE_ENV: "production",
+        VERCEL_API_TOKEN: "legacy-name-is-ignored",
+        VERCEL_RESTAURANT_PROJECT_ID: "prj_rest",
+      }),
+    ).toThrow(DomainProviderError);
+  });
+
   it("allows an explicit fake only outside production", async () => {
     const provider = createDomainDeploymentProvider({
       DARB_DOMAIN_PROVIDER: "fake",

@@ -41,7 +41,7 @@ Provider failures emit structured server logs containing only normalized hostnam
 module target, operation, and a stable safe error category. Credentials, proof tokens, response
 bodies, and tenant publications are excluded; successful requests are not logged.
 
-Production server-only variables are `VERCEL_API_TOKEN`, `VERCEL_RESTAURANT_PROJECT_ID`, optional
+Production server-only variables are `DARB_VERCEL_API_TOKEN`, `VERCEL_RESTAURANT_PROJECT_ID`, optional
 `VERCEL_TEAM_ID`, and `SUPABASE_SECRET_KEY` for the narrow attestation RPCs.
 `DARB_DOMAIN_PROVIDER=fake` and `DARB_LOCAL_DOMAIN_ROUTING=enabled` are local/E2E controls;
 production rejects the fake provider and local/IP hosts.
