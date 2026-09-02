@@ -55,7 +55,11 @@ export type Database = {
           hostname: string;
           id: string;
           is_primary: boolean;
+          routing_checked_at: string | null;
+          routing_live_at: string | null;
+          routing_status: Database["core"]["Enums"]["domain_routing_status"];
           status: Database["core"]["Enums"]["domain_status"];
+          target_module_key: string | null;
           updated_at: string;
           verification_checked_at: string | null;
           verification_method: Database["core"]["Enums"]["domain_verification_method"];
@@ -69,7 +73,11 @@ export type Database = {
           hostname: string;
           id?: string;
           is_primary?: boolean;
+          routing_checked_at?: string | null;
+          routing_live_at?: string | null;
+          routing_status?: Database["core"]["Enums"]["domain_routing_status"];
           status?: Database["core"]["Enums"]["domain_status"];
+          target_module_key?: string | null;
           updated_at?: string;
           verification_checked_at?: string | null;
           verification_method?: Database["core"]["Enums"]["domain_verification_method"];
@@ -83,7 +91,11 @@ export type Database = {
           hostname?: string;
           id?: string;
           is_primary?: boolean;
+          routing_checked_at?: string | null;
+          routing_live_at?: string | null;
+          routing_status?: Database["core"]["Enums"]["domain_routing_status"];
           status?: Database["core"]["Enums"]["domain_status"];
+          target_module_key?: string | null;
           updated_at?: string;
           verification_checked_at?: string | null;
           verification_method?: Database["core"]["Enums"]["domain_verification_method"];
@@ -97,6 +109,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "businesses";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "business_domains_target_module_key_fkey";
+            columns: ["target_module_key"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["key"];
           },
         ];
       };
@@ -629,7 +648,11 @@ export type Database = {
           hostname: string;
           id: string;
           is_primary: boolean;
+          routing_checked_at: string | null;
+          routing_live_at: string | null;
+          routing_status: Database["core"]["Enums"]["domain_routing_status"];
           status: Database["core"]["Enums"]["domain_status"];
+          target_module_key: string | null;
           updated_at: string;
           verification_checked_at: string | null;
           verification_method: Database["core"]["Enums"]["domain_verification_method"];
@@ -689,6 +712,33 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "media_assets";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      begin_business_domain_routing: {
+        Args: { target_business_id: string; target_domain_id: string };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          hostname: string;
+          id: string;
+          is_primary: boolean;
+          routing_checked_at: string | null;
+          routing_live_at: string | null;
+          routing_status: Database["core"]["Enums"]["domain_routing_status"];
+          status: Database["core"]["Enums"]["domain_status"];
+          target_module_key: string | null;
+          updated_at: string;
+          verification_checked_at: string | null;
+          verification_method: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "business_domains";
           isOneToOne: false;
           isSetofReturn: true;
         };
@@ -797,7 +847,69 @@ export type Database = {
           hostname: string;
           id: string;
           is_primary: boolean;
+          routing_checked_at: string | null;
+          routing_live_at: string | null;
+          routing_status: Database["core"]["Enums"]["domain_routing_status"];
           status: Database["core"]["Enums"]["domain_status"];
+          target_module_key: string | null;
+          updated_at: string;
+          verification_checked_at: string | null;
+          verification_method: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "business_domains";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      disconnect_business_domain_routing: {
+        Args: { target_business_id: string; target_domain_id: string };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          hostname: string;
+          id: string;
+          is_primary: boolean;
+          routing_checked_at: string | null;
+          routing_live_at: string | null;
+          routing_status: Database["core"]["Enums"]["domain_routing_status"];
+          status: Database["core"]["Enums"]["domain_status"];
+          target_module_key: string | null;
+          updated_at: string;
+          verification_checked_at: string | null;
+          verification_method: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "business_domains";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      record_business_domain_routing_attestation: {
+        Args: {
+          attested_status: Database["core"]["Enums"]["domain_routing_status"];
+          requesting_user_id: string;
+          target_domain_id: string;
+        };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          hostname: string;
+          id: string;
+          is_primary: boolean;
+          routing_checked_at: string | null;
+          routing_live_at: string | null;
+          routing_status: Database["core"]["Enums"]["domain_routing_status"];
+          status: Database["core"]["Enums"]["domain_status"];
+          target_module_key: string | null;
           updated_at: string;
           verification_checked_at: string | null;
           verification_method: Database["core"]["Enums"]["domain_verification_method"];
@@ -824,7 +936,11 @@ export type Database = {
           hostname: string;
           id: string;
           is_primary: boolean;
+          routing_checked_at: string | null;
+          routing_live_at: string | null;
+          routing_status: Database["core"]["Enums"]["domain_routing_status"];
           status: Database["core"]["Enums"]["domain_status"];
+          target_module_key: string | null;
           updated_at: string;
           verification_checked_at: string | null;
           verification_method: Database["core"]["Enums"]["domain_verification_method"];
@@ -892,7 +1008,11 @@ export type Database = {
           hostname: string;
           id: string;
           is_primary: boolean;
+          routing_checked_at: string | null;
+          routing_live_at: string | null;
+          routing_status: Database["core"]["Enums"]["domain_routing_status"];
           status: Database["core"]["Enums"]["domain_status"];
+          target_module_key: string | null;
           updated_at: string;
           verification_checked_at: string | null;
           verification_method: Database["core"]["Enums"]["domain_verification_method"];
@@ -930,7 +1050,42 @@ export type Database = {
           hostname: string;
           id: string;
           is_primary: boolean;
+          routing_checked_at: string | null;
+          routing_live_at: string | null;
+          routing_status: Database["core"]["Enums"]["domain_routing_status"];
           status: Database["core"]["Enums"]["domain_status"];
+          target_module_key: string | null;
+          updated_at: string;
+          verification_checked_at: string | null;
+          verification_method: Database["core"]["Enums"]["domain_verification_method"];
+          verification_token: string;
+          verified_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "business_domains";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      set_business_domain_target: {
+        Args: {
+          requested_module_key: string;
+          target_business_id: string;
+          target_domain_id: string;
+        };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          hostname: string;
+          id: string;
+          is_primary: boolean;
+          routing_checked_at: string | null;
+          routing_live_at: string | null;
+          routing_status: Database["core"]["Enums"]["domain_routing_status"];
+          status: Database["core"]["Enums"]["domain_status"];
+          target_module_key: string | null;
           updated_at: string;
           verification_checked_at: string | null;
           verification_method: Database["core"]["Enums"]["domain_verification_method"];
@@ -1064,6 +1219,7 @@ export type Database = {
     Enums: {
       audit_actor_kind: "user" | "system" | "service";
       business_status: "active" | "suspended" | "archived";
+      domain_routing_status: "unconfigured" | "provisioning" | "live" | "failed" | "disconnected";
       domain_status: "pending" | "verified" | "failed" | "disabled";
       domain_verification_method: "dns_txt";
       locale_code: "ar" | "he" | "en";
@@ -1088,6 +1244,14 @@ export type Database = {
       get_restaurant_publication: {
         Args: { requested_business_slug: string };
         Returns: Json;
+      };
+      resolve_public_domain: {
+        Args: { requested_hostname: string };
+        Returns: Json;
+      };
+      resolve_public_restaurant_primary_domain: {
+        Args: { requested_business_slug: string };
+        Returns: string;
       };
     };
     Enums: {
@@ -2014,6 +2178,7 @@ export const Constants = {
     Enums: {
       audit_actor_kind: ["user", "system", "service"],
       business_status: ["active", "suspended", "archived"],
+      domain_routing_status: ["unconfigured", "provisioning", "live", "failed", "disconnected"],
       domain_status: ["pending", "verified", "failed", "disabled"],
       domain_verification_method: ["dns_txt"],
       locale_code: ["ar", "he", "en"],
