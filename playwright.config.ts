@@ -46,12 +46,17 @@ export default defineConfig({
     },
     {
       command: "pnpm --filter @darb/admin dev",
+      env: {
+        DARB_DOMAIN_PROVIDER: "fake",
+        DARB_FAKE_DOMAIN_PROVIDER_STATE: "live",
+      },
       url: "http://localhost:3001",
       reuseExistingServer: !isContinuousIntegration,
       timeout: 120_000,
     },
     {
       command: "pnpm --filter @darb/rest dev",
+      env: { DARB_LOCAL_DOMAIN_ROUTING: "enabled" },
       url: "http://localhost:3002",
       reuseExistingServer: !isContinuousIntegration,
       timeout: 120_000,

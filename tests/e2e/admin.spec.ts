@@ -21,6 +21,7 @@ const assignedLocationName = `Central Studio ${runId}`;
 const otherLocationName = `North Office ${runId}`;
 const mediaFilename = `phase6-${runId}.png`;
 const customHostname = `${fixturePrefix}.example.invalid`;
+const routableHostname = `${fixturePrefix}-routing.example.invalid`;
 
 const ownerPermissionBundle = [
   "appearance.manage",
@@ -366,14 +367,17 @@ test("records an honest failed DNS check and keeps domains isolated by business"
   await expect(domain.getByText("darb-verification=", { exact: false })).toBeVisible();
   await expect(domain.getByRole("button", { name: "Make primary" })).toHaveCount(0);
 
-  await domain.getByRole("button", { name: "Verify TXT record" }).click();
+  await domain.getByRole("button", { name: "Verify ownership" }).click();
   const missingRecord = domain.getByText("The exact TXT value was not found.", { exact: false });
   const unavailableResolver = domain.getByText("DNS could not be checked reliably.", {
     exact: false,
   });
   await expect(missingRecord.or(unavailableResolver)).toBeVisible();
   await expect(
-    domain.getByText((await missingRecord.isVisible()) ? "Failed" : "Pending", { exact: true }),
+    domain.getByText(
+      (await missingRecord.isVisible()) ? "Ownership: failed" : "Ownership: pending",
+      { exact: true },
+    ),
   ).toBeVisible();
 
   await page.getByLabel("Current business").selectOption(secondBusinessSlug);
@@ -385,7 +389,90 @@ test("records an honest failed DNS check and keeps domains isolated by business"
   const restoredDomain = page.getByRole("article", { name: new RegExp(customHostname, "i") });
   await restoredDomain.getByRole("button", { name: "Disable domain" }).click();
   await restoredDomain.getByRole("button", { name: "Confirm disable" }).click();
-  await expect(restoredDomain.getByText("Disabled", { exact: true })).toBeVisible();
+  await expect(restoredDomain.getByText("Ownership: disabled", { exact: true })).toBeVisible();
+});
+
+test("assigns, connects, and makes a verified Restaurant hostname primary", async ({ page }) => {
+  if (!primaryBusinessId) throw new Error("Primary business fixture is unavailable.");
+  const { error } = await adminClient
+    .schema("core")
+    .from("business_domains")
+    .insert({
+      business_id: primaryBusinessId,
+      hostname: routableHostname,
+      status: "verified",
+      verification_checked_at: new Date().toISOString(),
+      verification_method: "dns_txt",
+      verification_token: "e".repeat(64),
+      verified_at: new Date().toISOString(),
+    });
+  if (error) throw error;
+
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/domains`);
+  const domain = page.getByRole("article", { name: new RegExp(routableHostname, "i") });
+  await domain.getByRole("button", { name: "Use for Restaurant" }).click();
+  await expect(domain.getByText("Restaurant selected.", { exact: false })).toBeVisible();
+  await domain.getByRole("button", { name: "Connect deployment" }).click();
+  await expect(domain.getByText("Routing: live", { exact: true })).toBeVisible();
+  await domain.getByRole("button", { name: "Make primary" }).click();
+  await expect(domain.getByText("Primary Restaurant hostname")).toBeVisible();
+
+  await domain.getByRole("button", { name: "Disconnect deployment" }).click();
+  await domain.getByRole("button", { name: "Confirm disconnect" }).click();
+  await expect(domain.getByText("Routing: disconnected", { exact: true })).toBeVisible();
+  await expect(domain.getByText("Primary Restaurant hostname")).toHaveCount(0);
+  await domain.getByRole("button", { name: "Connect deployment" }).click();
+  await expect(domain.getByText("Routing: live", { exact: true })).toBeVisible();
+});
+
+test("presents provider routing failure safely and permits a trusted recheck", async ({ page }) => {
+  const { error } = await adminClient
+    .schema("core")
+    .from("business_domains")
+    .update({
+      is_primary: false,
+      routing_checked_at: new Date().toISOString(),
+      routing_live_at: null,
+      routing_status: "failed",
+    })
+    .eq("hostname", routableHostname);
+  if (error) throw error;
+
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/domains`);
+  const domain = page.getByRole("article", { name: new RegExp(routableHostname, "i") });
+  await expect(domain.getByText("Routing: needs attention", { exact: true })).toBeVisible();
+  await expect(domain.getByText("provider could not attest", { exact: false })).toBeVisible();
+  await expect(domain).not.toContainText("VERCEL_API_TOKEN");
+  await domain.getByRole("button", { name: "Check routing" }).click();
+  await expect(domain.getByText("Routing: live", { exact: true })).toBeVisible();
+});
+
+test("keeps domain routing administration composed at the exact QA viewports", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  await signIn(page, ownerEmail);
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+    { width: 1920, height: 1080 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto(`/b/${updatedBusinessSlug}/domains`);
+    await expect(page.getByRole("heading", { level: 1, name: "Domains" })).toBeVisible();
+    const domain = page.getByRole("article", { name: new RegExp(routableHostname, "i") });
+    await expect(domain.getByText("Routing: live", { exact: true })).toBeVisible();
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBe(dimensions.clientWidth);
+  }
+  expect(consoleErrors).toEqual([]);
 });
 
 test("persists enabled languages and an atomic default-locale change", async ({ page }) => {
@@ -614,6 +701,9 @@ test("enforces read-only business access and exact location scope in the UI", as
   await expect(page.getByText("Domain settings are read-only.")).toBeVisible();
   await expect(page.getByText(customHostname, { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Add domain" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Use for Restaurant" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Connect deployment" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Check routing" })).toHaveCount(0);
 
   await page.getByRole("link", { exact: true, name: "Languages" }).click();
   await expect(page.getByText("Language settings are read-only.")).toBeVisible();

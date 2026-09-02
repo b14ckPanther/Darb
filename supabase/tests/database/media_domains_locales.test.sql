@@ -40,6 +40,11 @@ values
   ('60000000-0000-0000-0000-000000000002', 'phase6-business-b', 'Phase 6 Business B', 'he', 'active'),
   ('60000000-0000-0000-0000-000000000003', 'phase6-existing-business', 'Phase 6 Existing Business', 'ar', 'active');
 
+insert into core.business_modules (business_id, module_key, is_enabled)
+values
+  ('60000000-0000-0000-0000-000000000001', 'restaurant', true),
+  ('60000000-0000-0000-0000-000000000002', 'restaurant', true);
+
 insert into core.memberships (id, business_id, user_id, status)
 values
   ('62000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000006a1', 'active'),
@@ -612,13 +617,32 @@ select results_eq(
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000006a1', true);
+select * from core.set_business_domain_target(
+  '60000000-0000-0000-0000-000000000001',
+  (select id from core.business_domains where hostname = 'portal.example.com'),
+  'restaurant'
+);
+select * from core.begin_business_domain_routing(
+  '60000000-0000-0000-0000-000000000001',
+  (select id from core.business_domains where hostname = 'portal.example.com')
+);
+reset role;
+set local role service_role;
+select * from core.record_business_domain_routing_attestation(
+  (select id from core.business_domains where hostname = 'portal.example.com'),
+  '00000000-0000-0000-0000-0000000006a1',
+  'live'
+);
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000006a1', true);
 select is(
   (select is_primary from core.set_business_domain_primary(
     '60000000-0000-0000-0000-000000000001',
     (select id from core.business_domains where hostname = 'portal.example.com')
   )),
   true,
-  'a verified domain can atomically become primary'
+  'a verified and live domain can atomically become primary'
 );
 
 select * from core.add_business_domain(
@@ -641,13 +665,32 @@ select is(
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000006a1', true);
+select * from core.set_business_domain_target(
+  '60000000-0000-0000-0000-000000000001',
+  (select id from core.business_domains where hostname = 'second.example.com'),
+  'restaurant'
+);
+select * from core.begin_business_domain_routing(
+  '60000000-0000-0000-0000-000000000001',
+  (select id from core.business_domains where hostname = 'second.example.com')
+);
+reset role;
+set local role service_role;
+select * from core.record_business_domain_routing_attestation(
+  (select id from core.business_domains where hostname = 'second.example.com'),
+  '00000000-0000-0000-0000-0000000006a1',
+  'live'
+);
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000006a1', true);
 select is(
   (select is_primary from core.set_business_domain_primary(
     '60000000-0000-0000-0000-000000000001',
     (select id from core.business_domains where hostname = 'second.example.com')
   )),
   true,
-  'primary designation can move to another verified domain'
+  'primary designation can move to another verified live domain'
 );
 
 reset role;
@@ -656,7 +699,7 @@ select is(
     where business_id = '60000000-0000-0000-0000-000000000001'
       and is_primary),
   1,
-  'the partial unique invariant preserves one primary domain per business'
+  'the partial unique invariant preserves one primary domain per business target'
 );
 
 set local role authenticated;
@@ -710,6 +753,12 @@ select set_eq(
     ('business.domain_verification_restarted'::text),
     ('business.domain_verified'::text),
     ('business.domain_verified'::text),
+    ('business.domain_target_changed'::text),
+    ('business.domain_target_changed'::text),
+    ('business.domain_connection_requested'::text),
+    ('business.domain_connection_requested'::text),
+    ('business.domain_routing_activated'::text),
+    ('business.domain_routing_activated'::text),
     ('business.domain_primary_changed'::text),
     ('business.domain_primary_changed'::text),
     ('business.domain_disabled'::text)$$,

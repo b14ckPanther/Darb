@@ -4,7 +4,12 @@ import { localizeRestaurantPublication, type PublicRestaurantPublication } from 
 import { safeFallbackTheme } from "@darb/theme";
 
 import { buildRestaurantImageUrl } from "./media";
-import { restaurantPath, parseLocaleSegments, readSingleSearchParameter } from "./routes";
+import {
+  parseLocaleSegments,
+  readSingleSearchParameter,
+  restaurantCanonicalUrl,
+  restaurantPath,
+} from "./routes";
 import { createRestaurantJsonLd, createRestaurantMetadata, serializeJsonLd } from "./seo";
 import { resolveRestaurantTheme } from "./theme";
 
@@ -68,6 +73,42 @@ describe("public Restaurant app helpers", () => {
     expect(restaurantPath("public-fixture", "en", "ar", "location id")).toBe(
       "/public-fixture/en?location=location+id",
     );
+  });
+
+  it("builds slug-free custom paths and trusted canonical origins", () => {
+    const route = {
+      hostname: "menu.example",
+      kind: "custom",
+      primaryHostname: "menu.example",
+    } as const;
+    expect(restaurantPath("public-fixture", "ar", "ar", null, route)).toBe("/");
+    expect(restaurantPath("public-fixture", "en", "ar", "location id", route)).toBe(
+      "/en?location=location+id",
+    );
+    expect(restaurantCanonicalUrl("public-fixture", "en", "ar", route).toString()).toBe(
+      "https://menu.example/en",
+    );
+  });
+
+  it("canonicalizes a non-primary custom host to the trusted primary", () => {
+    const route = {
+      hostname: "alternate.example",
+      kind: "custom",
+      primaryHostname: "primary.example",
+    } as const;
+    expect(restaurantCanonicalUrl("public-fixture", "ar", "ar", route).toString()).toBe(
+      "https://primary.example/",
+    );
+  });
+
+  it("never promotes an untrusted request hostname into a canonical origin", () => {
+    expect(
+      restaurantCanonicalUrl("public-fixture", "en", "ar", {
+        hostname: "attacker.example",
+        kind: "custom",
+        primaryHostname: null,
+      }).toString(),
+    ).toBe("https://rest.darb.co.il/public-fixture/en");
   });
 
   it("rejects ambiguous route and search parameter shapes", () => {

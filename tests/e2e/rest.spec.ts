@@ -26,6 +26,14 @@ const modifierGroupId = randomUUID();
 const modifierId = randomUUID();
 const mediaPath = `${businessId}/${mediaId}/public-menu.png`;
 const publicBusinessName = `مطبخ درب ${runId}`;
+const customHost = `${slug}.localhost`;
+const alternateHost = `alternate-${runId}.localhost`;
+const provisioningHost = `provisioning-${runId}.localhost`;
+const failedRoutingHost = `failed-routing-${runId}.localhost`;
+const pendingHost = `pending-${runId}.localhost`;
+const failedOwnershipHost = `failed-ownership-${runId}.localhost`;
+const disabledHost = `disabled-${runId}.localhost`;
+const unsupportedHost = `pages-${runId}.localhost`;
 
 let adminClient: SupabaseClient;
 
@@ -81,6 +89,25 @@ test.beforeAll(async () => {
       '${businessId}', 'restaurant', 'restaurant-signature',
       '{"colors":{"primary":"#263B32","accent":"#B8633F"},"shape":{"radius":"bold"}}'::jsonb
     );
+
+    insert into core.business_domains (
+      business_id, hostname, status, verification_token, verification_method,
+      verification_checked_at, verified_at, target_module_key, routing_status,
+      routing_checked_at, routing_live_at, is_primary
+    ) values
+      ('${businessId}', '${customHost}', 'verified', repeat('a', 64), 'dns_txt', now(), now(), 'restaurant', 'live', now(), now(), true),
+      ('${businessId}', '${alternateHost}', 'verified', repeat('b', 64), 'dns_txt', now(), now(), 'restaurant', 'live', now(), now(), false),
+      ('${businessId}', '${provisioningHost}', 'verified', repeat('c', 64), 'dns_txt', now(), now(), 'restaurant', 'provisioning', now(), null, false),
+      ('${businessId}', '${failedRoutingHost}', 'verified', repeat('e', 64), 'dns_txt', now(), now(), 'restaurant', 'failed', now(), null, false),
+      ('${businessId}', '${unsupportedHost}', 'verified', repeat('d', 64), 'dns_txt', now(), now(), 'pages', 'live', now(), now(), false);
+
+    insert into core.business_domains (
+      business_id, hostname, status, verification_token, verification_method,
+      verification_checked_at, target_module_key, routing_status, routing_checked_at
+    ) values
+      ('${businessId}', '${pendingHost}', 'pending', repeat('f', 64), 'dns_txt', null, null, 'unconfigured', null),
+      ('${businessId}', '${failedOwnershipHost}', 'failed', repeat('1', 64), 'dns_txt', now(), null, 'unconfigured', null),
+      ('${businessId}', '${disabledHost}', 'disabled', repeat('2', 64), 'dns_txt', now(), 'restaurant', 'disconnected', now());
 
     insert into restaurant.menus (
       id, business_id, internal_name, publication_status, lifecycle_status, display_order
@@ -236,12 +263,75 @@ test("emits canonical metadata and foundational Restaurant JSON-LD", async ({ pa
   await expect(page).toHaveTitle(`${publicBusinessName} · Seasonal menu`);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
-    `https://rest.darb.co.il/${slug}/en`,
+    `https://${customHost}/en`,
   );
   const jsonLd = await page.locator('script[type="application/ld+json"]').textContent();
   expect(jsonLd).toContain('"@type":"Restaurant"');
   expect(jsonLd).toContain('"price":"45.90"');
   expect(jsonLd).not.toContain("internal-signature");
+});
+
+test("serves the same publication on an exact live custom host without a tenant slug", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  await page.goto(`http://${customHost}:3002/en`);
+  await expect(page).toHaveURL(new RegExp(`^http://${customHost}:3002/en$`));
+  await expect(page.getByRole("heading", { level: 1, name: publicBusinessName })).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    `https://${customHost}/en`,
+  );
+  await expect(page.locator("body")).not.toContainText(slug);
+  expect(errors).toEqual([]);
+});
+
+test("keeps custom locale and location links on the same host", async ({ page }) => {
+  await page.goto(`http://${customHost}:3002/`);
+  await page.getByLabel("اللغة").click();
+  await page.getByRole("link", { name: "English" }).click();
+  await expect(page).toHaveURL(new RegExp(`^http://${customHost}:3002/en$`));
+  await page.locator("summary").filter({ hasText: "All locations" }).click();
+  await page.getByRole("link", { name: /فرع الحديقة/ }).click();
+  await expect(page).toHaveURL(
+    new RegExp(`^http://${customHost}:3002/en\\?location=${locationTwoId}$`),
+  );
+
+  await page.goto(`http://${customHost}:3002/en?location=${randomUUID()}`);
+  await expect(page.getByRole("heading", { name: "Restaurant unavailable" })).toBeVisible();
+});
+
+test("canonicalizes a live non-primary host and fails closed for unroutable hosts", async ({
+  page,
+}) => {
+  await page.goto(`http://${alternateHost}:3002/en`);
+  await expect(page.getByRole("heading", { name: "Seasonal menu" })).toBeVisible();
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    `https://${customHost}/en`,
+  );
+
+  for (const hostname of [
+    pendingHost,
+    failedOwnershipHost,
+    disabledHost,
+    provisioningHost,
+    failedRoutingHost,
+    unsupportedHost,
+    `unknown-${runId}.localhost`,
+  ]) {
+    await page.goto(`http://${hostname}:3002/`);
+    await expect(page.getByRole("heading", { name: "Restaurant unavailable" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: publicBusinessName })).toHaveCount(0);
+  }
+
+  await page.goto(`/darb-host-internal/${customHost}/en`);
+  await expect(page.getByRole("heading", { name: "Restaurant unavailable" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: publicBusinessName })).toHaveCount(0);
 });
 
 test("fails closed for disabled capabilities and invalid locale/location routes", async ({
@@ -296,6 +386,31 @@ test("respects reduced motion and remains usable with enlarged text", async ({ p
     scrollWidth: document.documentElement.scrollWidth,
   }));
   expect(metrics.scrollWidth).toBe(metrics.clientWidth);
+});
+
+test("passes exact custom-host responsive QA in RTL and LTR", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  const viewports = [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+    { width: 1920, height: 1080 },
+  ];
+  for (const [index, viewport] of viewports.entries()) {
+    await page.setViewportSize(viewport);
+    await page.goto(`http://${customHost}:3002/${index % 2 === 0 ? "" : "en"}`);
+    await expect(page.getByRole("heading", { level: 1, name: publicBusinessName })).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("dir", index % 2 === 0 ? "rtl" : "ltr");
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBe(dimensions.clientWidth);
+  }
+  expect(consoleErrors).toEqual([]);
 });
 
 test("fails closed when the module is disabled after publication", async ({ page }) => {

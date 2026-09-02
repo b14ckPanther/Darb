@@ -47,7 +47,10 @@ try {
     throw new Error("The local Supabase status did not provide the required E2E configuration.");
   }
 
-  run("pnpm", ["exec", "playwright", "test"], {
+  const playwrightArguments = globalThis.process.argv
+    .slice(2)
+    .filter((argument) => argument !== "--");
+  run("pnpm", ["exec", "playwright", "test", ...playwrightArguments], {
     env: {
       ...globalThis.process.env,
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
