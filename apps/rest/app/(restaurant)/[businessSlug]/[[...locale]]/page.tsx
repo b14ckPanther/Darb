@@ -1,56 +1,62 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-
 import { localizeRestaurantPublication, resolvePublicRestaurantLocale } from "@darb/restaurant";
-
-import { SignatureTemplate } from "../../../../components/signature-template";
+import { RestaurantExperience } from "../../../../components/restaurant-experience";
+import { resolvePrimaryRestaurantHostname } from "../../../../lib/domains";
 import { getPublicRestaurantPublication } from "../../../../lib/publication";
-import { parseLocaleSegments, readSingleSearchParameter } from "../../../../lib/routes";
 import {
-  createRestaurantJsonLd,
-  createRestaurantMetadata,
-  serializeJsonLd,
-} from "../../../../lib/seo";
+  parseLocaleSegments,
+  readSingleSearchParameter,
+  type RestaurantRouteContext,
+} from "../../../../lib/routes";
+import { createRestaurantMetadata } from "../../../../lib/seo";
 
 interface RestaurantPageProps {
   params: Promise<{ businessSlug: string; locale?: string[] }>;
   searchParams: Promise<{ location?: string | string[] }>;
 }
 
-export async function generateMetadata({ params }: RestaurantPageProps): Promise<Metadata> {
+async function loadRoute(params: RestaurantPageProps["params"]) {
   const route = await params;
-  const publication = await getPublicRestaurantPublication(route.businessSlug);
-  if (!publication) return {};
+  const [publication, primaryHostname] = await Promise.all([
+    getPublicRestaurantPublication(route.businessSlug),
+    resolvePrimaryRestaurantHostname(route.businessSlug),
+  ]);
+  if (!publication) return null;
   const locale = resolvePublicRestaurantLocale(
     parseLocaleSegments(route.locale),
     publication.locales,
     publication.business.defaultLocale,
   );
-  if (!locale) return {};
-  return createRestaurantMetadata(publication, localizeRestaurantPublication(publication, locale));
+  if (!locale) return null;
+  return {
+    publication,
+    locale,
+    route: { kind: "platform", primaryHostname } satisfies RestaurantRouteContext,
+  };
+}
+
+export async function generateMetadata({ params }: RestaurantPageProps): Promise<Metadata> {
+  const loaded = await loadRoute(params);
+  return loaded
+    ? createRestaurantMetadata(
+        loaded.publication,
+        localizeRestaurantPublication(loaded.publication, loaded.locale),
+        loaded.route,
+      )
+    : {};
 }
 
 export default async function RestaurantPage({ params, searchParams }: RestaurantPageProps) {
-  const [route, query] = await Promise.all([params, searchParams]);
-  const publication = await getPublicRestaurantPublication(route.businessSlug);
-  if (!publication) notFound();
-  const locale = resolvePublicRestaurantLocale(
-    parseLocaleSegments(route.locale),
-    publication.locales,
-    publication.business.defaultLocale,
-  );
-  if (!locale) notFound();
+  const [loaded, query] = await Promise.all([loadRoute(params), searchParams]);
+  if (!loaded) notFound();
   const requestedLocation = readSingleSearchParameter(query.location);
-  if (requestedLocation && !publication.locations.some(({ id }) => id === requestedLocation)) {
+  if (requestedLocation && !loaded.publication.locations.some(({ id }) => id === requestedLocation))
     notFound();
-  }
-  const localized = localizeRestaurantPublication(publication, locale, requestedLocation);
-  const jsonLd = serializeJsonLd(createRestaurantJsonLd(localized));
-
-  return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
-      <SignatureTemplate publication={localized} />
-    </>
+  const localized = localizeRestaurantPublication(
+    loaded.publication,
+    loaded.locale,
+    requestedLocation,
   );
+  return <RestaurantExperience publication={localized} route={loaded.route} />;
 }

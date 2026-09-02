@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { darbApplications } from "@darb/config/platform";
 import type { SupportedLocale } from "@darb/i18n";
 import {
   restaurantMoneyToDecimalString,
@@ -8,28 +7,31 @@ import {
   type PublicRestaurantPublication,
 } from "@darb/restaurant";
 
-import { restaurantPath } from "./routes";
-
-const publicOrigin = `https://${darbApplications.rest.productionHost}`;
+import { restaurantCanonicalUrl, type RestaurantRouteContext } from "./routes";
 
 export function createRestaurantMetadata(
   publication: PublicRestaurantPublication,
   localized: LocalizedRestaurantPublication,
+  route: RestaurantRouteContext = { kind: "platform", primaryHostname: null },
 ): Metadata {
   const title = `${publication.business.displayName} · ${localized.menus[0]?.name ?? "Menu"}`;
   const description =
     localized.menus[0]?.description ?? localized.menus[0]?.categories[0]?.description ?? undefined;
-  const canonical = new URL(
-    restaurantPath(publication.business.slug, localized.locale, publication.business.defaultLocale),
-    publicOrigin,
-  );
+  const canonical = restaurantCanonicalUrl(
+    publication.business.slug,
+    localized.locale,
+    publication.business.defaultLocale,
+    route,
+  ).toString();
   const languages = Object.fromEntries(
     publication.locales.map((locale) => [
       localeToLanguageTag(locale),
-      new URL(
-        restaurantPath(publication.business.slug, locale, publication.business.defaultLocale),
-        publicOrigin,
-      ),
+      restaurantCanonicalUrl(
+        publication.business.slug,
+        locale,
+        publication.business.defaultLocale,
+        route,
+      ).toString(),
     ]),
   );
 
@@ -50,14 +52,13 @@ export function createRestaurantMetadata(
 
 export function createRestaurantJsonLd(
   publication: LocalizedRestaurantPublication,
+  route: RestaurantRouteContext = { kind: "platform", primaryHostname: null },
 ): Record<string, unknown> {
-  const url = new URL(
-    restaurantPath(
-      publication.business.slug,
-      publication.locale,
-      publication.business.defaultLocale,
-    ),
-    publicOrigin,
+  const url = restaurantCanonicalUrl(
+    publication.business.slug,
+    publication.locale,
+    publication.business.defaultLocale,
+    route,
   ).toString();
 
   return {

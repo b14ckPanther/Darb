@@ -18,14 +18,15 @@ import {
 import { getRestaurantCopy } from "../lib/copy";
 import { getPublicSupabaseConfig } from "../lib/config";
 import { buildRestaurantImageUrl } from "../lib/media";
-import { restaurantPath } from "../lib/routes";
+import { restaurantPath, type RestaurantRouteContext } from "../lib/routes";
 import { ItemDialogController } from "./item-dialog-controller";
 
 interface SignatureTemplateProps {
   publication: LocalizedRestaurantPublication;
+  route: RestaurantRouteContext;
 }
 
-export function SignatureTemplate({ publication }: SignatureTemplateProps) {
+export function SignatureTemplate({ publication, route }: SignatureTemplateProps) {
   const copy = getRestaurantCopy(publication.locale);
   const heroImage = findFirstImage(publication);
   const imageBaseUrl = getPublicSupabaseConfig().url;
@@ -45,6 +46,7 @@ export function SignatureTemplate({ publication }: SignatureTemplateProps) {
             publication.locale,
             publication.business.defaultLocale,
             currentLocationId,
+            route,
           )}
           className="brand-mark"
         >
@@ -67,6 +69,8 @@ export function SignatureTemplate({ publication }: SignatureTemplateProps) {
                     publication.business.slug,
                     publication.locale,
                     publication.business.defaultLocale,
+                    null,
+                    route,
                   )}
                 >
                   {copy.allLocations}
@@ -80,6 +84,7 @@ export function SignatureTemplate({ publication }: SignatureTemplateProps) {
                       publication.locale,
                       publication.business.defaultLocale,
                       location.id,
+                      route,
                     )}
                   >
                     <span>{location.displayName}</span>
@@ -106,6 +111,7 @@ export function SignatureTemplate({ publication }: SignatureTemplateProps) {
                       locale,
                       publication.business.defaultLocale,
                       currentLocationId,
+                      route,
                     )}
                   >
                     {{ ar: "العربية", en: "English", he: "עברית" }[locale]}
