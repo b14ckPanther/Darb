@@ -265,10 +265,75 @@ test("emits canonical metadata and foundational Restaurant JSON-LD", async ({ pa
     "href",
     `https://${customHost}/en`,
   );
+  await expect(page.locator('link[rel="alternate"][hreflang="ar-IL"]')).toHaveAttribute(
+    "href",
+    `https://${customHost}/`,
+  );
+  await expect(page.locator('link[rel="alternate"][hreflang="he-IL"]')).toHaveAttribute(
+    "href",
+    `https://${customHost}/he`,
+  );
+  await expect(page.locator('link[rel="alternate"][hreflang="x-default"]')).toHaveAttribute(
+    "href",
+    `https://${customHost}/`,
+  );
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
+    "content",
+    `https://${customHost}/en`,
+  );
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+    "content",
+    "summary_large_image",
+  );
   const jsonLd = await page.locator('script[type="application/ld+json"]').textContent();
   expect(jsonLd).toContain('"@type":"Restaurant"');
   expect(jsonLd).toContain('"price":"45.90"');
   expect(jsonLd).not.toContain("internal-signature");
+  expect(jsonLd).not.toContain("secret-draft-menu");
+
+  await page.goto(`/${slug}/en?location=${locationOneId}`);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    `https://${customHost}/en`,
+  );
+});
+
+test("publishes only canonical Restaurant discovery and fail-closed robots", async ({
+  request,
+}) => {
+  const [platformSitemap, customSitemap, alternateSitemap, customRobots, invalidRobots, health] =
+    await Promise.all([
+      request.get("http://localhost:3002/sitemap.xml"),
+      request.get(`http://${customHost}:3002/sitemap.xml`),
+      request.get(`http://${alternateHost}:3002/sitemap.xml`),
+      request.get(`http://${customHost}:3002/robots.txt`),
+      request.get(`http://unknown-${runId}.localhost:3002/robots.txt`),
+      request.get("http://localhost:3002/health"),
+    ]);
+  expect(await platformSitemap.text()).not.toContain(slug);
+  const canonicalSitemap = await customSitemap.text();
+  expect(canonicalSitemap).toContain(`https://${customHost}/en`);
+  expect(canonicalSitemap).toContain(`hreflang=\"x-default\"`);
+  expect(await alternateSitemap.text()).not.toContain(slug);
+  expect(await customRobots.text()).toContain(`Sitemap: https://${customHost}/sitemap.xml`);
+  expect(await invalidRobots.text()).toContain("Disallow: /");
+  expect(await health.json()).toEqual({ service: "darb-rest", status: "ok" });
+  expect(health.headers()["cache-control"]).toContain("no-store");
+});
+
+test("serves hardened headers and rejects forwarded-host canonical poisoning", async ({
+  request,
+}) => {
+  const response = await request.get(`http://localhost:3002/${slug}/en`);
+  expect(response.headers()["x-content-type-options"]).toBe("nosniff");
+  expect(response.headers()["x-frame-options"]).toBe("DENY");
+  expect(response.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+  expect(response.headers()["x-request-id"]).toMatch(/^[0-9a-f-]{36}$/);
+
+  const poisoned = await request.get(`http://127.0.0.1:3002/${slug}/en`, {
+    headers: { host: "rest.darb.co.il", "x-forwarded-host": "attacker.example" },
+  });
+  expect(await poisoned.text()).not.toContain(publicBusinessName);
 });
 
 test("serves the same publication on an exact live custom host without a tenant slug", async ({

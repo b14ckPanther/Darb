@@ -74,6 +74,20 @@ test("redirects an unauthenticated admin request to login", async ({ page }) => 
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
 });
 
+test("keeps Admin private at both metadata and response-header boundaries", async ({ request }) => {
+  const [login, robots, health] = await Promise.all([
+    request.get("/login"),
+    request.get("/robots.txt"),
+    request.get("/health"),
+  ]);
+  expect(login.headers()["x-robots-tag"]).toContain("noindex");
+  expect(login.headers()["x-frame-options"]).toBe("DENY");
+  expect(login.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+  await expect(robots.text()).resolves.toContain("Disallow: /");
+  expect(await health.json()).toEqual({ service: "darb-admin", status: "ok" });
+  expect(health.headers()["cache-control"]).toContain("no-store");
+});
+
 test("shows a generic sign-in error and rejects an external return path", async ({ page }) => {
   await page.goto("/login?next=%2F%2Fattacker.example");
 
