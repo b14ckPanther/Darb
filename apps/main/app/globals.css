@@ -197,43 +197,6 @@ svg {
   background: var(--forest);
 }
 
-.public-brand {
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  gap: 0.8rem;
-}
-
-.public-brand__mark {
-  width: 3.1rem;
-  height: auto;
-  flex: 0 0 auto;
-  filter: drop-shadow(0 7px 15px rgb(0 0 0 / 22%));
-}
-
-.public-brand__names {
-  display: grid;
-  align-items: center;
-  color: var(--ivory);
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.035em;
-  line-height: 0.92;
-}
-
-.public-brand__names [lang="ar"] {
-  font-size: 1.18em;
-  letter-spacing: 0;
-}
-
-.public-brand--compact .public-brand__mark {
-  width: 2.25rem;
-}
-
-.public-brand--compact .public-brand__names {
-  font-size: 0.8rem;
-}
-
 .public-header {
   position: absolute;
   z-index: 20;

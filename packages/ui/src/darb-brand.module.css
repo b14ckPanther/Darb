@@ -1,0 +1,67 @@
+.lockup {
+  --darb-brand-script-arabic: "Cairo";
+  --darb-brand-script-latin: "Ubuntu";
+
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.78rem;
+  color: var(--darb-brand-color);
+}
+
+.tone-dark {
+  --darb-brand-color: #10241c;
+  color: var(--darb-brand-color);
+}
+
+.tone-light {
+  --darb-brand-color: #fffdf6;
+  color: var(--darb-brand-color);
+}
+
+.mark {
+  width: var(--darb-brand-mark-size);
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.lockupMark {
+  filter: drop-shadow(0 7px 15px rgb(0 0 0 / 18%));
+}
+
+.names {
+  min-width: 0;
+  display: grid;
+  align-items: center;
+  color: inherit;
+  font-size: 0.93rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  line-height: 0.94;
+}
+
+.arabic {
+  font-family: var(--darb-brand-script-arabic), sans-serif;
+  font-size: 1.18em;
+  letter-spacing: 0;
+}
+
+.latin {
+  font-family: var(--darb-brand-script-latin), sans-serif;
+}
+
+.compact {
+  gap: 0.64rem;
+}
+
+.compact .names {
+  font-size: 0.8rem;
+}

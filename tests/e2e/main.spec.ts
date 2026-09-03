@@ -40,6 +40,7 @@ for (const localeCase of localeCases) {
     await expect(page.locator("html")).toHaveAttribute("dir", localeCase.direction);
     await expect(page).toHaveTitle(localeCase.title);
     await expect(page.getByRole("heading", { level: 1, name: localeCase.heading })).toBeVisible();
+    await expect(page.locator('[data-darb-mark="current"]').first()).toBeVisible();
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
       `https://darb.co.il/${localeCase.locale}`,

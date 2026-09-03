@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { darbApplications } from "@darb/config/platform";
 import { ArrowRightIcon, CancelIcon, MenuIcon } from "@darb/icons";
 import type { SupportedLocale } from "@darb/i18n";
 
@@ -11,7 +12,7 @@ import { getPublicLocalePath } from "../lib/site";
 import { BrandLockup } from "./brand-lockup";
 import { LocaleLinks } from "./locale-links";
 
-const adminUrl = "https://admin.darb.co.il";
+const adminUrl = `https://${darbApplications.admin.productionHost}`;
 
 export function SiteHeader({ copy, locale }: { copy: MainSiteCopy; locale: SupportedLocale }) {
   const [menuOpen, setMenuOpen] = useState(false);

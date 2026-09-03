@@ -41,13 +41,15 @@ export function resolveThemeTypography(locale: DarbThemeLocale): {
   fontFamily: string;
   language: DarbThemeLocale;
 } {
+  const fontFamily = "var(--font-ubuntu), var(--font-cairo), var(--font-heebo), sans-serif";
+
   if (locale === "ar") {
-    return { direction: "rtl", fontFamily: "var(--font-cairo), sans-serif", language: locale };
+    return { direction: "rtl", fontFamily, language: locale };
   }
   if (locale === "he") {
-    return { direction: "rtl", fontFamily: "var(--font-heebo), sans-serif", language: locale };
+    return { direction: "rtl", fontFamily, language: locale };
   }
-  return { direction: "ltr", fontFamily: "var(--font-ubuntu), sans-serif", language: locale };
+  return { direction: "ltr", fontFamily, language: locale };
 }
 
 export function resolveMotionDuration(

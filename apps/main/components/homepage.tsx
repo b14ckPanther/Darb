@@ -1,3 +1,4 @@
+import { darbApplications } from "@darb/config/platform";
 import {
   AppearanceIcon,
   ArrowRightIcon,
@@ -16,7 +17,7 @@ import { HeroArt } from "./hero-art";
 import { LocaleLinks } from "./locale-links";
 import { SiteHeader } from "./site-header";
 
-const adminUrl = "https://admin.darb.co.il";
+const adminUrl = `https://${darbApplications.admin.productionHost}`;
 
 const foundationIcons = [
   BuildingIcon,

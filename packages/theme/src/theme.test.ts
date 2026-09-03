@@ -87,9 +87,22 @@ describe("Darb theme contracts", () => {
   });
 
   it("maps locale typography and lets reduced-motion preference win", () => {
-    expect(resolveThemeTypography("ar")).toMatchObject({ direction: "rtl", language: "ar" });
-    expect(resolveThemeTypography("he").fontFamily).toContain("heebo");
-    expect(resolveThemeTypography("en")).toMatchObject({ direction: "ltr", language: "en" });
+    const scriptAwareStack = "var(--font-ubuntu), var(--font-cairo), var(--font-heebo), sans-serif";
+    expect(resolveThemeTypography("ar")).toEqual({
+      direction: "rtl",
+      fontFamily: scriptAwareStack,
+      language: "ar",
+    });
+    expect(resolveThemeTypography("he")).toEqual({
+      direction: "rtl",
+      fontFamily: scriptAwareStack,
+      language: "he",
+    });
+    expect(resolveThemeTypography("en")).toEqual({
+      direction: "ltr",
+      fontFamily: scriptAwareStack,
+      language: "en",
+    });
     expect(resolveMotionDuration("expressive", true)).toBe("0ms");
     expect(resolveMotionDuration("expressive", false)).toBe("320ms");
   });
