@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
-import { ArrowRightIcon, LockIcon, MailIcon } from "@darb/icons";
+import { ArrowRightIcon, LockIcon, MailIcon, PreviewIcon, VisibilityOffIcon } from "@darb/icons";
 
 import { signInAction } from "../../actions/auth";
 import { adminAuthCopy } from "../../../lib/copy";
@@ -12,6 +12,7 @@ const copy = adminAuthCopy.en.login;
 
 export function LoginForm({ nextPath }: Readonly<{ nextPath: string }>) {
   const [state, action, pending] = useActionState(signInAction, initialFormState);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   return (
     <form action={action} className="auth-form">
@@ -47,12 +48,22 @@ export function LoginForm({ nextPath }: Readonly<{ nextPath: string }>) {
           <input
             id="password"
             name="password"
-            type="password"
+            type={passwordVisible ? "text" : "password"}
             autoComplete="current-password"
             aria-invalid={Boolean(state.fieldErrors?.password)}
             aria-describedby={state.fieldErrors?.password ? "password-error" : undefined}
             required
           />
+          <button
+            className="password-visibility"
+            type="button"
+            aria-controls="password"
+            aria-label={passwordVisible ? "Hide password" : "Show password"}
+            aria-pressed={passwordVisible}
+            onClick={() => setPasswordVisible((visible) => !visible)}
+          >
+            {passwordVisible ? <VisibilityOffIcon size={19} /> : <PreviewIcon size={19} />}
+          </button>
         </div>
         {state.fieldErrors?.password ? (
           <p className="field-error" id="password-error">

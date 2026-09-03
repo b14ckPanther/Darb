@@ -16,11 +16,12 @@ import {
   TemplatesIcon,
   UsersIcon,
 } from "@darb/icons";
+import { DarbMark } from "@darb/ui";
 
 import type { CurrentUser } from "../../lib/auth";
 import { platformPaths } from "../../lib/platform-model";
 import { signOutAction } from "../actions/auth";
-import { DarbAdminBrand } from "./brand";
+import { DarbAdminBrand, DarbPublicSiteLink } from "./brand";
 
 interface PlatformShellProps {
   children: ReactNode;
@@ -146,7 +147,7 @@ export function PlatformShell({ children, user }: PlatformShellProps) {
         role={navigationOpen ? "dialog" : undefined}
       >
         <div className="admin-sidebar__brand">
-          <DarbAdminBrand />
+          <DarbAdminBrand context="platform" tone="light" />
           <button
             ref={closeButtonRef}
             type="button"
@@ -200,6 +201,7 @@ export function PlatformShell({ children, user }: PlatformShellProps) {
           })}
         </nav>
         <div className="admin-sidebar__footer">
+          <DarbPublicSiteLink className="public-site-link" label="Darb public website" />
           <Link className="all-businesses-link" href="/" onClick={() => setNavigationOpen(false)}>
             <BuildingIcon size={18} />
             Business workspaces
@@ -232,9 +234,12 @@ export function PlatformShell({ children, user }: PlatformShellProps) {
           >
             <MenuIcon size={21} />
           </button>
-          <div>
-            <small>Platform administration</small>
-            <strong>Darb Platform</strong>
+          <div className="admin-mobile-context">
+            <DarbMark size={24} aria-hidden="true" />
+            <div>
+              <small>Platform administration</small>
+              <strong>Darb Platform</strong>
+            </div>
           </div>
           <span className="platform-mobile-mark">
             <AuditIcon size={18} />

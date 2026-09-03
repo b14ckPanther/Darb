@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 
 import { AlertCircleIcon, InformationCircleIcon } from "@darb/icons";
+import { DarbMark } from "@darb/ui";
 
 interface AdminStateProps {
   action?: ReactNode;
+  branded?: boolean;
   description: string;
   eyebrow?: string;
   headingLevel?: 1 | 2;
@@ -14,6 +16,7 @@ interface AdminStateProps {
 
 export function AdminState({
   action,
+  branded = false,
   description,
   eyebrow,
   headingLevel = 1,
@@ -25,6 +28,7 @@ export function AdminState({
 
   return (
     <section className={`admin-state admin-state--${tone}`}>
+      {branded ? <DarbMark className="admin-state__brand" size={42} /> : null}
       <span className="admin-state__icon">
         {icon ??
           (tone === "error" ? <AlertCircleIcon size={24} /> : <InformationCircleIcon size={24} />)}

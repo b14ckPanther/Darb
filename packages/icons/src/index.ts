@@ -11,6 +11,7 @@ import {
   ColorsIcon,
   Copy01Icon,
   Edit02Icon,
+  ExternalLinkIcon as ExternalLinkHugeicon,
   Globe02Icon,
   Grid2X2Icon,
   Home04Icon,
@@ -32,6 +33,7 @@ import {
   TranslateIcon,
   UserGroupIcon,
   ViewIcon,
+  ViewOffIcon,
   Video01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
@@ -99,6 +101,10 @@ export function EditIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Edit02Icon, props);
 }
 
+export function ExternalLinkIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(ExternalLinkHugeicon, props);
+}
+
 export function HomeIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(Home04Icon, props);
 }
@@ -157,6 +163,10 @@ export function PlusIcon(props: DarbIconProps): ReactElement {
 
 export function PreviewIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(ViewIcon, props);
+}
+
+export function VisibilityOffIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(ViewOffIcon, props);
 }
 
 export function ResetIcon(props: DarbIconProps): ReactElement {

@@ -41,7 +41,7 @@ export function BusinessSwitcher({
           }}
         >
           {businesses.map((business) => (
-            <option key={business.id} value={business.slug}>
+            <option key={business.id} value={business.slug} lang={business.default_locale}>
               {business.display_name}
             </option>
           ))}

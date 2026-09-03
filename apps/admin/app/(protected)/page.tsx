@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { ArrowRightIcon, AuditIcon, BuildingIcon, LogoutIcon } from "@darb/icons";
 
 import { signOutAction } from "../actions/auth";
-import { DarbAdminBrand } from "../_components/brand";
+import { DarbAdminBrand, DarbPublicSiteLink } from "../_components/brand";
 import { StatusBadge } from "../_components/status-badge";
 import { getAdminAccessSnapshot } from "../../lib/auth";
 import { businessPath, getProtectedAdminDestination } from "../../lib/navigation";
@@ -35,12 +35,15 @@ export default async function BusinessChooserPage() {
     <div className="business-chooser-page">
       <header className="chooser-header">
         <DarbAdminBrand />
-        <form action={signOutAction}>
-          <button className="quiet-button" type="submit">
-            <LogoutIcon size={18} />
-            Sign out
-          </button>
-        </form>
+        <div className="chooser-header__actions">
+          <DarbPublicSiteLink className="chooser-public-link" />
+          <form action={signOutAction}>
+            <button className="quiet-button" type="submit">
+              <LogoutIcon size={18} />
+              Sign out
+            </button>
+          </form>
+        </div>
       </header>
 
       <main id="main-content" className="business-chooser-content">
@@ -81,7 +84,9 @@ export default async function BusinessChooserPage() {
                   <BuildingIcon size={23} />
                 </span>
                 <span className="chooser-card__body">
-                  <strong dir="auto">{business.display_name}</strong>
+                  <strong lang={business.default_locale} dir="auto">
+                    {business.display_name}
+                  </strong>
                   <small dir="ltr">{business.slug}</small>
                 </span>
                 <StatusBadge status={business.status} />

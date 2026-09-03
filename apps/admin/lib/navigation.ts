@@ -1,4 +1,6 @@
-const ADMIN_ORIGIN = "https://admin.darb.co.il";
+import { darbApplications } from "@darb/config/platform";
+
+const ADMIN_ORIGIN = `https://${darbApplications.admin.productionHost}`;
 
 export const adminPaths = {
   home: "/",

@@ -6,6 +6,7 @@ export default function AdminNotFound() {
   return (
     <main id="main-content" className="route-state-page">
       <AdminState
+        branded
         tone="neutral"
         eyebrow="Not found"
         title="This admin page is not available."

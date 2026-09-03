@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { DarbAdminBrand } from "../../_components/brand";
+import { DarbAdminBrand, DarbPublicSiteLink } from "../../_components/brand";
 import { getAdminAccessSnapshot } from "../../../lib/auth";
 import { adminAuthCopy } from "../../../lib/copy";
 import { getLoginDestination, sanitizeReturnPath } from "../../../lib/navigation";
@@ -30,7 +30,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main id="main-content" className="auth-layout">
       <section className="auth-story" aria-labelledby="auth-story-title">
-        <DarbAdminBrand />
+        <div className="auth-story__brandline">
+          <DarbAdminBrand tone="light" />
+          <DarbPublicSiteLink className="auth-public-link" label="Back to Darb" />
+        </div>
         <div className="auth-story__copy">
           <p className="auth-story__kicker">{copy.brandDescriptor}</p>
           <h2 id="auth-story-title">A clear path from your business to every customer.</h2>
@@ -39,9 +42,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             manage.
           </p>
         </div>
-        <div className="path-motif" aria-hidden="true">
-          <span />
-          <span />
+        <div className="auth-opening" aria-hidden="true">
           <span />
         </div>
       </section>

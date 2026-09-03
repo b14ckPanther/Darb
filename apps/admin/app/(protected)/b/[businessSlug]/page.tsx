@@ -50,7 +50,7 @@ export default async function BusinessHomePage({ params }: BusinessHomePageProps
           </span>
           <div>
             <p className="eyebrow">Business identity</p>
-            <h2 id="business-brief-heading" dir="auto">
+            <h2 id="business-brief-heading" lang={context.business.default_locale} dir="auto">
               {context.business.display_name}
             </h2>
             <p dir="ltr">darb.co.il/b/{context.business.slug}</p>

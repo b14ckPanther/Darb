@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { darbApplications } from "@darb/config/platform";
 import { CheckmarkCircleIcon, InformationCircleIcon, SettingsIcon } from "@darb/icons";
 import { getTextDirection, supportedLocales } from "@darb/i18n";
 
@@ -68,7 +69,7 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
           <div className="field-group">
             <label htmlFor="business-slug">Business slug</label>
             <div className="field-control field-control--prefix">
-              <span className="field-prefix">admin.darb.co.il/b/</span>
+              <span className="field-prefix">{darbApplications.admin.productionHost}/b/</span>
               <input
                 id="business-slug"
                 name="slug"

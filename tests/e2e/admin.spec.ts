@@ -80,6 +80,18 @@ test("redirects an unauthenticated admin request to login", async ({ page }) => 
 
   await expect(page).toHaveURL(/\/login\?next=%2F$/);
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  await expect(page.locator('[data-darb-mark="current"]')).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to Darb" })).toHaveAttribute(
+    "href",
+    "https://darb.co.il",
+  );
+
+  const password = page.getByLabel("Password", { exact: true });
+  await expect(password).toHaveAttribute("type", "password");
+  await page.getByRole("button", { name: "Show password" }).click();
+  await expect(password).toHaveAttribute("type", "text");
+  await page.getByRole("button", { name: "Hide password" }).click();
+  await expect(password).toHaveAttribute("type", "password");
 });
 
 test("keeps Admin private at both metadata and response-header boundaries", async ({ request }) => {
@@ -101,7 +113,7 @@ test("shows a generic sign-in error and rejects an external return path", async 
 
   await expect(page.locator('input[name="next"]')).toHaveValue("/");
   await page.getByLabel("Email address").fill(ownerEmail);
-  await page.getByLabel("Password").fill("incorrect-password");
+  await page.getByLabel("Password", { exact: true }).fill("incorrect-password");
   await page.getByRole("button", { name: "Sign in" }).click();
 
   await expect(page.locator(".form-alert")).toContainText("email or password is incorrect");
@@ -183,6 +195,25 @@ test("renders the unified Overview from real platform state and one grouped navi
   await expect(page.locator('a[href*="/restaurant"]')).toHaveCount(0);
 
   const navigation = page.getByRole("navigation", { name: "Business administration" });
+  await expect(page.locator('[data-admin-brand="admin"]')).toBeVisible();
+  await expect(page.getByRole("link", { name: "Darb public website" })).toHaveAttribute(
+    "href",
+    "https://darb.co.il",
+  );
+  await expect
+    .poll(() =>
+      page
+        .locator('[data-admin-brand="admin"] [lang="ar"]')
+        .evaluate((element) => getComputedStyle(element).fontFamily),
+    )
+    .toContain("Cairo");
+  await expect
+    .poll(() =>
+      page
+        .getByRole("heading", { level: 2, name: initialBusinessName })
+        .evaluate((element) => getComputedStyle(element).fontFamily),
+    )
+    .toContain("Cairo");
   await expect(navigation.getByRole("heading", { name: "Workspace" })).toBeVisible();
   await expect(navigation.getByRole("heading", { name: "Business" })).toBeVisible();
   await expect(navigation.getByRole("heading", { name: "Experience" })).toBeVisible();
@@ -1011,6 +1042,7 @@ test("operates the separate platform context and enters a tenant as the real ope
   await expect(page).toHaveURL(/\/platform$/);
   await expect(page.getByRole("heading", { level: 1, name: "Platform overview" })).toBeVisible();
   await expect(page.getByText("Darb Platform", { exact: true }).first()).toBeVisible();
+  await expect(page.locator('[data-admin-brand="platform"]')).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Platform administration" })).toBeVisible();
 
   await page.getByRole("link", { exact: true, name: "Businesses" }).click();
@@ -1232,7 +1264,7 @@ test("signs out and re-protects the admin route", async ({ page }) => {
 async function signIn(page: Page, email: string): Promise<void> {
   await page.goto("/login");
   await page.getByLabel("Email address").fill(email);
-  await page.getByLabel("Password").fill(password);
+  await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.waitForURL((url) => url.pathname !== "/login");
 }

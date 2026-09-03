@@ -15,6 +15,7 @@ export default function AdminError({ error, reset }: { error: Error; reset: () =
   return (
     <main id="main-content" className="route-state-page">
       <AdminState
+        branded
         tone="error"
         eyebrow="Admin interrupted"
         title="Darb Admin could not be loaded."

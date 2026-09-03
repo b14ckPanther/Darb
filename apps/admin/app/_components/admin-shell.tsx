@@ -21,6 +21,7 @@ import {
   SettingsIcon,
   ShieldIcon,
 } from "@darb/icons";
+import { DarbMark } from "@darb/ui";
 
 import { signOutAction } from "../actions/auth";
 import type { AccessibleBusiness, CurrentUser } from "../../lib/auth";
@@ -29,7 +30,7 @@ import {
   type AdminNavigationIconKey,
   type ResolvedAdminNavigationGroup,
 } from "../../lib/navigation";
-import { DarbAdminBrand } from "./brand";
+import { DarbAdminBrand, DarbPublicSiteLink } from "./brand";
 import { BusinessLifecycleNotice } from "./business-lifecycle-notice";
 import { BusinessSwitcher } from "./business-switcher";
 import { StatusBadge } from "./status-badge";
@@ -136,7 +137,7 @@ export function AdminShell({
         role={navigationOpen ? "dialog" : undefined}
       >
         <div className="admin-sidebar__brand">
-          <DarbAdminBrand />
+          <DarbAdminBrand tone="light" />
           <button
             ref={closeButtonRef}
             type="button"
@@ -182,6 +183,7 @@ export function AdminShell({
         </nav>
 
         <div className="admin-sidebar__footer">
+          <DarbPublicSiteLink className="public-site-link" label="Darb public website" />
           {isPlatformAdmin ? (
             <Link
               className="platform-entry-link"
@@ -225,9 +227,14 @@ export function AdminShell({
           >
             <MenuIcon size={21} />
           </button>
-          <div>
-            <small>Current business</small>
-            <strong dir="auto">{currentBusiness.display_name}</strong>
+          <div className="admin-mobile-context">
+            <DarbMark size={24} aria-hidden="true" />
+            <div>
+              <small>Current business</small>
+              <strong lang={currentBusiness.default_locale} dir="auto">
+                {currentBusiness.display_name}
+              </strong>
+            </div>
           </div>
           <StatusBadge status={currentBusiness.status} />
         </header>
