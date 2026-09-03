@@ -9,6 +9,7 @@ import { getPublicRestaurantPublication } from "../lib/publication";
 import { createRestaurantRobots } from "../lib/seo";
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
+  const mainOrigin = `https://${darbApplications.main.productionHost}`;
   const requestHeaders = await headers();
   const routing = resolveHostRouting(
     requestHeaders.get("host"),
@@ -16,15 +17,15 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     process.env,
   );
 
-  if (routing.kind === "invalid") return createRestaurantRobots(false, "https://darb.co.il");
+  if (routing.kind === "invalid") return createRestaurantRobots(false, mainOrigin);
   if (routing.kind === "platform") {
     return createRestaurantRobots(true, `https://${darbApplications.rest.productionHost}`);
   }
 
   const resolution = await resolvePublicDomain(routing.hostname);
-  if (!resolution) return createRestaurantRobots(false, "https://darb.co.il");
+  if (!resolution) return createRestaurantRobots(false, mainOrigin);
   const publication = await getPublicRestaurantPublication(resolution.businessSlug);
-  if (!publication) return createRestaurantRobots(false, "https://darb.co.il");
+  if (!publication) return createRestaurantRobots(false, mainOrigin);
 
   const sitemapOrigin = resolution.primaryHostname
     ? `https://${resolution.primaryHostname}`

@@ -1,8 +1,8 @@
 :root {
   color-scheme: light;
-  --font-cairo: var(--font-arabic);
-  --font-heebo: var(--font-hebrew);
-  --font-ubuntu: var(--font-english);
+  --font-cairo: "Cairo";
+  --font-heebo: "Heebo";
+  --font-ubuntu: "Ubuntu";
 }
 
 * {
@@ -21,12 +21,30 @@ body {
   overflow-x: clip;
   color: var(--darb-theme-text-primary, #18231f);
   background: var(--darb-theme-page, #f6f0e6);
-  font-family: var(--darb-theme-font-family, var(--font-english)), sans-serif;
+  font-family: var(
+    --darb-theme-font-family,
+    var(--font-ubuntu),
+    var(--font-cairo),
+    var(--font-heebo),
+    sans-serif
+  );
   font-size: calc(1rem * var(--darb-theme-font-scale, 1));
   font-weight: var(--darb-theme-font-body-weight, 400);
   line-height: var(--darb-theme-line-height, 1.6);
   letter-spacing: var(--darb-theme-letter-spacing, 0);
   text-rendering: optimizeLegibility;
+}
+
+:where([lang="ar"]:not(html)) {
+  font-family: var(--font-cairo), var(--font-ubuntu), sans-serif;
+}
+
+:where([lang="he"]:not(html)) {
+  font-family: var(--font-heebo), var(--font-ubuntu), sans-serif;
+}
+
+:where([lang="en"]:not(html)) {
+  font-family: var(--font-ubuntu), sans-serif;
 }
 
 button,
@@ -729,19 +747,41 @@ summary {
 }
 
 .platform-landing {
-  color: #18231f;
-  font-family: var(--font-english), sans-serif;
+  position: relative;
+  color: #10241c;
+  font-family: var(--font-ubuntu), var(--font-cairo), var(--font-heebo), sans-serif;
 }
 
-.platform-landing__mark {
-  display: grid;
-  width: 3.5rem;
-  height: 3.5rem;
-  place-items: center;
-  margin-bottom: 2rem;
-  border-radius: 50%;
-  color: white;
-  background: #173c32;
+.platform-landing::after {
+  position: absolute;
+  z-index: -1;
+  inset: auto 0 0 auto;
+  width: min(42vw, 20rem);
+  height: min(65vh, 29rem);
+  border: 1px solid rgb(18 60 46 / 14%);
+  border-block-end: 0;
+  border-radius: 999px 999px 0 0;
+  content: "";
+}
+
+.platform-landing__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: clamp(3.5rem, 10vh, 7rem);
+}
+
+.platform-landing__brand > span:last-child {
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  padding-inline-start: 0.85rem;
+  border-inline-start: 1px solid rgb(16 36 28 / 22%);
+  color: #66716b;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .platform-landing h1,
@@ -757,6 +797,17 @@ summary {
 .system-state p {
   max-width: 35rem;
   color: #4f5e58;
+}
+
+.system-state__status-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  margin-block: 1.5rem 0.25rem;
+  border-radius: 50%;
+  color: #173c32;
+  background: #e0e9e3;
 }
 
 .platform-landing a,

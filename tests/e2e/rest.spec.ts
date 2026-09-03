@@ -198,6 +198,23 @@ test.afterAll(async () => {
   `);
 });
 
+test("uses current Darb identity only on the Darb-owned Restaurant landing", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/");
+  await expect(page.locator('[data-darb-brand="bilingual"]')).toBeVisible();
+  await expect(page.locator('[data-darb-mark="current"]')).toBeVisible();
+  await expect(page.getByRole("link", { name: "Visit Darb" })).toHaveAttribute(
+    "href",
+    "https://darb.co.il",
+  );
+
+  const icon = await request.get("/icon.png");
+  expect(icon.ok()).toBe(true);
+  expect(icon.headers()["content-type"]).toContain("image/png");
+});
+
 test("renders the anonymous public projection with media and no admin metadata", async ({
   page,
 }) => {
@@ -205,6 +222,15 @@ test("renders the anonymous public projection with media and no admin metadata",
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(page.getByRole("heading", { level: 1, name: publicBusinessName })).toBeVisible();
+  await expect(page.locator('[data-darb-brand="bilingual"]')).toHaveCount(0);
+  await expect(page.locator(".brand-mark")).toContainText(publicBusinessName);
+  await expect
+    .poll(() =>
+      page
+        .getByRole("heading", { level: 1, name: publicBusinessName })
+        .evaluate((element) => getComputedStyle(element).fontFamily),
+    )
+    .toContain("Cairo");
   await expect(page.getByRole("heading", { name: "قائمة الموسم" })).toBeVisible();
   await expect(page.getByAltText("طبق مميز من مطبخ درب").first()).toBeVisible();
   await expect(page.getByText("secret-draft-menu")).toHaveCount(0);

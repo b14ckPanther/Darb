@@ -1,3 +1,4 @@
+import { darbApplications } from "@darb/config/platform";
 import type { SupportedLocale } from "@darb/i18n";
 
 export type RestaurantRouteContext =
@@ -41,7 +42,10 @@ export function restaurantCanonicalUrl(
       `https://${route.primaryHostname}`,
     );
   }
-  return new URL(restaurantPath(businessSlug, locale, defaultLocale), "https://rest.darb.co.il");
+  return new URL(
+    restaurantPath(businessSlug, locale, defaultLocale),
+    `https://${darbApplications.rest.productionHost}`,
+  );
 }
 
 export function parseLocaleSegments(segments: readonly string[] | undefined): string | null {

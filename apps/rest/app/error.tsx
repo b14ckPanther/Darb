@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { reportOperationalError } from "@darb/config/observability";
 import { AlertCircleIcon } from "@darb/icons";
+import { DarbMark } from "@darb/ui";
 
 export default function PublicRestaurantError({
   error,
@@ -18,7 +19,10 @@ export default function PublicRestaurantError({
 
   return (
     <main className="system-state">
-      <AlertCircleIcon size={34} />
+      <DarbMark size={46} />
+      <span className="system-state__status-icon" aria-hidden="true">
+        <AlertCircleIcon size={19} />
+      </span>
       <h1>Restaurant unavailable</h1>
       <p>The menu could not be loaded safely. Please try again.</p>
       <button type="button" onClick={reset}>

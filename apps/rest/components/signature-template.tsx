@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { darbApplications } from "@darb/config/platform";
 import {
   ArrowRightIcon,
   CancelIcon,
@@ -61,7 +62,9 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
           <span className="brand-symbol" aria-hidden="true">
             <RestaurantIcon size={20} />
           </span>
-          <span dir="auto">{publication.business.displayName}</span>
+          <span lang={publication.business.defaultLocale} dir="auto">
+            {publication.business.displayName}
+          </span>
         </Link>
         <div className="header-tools">
           {publication.locations.length > 0 ? (
@@ -144,7 +147,9 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
         <section className={`hero ${heroImage ? "hero--with-image" : "hero--without-image"}`}>
           <div className="hero-copy">
             <p className="eyebrow">{copy.menu}</p>
-            <h1 dir="auto">{publication.business.displayName}</h1>
+            <h1 lang={publication.business.defaultLocale} dir="auto">
+              {publication.business.displayName}
+            </h1>
             {publication.menus[0]?.description ? (
               <p className="hero-description">{publication.menus[0].description}</p>
             ) : null}
@@ -253,8 +258,14 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
       </main>
 
       <footer className="site-footer">
-        <span dir="auto">{publication.business.displayName}</span>
-        <a href="https://darb.co.il" lang="en" data-analytics-event="outbound-darb">
+        <span lang={publication.business.defaultLocale} dir="auto">
+          {publication.business.displayName}
+        </span>
+        <a
+          href={`https://${darbApplications.main.productionHost}`}
+          lang="en"
+          data-analytics-event="outbound-darb"
+        >
           {copy.poweredBy}
           <ArrowRightIcon size={16} />
         </a>
