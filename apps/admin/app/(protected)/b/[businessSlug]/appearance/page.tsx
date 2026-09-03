@@ -7,9 +7,15 @@ import { PermissionNotice } from "../../../../_components/permission-notice";
 import { canManageAppearance } from "../../../../../lib/admin-access";
 import { listResolvedBusinessAppearances } from "../../../../../lib/appearance";
 import { requireBusinessAdminContext } from "../../../../../lib/admin-context";
+import {
+  createBrandingMediaOptions,
+  listRestaurantBrandingAssignments,
+} from "../../../../../lib/branding-media";
+import { listBusinessMediaAssets } from "../../../../../lib/media";
 import { businessPath, businessSectionPath } from "../../../../../lib/navigation";
 import { createServerComponentSupabaseClient } from "../../../../../lib/supabase/server";
 import { AppearanceEditor } from "./appearance-editor";
+import { RestaurantBrandingManager } from "./restaurant-branding-manager";
 import styles from "./appearance.module.css";
 
 interface AppearancePageProps {
@@ -20,11 +26,11 @@ export default async function AppearancePage({ params }: AppearancePageProps) {
   const { businessSlug } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
   const supabase = await createServerComponentSupabaseClient();
-  const appearances = await listResolvedBusinessAppearances(
-    supabase,
-    context.business.id,
-    context.modules,
-  );
+  const [appearances, media, brandingAssignments] = await Promise.all([
+    listResolvedBusinessAppearances(supabase, context.business.id, context.modules),
+    listBusinessMediaAssets(supabase, context.business.id),
+    listRestaurantBrandingAssignments(supabase, context.business.id),
+  ]);
   const editable = canManageAppearance(context.access, context.business.status);
 
   return (
@@ -36,7 +42,7 @@ export default async function AppearancePage({ params }: AppearancePageProps) {
         ]}
         eyebrow="Customer experience foundation"
         title="Appearance"
-        summary="Choose a composition and tune controlled visual tokens for enabled capabilities. These settings prepare future renderers; they do not create an engine or storefront."
+        summary="Choose a composition, tune controlled visual tokens, and assign approved brand media for enabled customer experiences."
       />
 
       {!editable && appearances.length > 0 ? (
@@ -79,16 +85,26 @@ export default async function AppearancePage({ params }: AppearancePageProps) {
           </section>
 
           {appearances.map((appearance) => (
-            <AppearanceEditor
-              key={appearance.moduleKey}
-              appearance={appearance}
-              business={{
-                defaultLocale: context.business.default_locale,
-                displayName: context.business.display_name,
-                id: context.business.id,
-              }}
-              editable={editable}
-            />
+            <div className={styles.appearanceContext} key={appearance.moduleKey}>
+              <AppearanceEditor
+                appearance={appearance}
+                business={{
+                  defaultLocale: context.business.default_locale,
+                  displayName: context.business.display_name,
+                  id: context.business.id,
+                }}
+                editable={editable}
+              />
+              {appearance.moduleKey === "restaurant" ? (
+                <RestaurantBrandingManager
+                  assignments={brandingAssignments}
+                  businessId={context.business.id}
+                  editable={editable}
+                  heroOptions={createBrandingMediaOptions(media, "hero")}
+                  logoOptions={createBrandingMediaOptions(media, "logo")}
+                />
+              ) : null}
+            </div>
           ))}
         </>
       )}

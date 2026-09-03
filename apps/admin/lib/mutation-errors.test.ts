@@ -65,6 +65,24 @@ describe("safe mutation error mapping", () => {
       message: "This template is not currently available for selection.",
       status: "error",
     });
+    expect(
+      mapMutationError(
+        { code: "55000", message: "MEDIA_ROLE_NOT_AVAILABLE internal detail" },
+        "appearance",
+      ),
+    ).toEqual({
+      message: "That branding role is not currently available.",
+      status: "error",
+    });
+    expect(
+      mapMutationError(
+        { code: "22023", message: "MEDIA_ASSET_NOT_ELIGIBLE internal detail" },
+        "appearance",
+      ),
+    ).toEqual({
+      message: "Choose an active, compatible asset from this business's Media Library.",
+      status: "error",
+    });
   });
 
   it("maps domain conflicts, lifecycle failures, and media failures without SQL details", () => {

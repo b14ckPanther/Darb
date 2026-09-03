@@ -3,6 +3,7 @@
 import type { Json } from "@darb/database/types";
 
 import { requireActionBusiness } from "../../lib/action-context";
+import { parseBrandingMediaInput } from "../../lib/branding-media-form";
 import { listAppearanceTemplates } from "../../lib/appearance";
 import { parseAppearanceInput, parseAppearanceResetInput } from "../../lib/appearance-form";
 import { hasBusinessPermission } from "../../lib/auth";
@@ -101,6 +102,52 @@ export async function resetBusinessThemeAction(
     message: data.changed
       ? "Theme overrides reset to the template defaults."
       : "Theme was already using its defaults.",
+    status: "success",
+  };
+}
+
+export async function setBusinessBrandingMediaAction(
+  businessId: string,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = parseBrandingMediaInput(formData);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.errors, message: "Choose valid branding media.", status: "error" };
+  }
+
+  const supabase = await createServerActionSupabaseClient();
+  const business = await requireActionBusiness(supabase, businessId);
+  if (business.status !== "active") {
+    return mapMutationError({ message: "BUSINESS_APPEARANCE_INACTIVE" }, "appearance");
+  }
+  if (!(await hasBusinessPermission(supabase, business.id, "appearance.manage"))) {
+    return mapMutationError({ code: "42501" }, "appearance");
+  }
+  const modules = await listBusinessModuleStates(supabase, business.id, business.status);
+  if (!modules.some((module) => module.key === "restaurant" && module.isEffectivelyEnabled)) {
+    return mapMutationError({ message: "MODULE_NOT_ENABLED" }, "appearance");
+  }
+
+  const { data, error } = await supabase
+    .schema("core")
+    .rpc("set_business_media_assignment", {
+      target_business_id: business.id,
+      target_media_asset_id: parsed.data.mediaAssetId as unknown as string,
+      target_module_key: "restaurant",
+      target_role_key: parsed.data.role,
+    })
+    .single();
+  if (error || !data) return mapMutationError(error ?? {}, "appearance");
+
+  const label = parsed.data.role === "logo" ? "Restaurant logo" : "Restaurant hero";
+  return {
+    message: data.changed
+      ? parsed.data.mediaAssetId
+        ? `${label} updated.`
+        : `${label} returned to its template fallback.`
+      : parsed.data.mediaAssetId
+        ? `${label} was already up to date.`
+        : `${label} was already using its template fallback.`,
     status: "success",
   };
 }

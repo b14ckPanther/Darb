@@ -120,6 +120,17 @@ export function mapMutationError(error: DatabaseErrorLike, kind: MutationKind): 
     };
   }
 
+  if (error.message?.includes("MEDIA_ROLE_NOT_AVAILABLE")) {
+    return { message: "That branding role is not currently available.", status: "error" };
+  }
+
+  if (error.message?.includes("MEDIA_ASSET_NOT_ELIGIBLE")) {
+    return {
+      message: "Choose an active, compatible asset from this business's Media Library.",
+      status: "error",
+    };
+  }
+
   if (error.code === "23505" && kind === "domain") {
     return {
       fieldErrors: { hostname: "That hostname is already claimed on Darb." },

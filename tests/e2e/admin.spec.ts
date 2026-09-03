@@ -23,6 +23,7 @@ const platformBusinessSlug = `${fixturePrefix}-platform`;
 const assignedLocationName = `Central Studio ${runId}`;
 const otherLocationName = `North Office ${runId}`;
 const mediaFilename = `phase6-${runId}.png`;
+const brandingMediaFilename = `restaurant-branding-${runId}.png`;
 const customHostname = `${fixturePrefix}.example.invalid`;
 const routableHostname = `${fixturePrefix}-routing.example.invalid`;
 
@@ -865,6 +866,85 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   await expect(page.getByRole("heading", { level: 1, name: "All day menu" })).toBeVisible();
 });
 
+test("assigns, replaces, and removes Restaurant branding through the visual Media Library picker", async ({
+  page,
+}) => {
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/media`);
+  await page.getByLabel("Image or video").setInputFiles({
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+      "base64",
+    ),
+    mimeType: "image/png",
+    name: brandingMediaFilename,
+  });
+  const uploadForm = page
+    .locator("form")
+    .filter({ has: page.getByRole("button", { name: "Upload media" }) })
+    .first();
+  await uploadForm.getByLabel("Alternative text").fill("Restaurant branding fixture");
+  await uploadForm.getByRole("button", { name: "Upload media" }).click();
+  await expect(page.getByRole("article", { name: brandingMediaFilename })).toBeVisible();
+
+  await page.goto(`/b/${updatedBusinessSlug}/appearance`);
+  const branding = page.getByRole("region", { name: "Brand media" });
+  const logo = branding.getByRole("article", { name: "Restaurant logo" });
+  const hero = branding.getByRole("article", { name: "Hero media" });
+
+  await logo.getByRole("button", { name: "Choose media" }).click();
+  let picker = page.getByRole("dialog", { name: "Choose restaurant logo" });
+  await picker.locator("label").filter({ hasText: mediaFilename }).getByRole("radio").check();
+  await picker.getByRole("button", { name: "Assign media" }).click();
+  await expect(logo.getByText("Restaurant logo updated.")).toBeVisible();
+
+  await hero.getByRole("button", { name: "Choose media" }).click();
+  picker = page.getByRole("dialog", { name: "Choose hero media" });
+  await picker
+    .locator("label")
+    .filter({ hasText: brandingMediaFilename })
+    .getByRole("radio")
+    .check();
+  await picker.getByRole("button", { name: "Assign media" }).click();
+  await expect(hero.getByText("Restaurant hero updated.")).toBeVisible();
+
+  await logo.getByRole("button", { name: "Replace" }).click();
+  picker = page.getByRole("dialog", { name: "Choose restaurant logo" });
+  await picker
+    .locator("label")
+    .filter({ hasText: brandingMediaFilename })
+    .getByRole("radio")
+    .check();
+  await picker.getByRole("button", { name: "Assign media" }).click();
+  await expect(logo.getByText(brandingMediaFilename)).toBeVisible();
+
+  const remove = hero.getByRole("button", { name: "Remove assignment" });
+  await remove.click();
+  const confirmation = page.getByRole("dialog", { name: "Remove hero media?" });
+  await page.keyboard.press("Escape");
+  await expect(remove).toBeFocused();
+  await remove.click();
+  await confirmation.getByRole("button", { name: "Remove assignment" }).click();
+  await expect(hero.getByText("Restaurant hero returned to its template fallback.")).toBeVisible();
+
+  for (const viewport of [
+    { height: 844, width: 390 },
+    { height: 1024, width: 768 },
+    { height: 900, width: 1440 },
+    { height: 1080, width: 1920 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await expect(logo.getByTitle(brandingMediaFilename, { exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      viewport.width + 1,
+    );
+  }
+
+  await page.reload();
+  await expect(logo.getByTitle(brandingMediaFilename, { exact: true })).toBeVisible();
+  await expect(hero.getByText("Template fallback", { exact: true })).toBeVisible();
+});
+
 test("enforces read-only business access and exact location scope in the UI", async ({ page }) => {
   if (!assignedLocationId || !otherLocationId) {
     throw new Error("Location scope fixtures were not prepared.");
@@ -899,6 +979,8 @@ test("enforces read-only business access and exact location scope in the UI", as
   await expect(page.getByRole("radio", { name: /Editorial/ })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Save appearance" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Reset theme" })).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Brand media" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Choose media" })).toHaveCount(0);
 
   await expect(page.getByRole("link", { exact: true, name: "Media" })).toHaveCount(0);
   await expect(page.getByRole("link", { exact: true, name: "Domains" })).toHaveCount(0);
