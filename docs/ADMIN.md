@@ -89,8 +89,10 @@ inactive, or archived. Archive is non-destructive, idempotent, and read-only; re
 
 ## Interface foundation
 
-The shell provides a stable Darb identity, obvious current-business context, grouped selected-state
-navigation, lifecycle communication, and an intentionally constrained content region. Desktop uses
+The shell uses the current shared Darb architectural-opening mark, an explicit Admin or Platform
+product-context label, obvious current-business context, grouped selected-state navigation,
+lifecycle communication, and an intentionally constrained content region. A subordinate trusted
+link returns to `darb.co.il`; it never accepts a caller-provided origin. Desktop uses
 a proportioned fixed workspace rail. Tablet and mobile use a focus-trapped, scroll-locking drawer
 with Escape dismissal and focus restoration. The business selector is keyboard-operable, handles
 long names, and is usable inside either shell.
@@ -106,8 +108,10 @@ confirmation dialog. High-impact location archive and capability disable actions
 dialog rather than browser confirmation. Native form status remains inline and screen-reader
 announced; no global client-state or toast dependency is required.
 
-Cairo, Heebo, and Ubuntu remain the approved script fonts; mixed-direction data uses explicit
-direction handling. The shell retains semantic landmarks, skip navigation, visible focus,
+Cairo, Heebo, and Ubuntu remain the approved Arabic, Hebrew, and Latin script fonts. The base stack
+selects by glyph support rather than page locale; known business-locale runs also carry semantic
+language hints and mixed-direction data retains explicit direction handling. The shell retains
+semantic landmarks, skip navigation, visible focus,
 touch-sized actions, `aria-current`, reduced-motion handling, and responsive layout behavior.
 
 ## Static engine extension contract

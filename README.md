@@ -24,7 +24,7 @@ packages/
   i18n/       Supported-locale and text-direction primitives
   icons/      Governed icon and custom-SVG boundary
   types/      Platform-level TypeScript types
-  ui/         Minimal platform/admin UI accessibility foundation
+  ui/         Shared Darb identity and minimal platform/admin UI primitives
   database/   Generated database types and explicit Supabase client boundaries
   restaurant/ Restaurant Engine database type aliases and pure domain helpers
   theme/      Closed semantic theme contract and deterministic resolver

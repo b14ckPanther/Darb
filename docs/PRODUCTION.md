@@ -129,6 +129,12 @@ original raster masters remain preserved. Browser and installable-app identity u
 derivatives of the approved Darb symbol through a manifest and favicon metadata; no offline service
 worker or deployment cache was introduced.
 
+Admin and the Darb-owned Restaurant platform surface use byte-identical lightweight icon derivatives
+from that same approved symbol. Their HTML lockups consume the shared `@darb/ui` identity boundary;
+obsolete CSS-drawn and Restaurant-bowl Darb corporate icons are not active. Public tenant Restaurant
+metadata and page identity remain business-first. Darb does not override tenant names, imagery, or
+theme state; the platform icon covers only browser identity where no tenant favicon contract exists.
+
 The public Restaurant path remains RSC-first. A request loads one curated publication graph, and
 React request memoization prevents metadata/layout/page duplication from becoming repeated database
 queries. Host resolution is exact and request-scoped. The only public interactive client boundary

@@ -17,13 +17,15 @@ Darb will maintain a deliberate separation between:
 These systems may share low-level accessibility knowledge and selected technical primitives, but
 they must not be forced into one visual language or one unrestricted component API.
 
-Darb's **corporate public brand** is a third, explicitly owned application concern. The Main website
-uses the approved doorway symbol, forest/ivory/gold palette, and cinematic architectural artwork. It
-must not inherit tenant theme overrides or turn `@darb/ui` into a marketing component catalogue.
-The permanent asset and derivative rules live in [`BRAND.md`](./BRAND.md).
+Darb's **corporate brand** is a third, explicitly owned concern. Main uses the approved doorway
+symbol, forest/ivory/gold palette, and cinematic architectural artwork. Stable mark and semantic
+wordmark primitives live in `@darb/ui` so Darb-owned applications cannot drift into independent
+logos; composed marketing layouts remain application-owned. Corporate identity must not inherit
+tenant theme overrides or turn `@darb/ui` into a marketing component catalogue. The permanent asset
+and derivative rules live in [`BRAND.md`](./BRAND.md).
 
 `@darb/theme` establishes the second system's closed semantic token contract, resolver,
-contrast validation, locale typography, motion intent, and CSS-variable mapping. Platform template
+contrast validation, script-aware typography, motion intent, and CSS-variable mapping. Platform template
 definitions and tenant overrides are database-driven. These primitives do not move tenant styling
 into `@darb/ui` and do not constitute a page builder.
 
@@ -39,7 +41,8 @@ appropriate labeling, sufficient contrast, touch-friendly targets, and robust zo
 
 ## Typography
 
-The approved families are Cairo for Arabic, Heebo for Hebrew, and Ubuntu for English. Type tokens
+The approved families are Cairo for Arabic script, Heebo for Hebrew script, and Ubuntu for Latin
+script. Font selection follows the rendered script rather than only the page locale. Type tokens
 must account for script-specific hierarchy, weight availability, spacing, line height, readable
 measure, responsive scaling, and mixed RTL/LTR runs. Font delivery must avoid unnecessary variants
 and visible layout shift.
@@ -63,12 +66,12 @@ progress.
 
 ## Current implementation
 
-The admin application now provides script-aware font loading, an accessible skip link, a responsive
-matte-surface business shell, a route-backed business switcher, grouped selected-state navigation,
+The admin application now provides the shared current Darb mark, script-aware font loading, an
+accessible skip link, a responsive matte-surface business shell, a route-backed business switcher,
+trusted public-site escape paths, grouped selected-state navigation,
 compact page headers, semantic statuses, lifecycle notices, page-shaped loading, empty/error/
-read-only states, and a focus-managed confirmation dialog. These admin-orchestration components
-remain inside `apps/admin` until cross-application reuse is demonstrated; they have not been
-prematurely promoted to `@darb/ui`.
+read-only states, and a focus-managed confirmation dialog. Admin orchestration remains inside
+`apps/admin`; only the proven corporate identity primitive is shared through `@darb/ui`.
 
 The Overview presents real RLS-visible platform state and actionable readiness categories; it does
 not manufacture engine metrics, charts, or completion percentages. This is a scoped operational

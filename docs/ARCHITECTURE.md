@@ -15,7 +15,7 @@ the Next.js App Router and can be released independently while sharing reviewed 
 | `apps/rest`           | Public Restaurant renderer for `rest.darb.co.il`            |
 | `packages/config`     | Shared tooling, HTTP-security, logging, and platform config |
 | `packages/types`      | Genuinely platform-wide type contracts                      |
-| `packages/ui`         | Darb platform/admin UI foundation                           |
+| `packages/ui`         | Shared Darb identity and platform/admin UI primitives       |
 | `packages/icons`      | Curated icon and custom-SVG boundary                        |
 | `packages/i18n`       | Locale and direction primitives                             |
 | `packages/theme`      | Typed customer-facing theme contract and resolver           |
@@ -77,9 +77,10 @@ provider adapter; its baseline adapter is intentionally no-op and creates no per
 
 The Main application is a platform-level public experience with no selected tenant and no Supabase
 dependency. Static `/ar`, `/he`, and `/en` routes own their document language/direction and metadata;
-the root permanently redirects to Arabic. Darb corporate brand assets, their deterministic raster
-derivatives, and the manifest/browser identity remain application-owned. They are not tenant theme
-data and are not shared with the Restaurant template system.
+the root permanently redirects to Arabic. Main preserves Darb's source brand assets and complete
+deterministic raster derivative set. The stable corporate mark/wordmark rendering contract is shared
+through `@darb/ui` across Darb-owned surfaces, but it is not tenant theme data and is not injected
+into the Restaurant template system.
 
 Tenant boundaries are enforced in Postgres through explicit grants, Row Level Security, and
 scope-aware authorization helpers. Applications must repeat authorization server-side for defense
@@ -134,7 +135,7 @@ The template/theme foundation remains separate from both module enablement and t
 system. Platform-owned templates are scoped to a module rendering context; tenant rows store only a
 selection and validated semantic overrides. `@darb/theme` is a pure shared contract used by the
 admin preview and future server renderers. It maps a closed token set to controlled CSS variables,
-locale-aware typography, direction, contrast decisions, and reduced-motion behavior. No arbitrary
+script-aware typography, locale direction, contrast decisions, and reduced-motion behavior. No arbitrary
 CSS or customer-facing runtime route exists.
 
 Splitting data services or introducing microservices requires demonstrated scale, security,
