@@ -151,6 +151,58 @@ export type Database = {
           },
         ];
       };
+      business_media_assignments: {
+        Row: {
+          assigned_by: string | null;
+          business_id: string;
+          created_at: string;
+          media_asset_id: string;
+          module_key: string;
+          role_key: string;
+          updated_at: string;
+        };
+        Insert: {
+          assigned_by?: string | null;
+          business_id: string;
+          created_at?: string;
+          media_asset_id: string;
+          module_key: string;
+          role_key: string;
+          updated_at?: string;
+        };
+        Update: {
+          assigned_by?: string | null;
+          business_id?: string;
+          created_at?: string;
+          media_asset_id?: string;
+          module_key?: string;
+          role_key?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_media_assignments_asset_fk";
+            columns: ["business_id", "media_asset_id"];
+            isOneToOne: false;
+            referencedRelation: "media_assets";
+            referencedColumns: ["business_id", "id"];
+          },
+          {
+            foreignKeyName: "business_media_assignments_module_fk";
+            columns: ["business_id", "module_key"];
+            isOneToOne: false;
+            referencedRelation: "business_modules";
+            referencedColumns: ["business_id", "module_key"];
+          },
+          {
+            foreignKeyName: "business_media_assignments_role_fk";
+            columns: ["module_key", "role_key"];
+            isOneToOne: false;
+            referencedRelation: "module_media_roles";
+            referencedColumns: ["module_key", "key"];
+          },
+        ];
+      };
       business_modules: {
         Row: {
           business_id: string;
@@ -495,6 +547,47 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "businesses";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      module_media_roles: {
+        Row: {
+          allowed_media_kinds: Database["core"]["Enums"]["media_kind"][];
+          created_at: string;
+          description: string;
+          display_name: string;
+          is_available: boolean;
+          key: string;
+          module_key: string;
+          sort_order: number;
+        };
+        Insert: {
+          allowed_media_kinds: Database["core"]["Enums"]["media_kind"][];
+          created_at?: string;
+          description: string;
+          display_name: string;
+          is_available?: boolean;
+          key: string;
+          module_key: string;
+          sort_order?: number;
+        };
+        Update: {
+          allowed_media_kinds?: Database["core"]["Enums"]["media_kind"][];
+          created_at?: string;
+          description?: string;
+          display_name?: string;
+          is_available?: boolean;
+          key?: string;
+          module_key?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "module_media_roles_module_key_fkey";
+            columns: ["module_key"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["key"];
           },
         ];
       };
@@ -1151,6 +1244,20 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      set_business_media_assignment: {
+        Args: {
+          target_business_id: string;
+          target_media_asset_id: string;
+          target_module_key: string;
+          target_role_key: string;
+        };
+        Returns: {
+          changed: boolean;
+          media_asset_id: string;
+          module_key: string;
+          role_key: string;
+        }[];
       };
       set_business_module_enabled: {
         Args: {
