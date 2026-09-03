@@ -10,6 +10,9 @@ interface RestaurantCopy {
   language: string;
   location: string;
   menu: string;
+  heroVideo: (businessName: string) => string;
+  pauseHeroVideo: string;
+  playHeroVideo: string;
   modifierOptional: string;
   modifierRequired: string;
   noItems: string;
@@ -36,6 +39,9 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     language: "اللغة",
     location: "الفرع",
     menu: "القائمة",
+    heroVideo: (businessName) => `فيديو الغلاف لـ ${businessName}`,
+    pauseHeroVideo: "وقّف الفيديو",
+    playHeroVideo: "شغّل الفيديو",
     modifierOptional: "اختياري",
     modifierRequired: "مطلوب",
     noItems: "لا توجد أصناف منشورة في هذا القسم بعد.",
@@ -61,6 +67,9 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     language: "שפה",
     location: "סניף",
     menu: "תפריט",
+    heroVideo: (businessName) => `סרטון השער של ${businessName}`,
+    pauseHeroVideo: "השהיית הסרטון",
+    playHeroVideo: "הפעלת הסרטון",
     modifierOptional: "לבחירה",
     modifierRequired: "חובה",
     noItems: "עדיין אין פריטים שפורסמו בחלק זה.",
@@ -86,6 +95,9 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     language: "Language",
     location: "Location",
     menu: "Menu",
+    heroVideo: (businessName) => `${businessName} hero video`,
+    pauseHeroVideo: "Pause video",
+    playHeroVideo: "Play video",
     modifierOptional: "Optional",
     modifierRequired: "Required",
     noItems: "No items have been published in this section yet.",

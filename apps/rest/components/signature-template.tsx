@@ -19,9 +19,10 @@ import { getTextDirection } from "@darb/i18n";
 
 import { getRestaurantCopy } from "../lib/copy";
 import { getPublicSupabaseConfig } from "../lib/config";
-import { buildRestaurantImageUrl } from "../lib/media";
+import { buildRestaurantImageUrl, buildRestaurantMediaUrl } from "../lib/media";
 import { restaurantPath, type RestaurantRouteContext } from "../lib/routes";
 import { ItemDialogController } from "./item-dialog-controller";
+import { HeroVideo } from "./hero-video";
 
 interface SignatureTemplateProps {
   publication: LocalizedRestaurantPublication;
@@ -30,7 +31,9 @@ interface SignatureTemplateProps {
 
 export function SignatureTemplate({ publication, route }: SignatureTemplateProps) {
   const copy = getRestaurantCopy(publication.locale);
-  const heroImage = findFirstImage(publication);
+  const assignedHero = publication.branding.hero;
+  const fallbackHeroImage = assignedHero ? null : findFirstImage(publication);
+  const hasHeroMedia = Boolean(assignedHero || fallbackHeroImage);
   const imageBaseUrl = getPublicSupabaseConfig().url;
   const currentLocationId = publication.selectedLocation?.id ?? null;
   const categoryCount = publication.menus.reduce(
@@ -59,9 +62,21 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
           )}
           className="brand-mark"
         >
-          <span className="brand-symbol" aria-hidden="true">
-            <RestaurantIcon size={20} />
-          </span>
+          {publication.branding.logo ? (
+            <span className="brand-logo" data-branding-role="logo">
+              <Image
+                src={buildRestaurantMediaUrl(imageBaseUrl, publication.branding.logo)}
+                alt=""
+                width={publication.branding.logo.width ?? 96}
+                height={publication.branding.logo.height ?? 96}
+                priority
+              />
+            </span>
+          ) : (
+            <span className="brand-symbol" aria-hidden="true">
+              <RestaurantIcon size={20} />
+            </span>
+          )}
           <span lang={publication.business.defaultLocale} dir="auto">
             {publication.business.displayName}
           </span>
@@ -144,7 +159,7 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
       </header>
 
       <main id="menu-content">
-        <section className={`hero ${heroImage ? "hero--with-image" : "hero--without-image"}`}>
+        <section className={`hero ${hasHeroMedia ? "hero--with-image" : "hero--without-image"}`}>
           <div className="hero-copy">
             <p className="eyebrow">{copy.menu}</p>
             <h1 lang={publication.business.defaultLocale} dir="auto">
@@ -160,11 +175,30 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
               </p>
             ) : null}
           </div>
-          {heroImage ? (
+          {assignedHero ? (
+            <div className="hero-image" data-branding-role="hero">
+              {assignedHero.mediaKind === "video" ? (
+                <HeroVideo
+                  src={buildRestaurantMediaUrl(imageBaseUrl, assignedHero)}
+                  label={assignedHero.altText ?? copy.heroVideo(publication.business.displayName)}
+                  pauseLabel={copy.pauseHeroVideo}
+                  playLabel={copy.playHeroVideo}
+                />
+              ) : (
+                <Image
+                  src={buildRestaurantMediaUrl(imageBaseUrl, assignedHero)}
+                  alt={assignedHero.altText ?? ""}
+                  fill
+                  fetchPriority="high"
+                  sizes="(max-width: 767px) 100vw, 54vw"
+                />
+              )}
+            </div>
+          ) : fallbackHeroImage ? (
             <div className="hero-image">
               <Image
-                src={buildRestaurantImageUrl(imageBaseUrl, heroImage)}
-                alt={heroImage.altText ?? ""}
+                src={buildRestaurantImageUrl(imageBaseUrl, fallbackHeroImage)}
+                alt={fallbackHeroImage.altText ?? ""}
                 fill
                 fetchPriority="high"
                 sizes="(max-width: 767px) 100vw, 54vw"

@@ -6,6 +6,8 @@ import {
   formatMinorMoneyInput,
   formatRestaurantMoney,
   isRestaurantCapabilityEffective,
+  isMediaEligibleForRestaurantBrandingRole,
+  isRestaurantBrandingRole,
   isRestaurantPublicExperienceEffective,
   localizeRestaurantPublication,
   parseMajorMoneyToMinor,
@@ -136,6 +138,54 @@ describe("Restaurant Engine domain helpers", () => {
       parsePublicRestaurantPublication({
         ...publicationFixture,
         menus: [{ ...publicationFixture.menus[0], id: null }],
+      }),
+    ).toBeNull();
+  });
+
+  it("keeps Restaurant branding roles small and media-kind aware", () => {
+    expect(isRestaurantBrandingRole("logo")).toBe(true);
+    expect(isRestaurantBrandingRole("cover")).toBe(false);
+    expect(isMediaEligibleForRestaurantBrandingRole("logo", "image")).toBe(true);
+    expect(isMediaEligibleForRestaurantBrandingRole("logo", "video")).toBe(false);
+    expect(isMediaEligibleForRestaurantBrandingRole("hero", "video")).toBe(true);
+  });
+
+  it("validates assigned branding while accepting pre-migration publications", () => {
+    const branding = {
+      hero: {
+        altText: "Restaurant dining room",
+        durationMs: 8000,
+        height: 1080,
+        mediaKind: "video",
+        mimeType: "video/mp4",
+        storageBucket: "business-media",
+        storagePath: "business/hero.mp4",
+        width: 1920,
+      },
+      logo: {
+        altText: "Restaurant logo",
+        durationMs: null,
+        height: 400,
+        mediaKind: "image",
+        mimeType: "image/png",
+        storageBucket: "business-media",
+        storagePath: "business/logo.png",
+        width: 400,
+      },
+    } as const;
+    expect(parsePublicRestaurantPublication({ ...publicationFixture, branding })?.branding).toEqual(
+      branding,
+    );
+    const { branding: omittedBranding, ...legacyPublication } = publicationFixture;
+    void omittedBranding;
+    expect(parsePublicRestaurantPublication(legacyPublication)?.branding).toEqual({
+      hero: null,
+      logo: null,
+    });
+    expect(
+      parsePublicRestaurantPublication({
+        ...publicationFixture,
+        branding: { ...branding, logo: branding.hero },
       }),
     ).toBeNull();
   });
@@ -277,6 +327,7 @@ const publicationFixture: PublicRestaurantPublication = {
     templateVersion: 1,
     themeSchemaVersion: 1,
   },
+  branding: { hero: null, logo: null },
   business: {
     currencyCode: "ILS",
     defaultLocale: "ar",

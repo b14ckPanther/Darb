@@ -224,6 +224,8 @@ function localeToOpenGraphLocale(locale: SupportedLocale): string {
 function findFirstPublicImage(
   publication: LocalizedRestaurantPublication,
 ): PublicRestaurantImage | null {
+  if (publication.branding.hero?.mediaKind === "image") return publication.branding.hero;
+  if (publication.branding.logo) return publication.branding.logo;
   for (const menu of publication.menus) {
     for (const category of menu.categories) {
       if (category.image) return category.image;

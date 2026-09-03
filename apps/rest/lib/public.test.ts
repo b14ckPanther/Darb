@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { localizeRestaurantPublication, type PublicRestaurantPublication } from "@darb/restaurant";
 import { safeFallbackTheme } from "@darb/theme";
 
-import { buildRestaurantImageUrl } from "./media";
+import { buildRestaurantImageUrl, buildRestaurantMediaUrl } from "./media";
 import {
   parseLocaleSegments,
   readSingleSearchParameter,
@@ -28,6 +28,7 @@ const publication: PublicRestaurantPublication = {
     templateVersion: 1,
     themeSchemaVersion: 1,
   },
+  branding: { hero: null, logo: null },
   business: {
     currencyCode: "ILS",
     defaultLocale: "ar",
@@ -148,6 +149,32 @@ describe("public Restaurant app helpers", () => {
     ).toThrow("Unsupported");
   });
 
+  it("constructs governed public image and video URLs without widening image handling", () => {
+    expect(
+      buildRestaurantMediaUrl("https://project.supabase.co", {
+        altText: "Dining room",
+        durationMs: 5000,
+        height: 1080,
+        mediaKind: "video",
+        mimeType: "video/mp4",
+        storageBucket: "tenant-media-videos",
+        storagePath: "business/hero.mp4",
+        width: 1920,
+      }),
+    ).toBe(
+      "https://project.supabase.co/storage/v1/object/public/tenant-media-videos/business/hero.mp4",
+    );
+    expect(() =>
+      buildRestaurantImageUrl("https://project.supabase.co", {
+        altText: null,
+        height: null,
+        storageBucket: "tenant-media-videos",
+        storagePath: "business/hero.mp4",
+        width: null,
+      }),
+    ).toThrow("Unsupported");
+  });
+
   it("resolves validated appearance tokens for the active locale", () => {
     const variables = resolveRestaurantTheme(publication.appearance, "ar");
     expect(variables["--darb-theme-accent"]).toBe("#9A452E");
@@ -247,6 +274,37 @@ describe("public Restaurant app helpers", () => {
     expect(serialized).toContain('"price":"25.99"');
     expect(serialized).toContain('"image":"https://project.supabase.co/storage/v1/object/public/');
     expect(serialized).not.toContain("internal");
+  });
+
+  it("prefers assigned Restaurant hero imagery for social and structured metadata", () => {
+    const hero = {
+      altText: "Public Restaurant hero",
+      durationMs: null,
+      height: 900,
+      mediaKind: "image" as const,
+      mimeType: "image/jpeg",
+      storageBucket: "tenant-media-images",
+      storagePath: "public-fixture/hero.jpg",
+      width: 1600,
+    };
+    const branded = { ...publication, branding: { hero, logo: null } };
+    const localized = localizeRestaurantPublication(branded, "en");
+    const metadata = createRestaurantMetadata(
+      branded,
+      localized,
+      { kind: "platform", primaryHostname: null },
+      "https://project.supabase.co",
+    );
+    expect(metadata.openGraph).toMatchObject({
+      images: [expect.objectContaining({ alt: hero.altText, width: 1600 })],
+    });
+    expect(
+      createRestaurantJsonLd(
+        localized,
+        { kind: "platform", primaryHostname: null },
+        "https://project.supabase.co",
+      ),
+    ).toMatchObject({ image: expect.stringContaining("public-fixture/hero.jpg") });
   });
 
   it("builds canonical multilingual sitemaps and honest robots policies", () => {

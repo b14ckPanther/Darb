@@ -1,5 +1,12 @@
 import type { Database } from "@darb/database/types";
 
+export {
+  isMediaEligibleForRestaurantBrandingRole,
+  isRestaurantBrandingRole,
+  restaurantBrandingRoles,
+} from "./branding";
+export type { RestaurantBrandingMediaKind, RestaurantBrandingRole } from "./branding";
+
 export { noOpRestaurantAnalyticsAdapter, trackRestaurantAnalytics } from "./analytics";
 export type {
   RestaurantAnalyticsAdapter,
@@ -27,8 +34,11 @@ export type {
   LocalizedRestaurantPublication,
   LocalizedRestaurantVariant,
   PublicRestaurantAppearance,
+  PublicRestaurantBranding,
+  PublicRestaurantBrandingMedia,
   PublicRestaurantImage,
   PublicRestaurantLocation,
+  PublicRestaurantMediaKind,
   PublicRestaurantPublication,
   PublicRestaurantSitemapEntry,
   PublicRestaurantTranslation,

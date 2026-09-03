@@ -21,6 +21,19 @@ export interface PublicRestaurantImage {
   width: number | null;
 }
 
+export type PublicRestaurantMediaKind = "image" | "video";
+
+export interface PublicRestaurantBrandingMedia extends PublicRestaurantImage {
+  durationMs: number | null;
+  mediaKind: PublicRestaurantMediaKind;
+  mimeType: string;
+}
+
+export interface PublicRestaurantBranding {
+  hero: PublicRestaurantBrandingMedia | null;
+  logo: PublicRestaurantBrandingMedia | null;
+}
+
 export interface PublicRestaurantLocation {
   addressLine: string | null;
   countryCode: string;
@@ -92,6 +105,7 @@ interface PublicRestaurantMenu {
 
 export interface PublicRestaurantPublication {
   appearance: PublicRestaurantAppearance;
+  branding: PublicRestaurantBranding;
   business: {
     currencyCode: string;
     defaultLocale: SupportedLocale;
@@ -172,14 +186,16 @@ export function parsePublicRestaurantPublication(
   if (!isRecord(value) || value.version !== 1) return null;
   const business = parseBusiness(value.business);
   const appearance = parseAppearance(value.appearance);
+  const branding =
+    value.branding === undefined ? { hero: null, logo: null } : parseBranding(value.branding);
   const locales = parseArray(value.locales, parseLocale);
   const locations = parseArray(value.locations, parseLocation);
   const menus = parseArray(value.menus, parseMenu);
 
-  if (!business || !appearance || !locales || !locations || !menus) return null;
+  if (!business || !appearance || !branding || !locales || !locations || !menus) return null;
   if (!locales.includes(business.defaultLocale)) return null;
 
-  return { appearance, business, locales, locations, menus, version: 1 };
+  return { appearance, branding, business, locales, locations, menus, version: 1 };
 }
 
 export function parsePublicRestaurantSitemapEntries(
@@ -488,6 +504,46 @@ function parseAppearance(value: unknown): PublicRestaurantAppearance | null {
   };
 }
 
+function parseBranding(value: unknown): PublicRestaurantBranding | null {
+  if (!isRecord(value)) return null;
+  const hero = parseNullable(value.hero, parseBrandingMedia);
+  const logo = parseNullable(value.logo, parseBrandingMedia);
+  if (hero === undefined || logo === undefined || logo?.mediaKind === "video") return null;
+  return { hero, logo };
+}
+
+function parseBrandingMedia(value: unknown): PublicRestaurantBrandingMedia | null {
+  if (
+    !isRecord(value) ||
+    !isNonemptyString(value.storageBucket) ||
+    !isNonemptyString(value.storagePath) ||
+    !isNonemptyString(value.mimeType) ||
+    !isMediaKind(value.mediaKind) ||
+    !value.mimeType.startsWith(`${value.mediaKind}/`)
+  ) {
+    return null;
+  }
+  const altText = parseNullableString(value.altText);
+  const durationMs = parseNullableInteger(value.durationMs);
+  const height = parseNullableInteger(value.height);
+  const width = parseNullableInteger(value.width);
+  return altText !== undefined &&
+    durationMs !== undefined &&
+    height !== undefined &&
+    width !== undefined
+    ? {
+        altText,
+        durationMs,
+        height,
+        mediaKind: value.mediaKind,
+        mimeType: value.mimeType,
+        storageBucket: value.storageBucket,
+        storagePath: value.storagePath,
+        width,
+      }
+    : null;
+}
+
 function parseLocation(value: unknown): PublicRestaurantLocation | null {
   if (
     !isRecord(value) ||
@@ -689,6 +745,10 @@ function parseNullableInteger(value: unknown): number | null | undefined {
 
 function isAvailability(value: unknown): value is PublicRestaurantAvailability {
   return value === "available" || value === "sold_out";
+}
+
+function isMediaKind(value: unknown): value is PublicRestaurantMediaKind {
+  return value === "image" || value === "video";
 }
 
 function isNonnegativeInteger(value: unknown): value is number {

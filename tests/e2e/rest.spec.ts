@@ -90,6 +90,12 @@ test.beforeAll(async () => {
       '{"colors":{"primary":"#263B32","accent":"#B8633F"},"shape":{"radius":"bold"}}'::jsonb
     );
 
+    insert into core.business_media_assignments (
+      business_id, module_key, role_key, media_asset_id
+    ) values
+      ('${businessId}', 'restaurant', 'logo', '${mediaId}'),
+      ('${businessId}', 'restaurant', 'hero', '${mediaId}');
+
     insert into core.business_domains (
       business_id, hostname, status, verification_token, verification_method,
       verification_checked_at, verified_at, target_module_key, routing_status,
@@ -224,6 +230,8 @@ test("renders the anonymous public projection with media and no admin metadata",
   await expect(page.getByRole("heading", { level: 1, name: publicBusinessName })).toBeVisible();
   await expect(page.locator('[data-darb-brand="bilingual"]')).toHaveCount(0);
   await expect(page.locator(".brand-mark")).toContainText(publicBusinessName);
+  await expect(page.locator('[data-branding-role="logo"] img')).toBeVisible();
+  await expect(page.locator('[data-branding-role="hero"] img')).toBeVisible();
   await expect
     .poll(() =>
       page
@@ -236,6 +244,43 @@ test("renders the anonymous public projection with media and no admin metadata",
   await expect(page.getByText("secret-draft-menu")).toHaveCount(0);
   await expect(page.getByText("Hidden item")).toHaveCount(0);
   await expect(page.locator("body")).not.toContainText("internal-signature");
+});
+
+test("restores deliberate public fallbacks when branding assignments are removed", async ({
+  page,
+}) => {
+  const { error: removeError } = await adminClient
+    .schema("core")
+    .from("business_media_assignments")
+    .delete()
+    .eq("business_id", businessId)
+    .eq("module_key", "restaurant");
+  if (removeError) throw removeError;
+
+  await page.goto(`/${slug}/en`);
+  await expect(page.locator('[data-branding-role="logo"]')).toHaveCount(0);
+  await expect(page.locator(".brand-symbol")).toBeVisible();
+  await expect(page.locator('[data-branding-role="hero"]')).toHaveCount(0);
+  await expect(page.locator(".hero-image")).toBeVisible();
+
+  const { error: restoreError } = await adminClient
+    .schema("core")
+    .from("business_media_assignments")
+    .insert([
+      {
+        business_id: businessId,
+        media_asset_id: mediaId,
+        module_key: "restaurant",
+        role_key: "logo",
+      },
+      {
+        business_id: businessId,
+        media_asset_id: mediaId,
+        module_key: "restaurant",
+        role_key: "hero",
+      },
+    ]);
+  if (restoreError) throw restoreError;
 });
 
 test("switches between Arabic, Hebrew, and English with correct direction", async ({ page }) => {
@@ -494,6 +539,8 @@ test("passes exact custom-host responsive QA in RTL and LTR", async ({ page }) =
     await page.setViewportSize(viewport);
     await page.goto(`http://${customHost}:3002/${index % 2 === 0 ? "" : "en"}`);
     await expect(page.getByRole("heading", { level: 1, name: publicBusinessName })).toBeVisible();
+    await expect(page.locator('[data-branding-role="logo"] img')).toBeVisible();
+    await expect(page.locator('[data-branding-role="hero"] img')).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("dir", index % 2 === 0 ? "rtl" : "ltr");
     const dimensions = await page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,

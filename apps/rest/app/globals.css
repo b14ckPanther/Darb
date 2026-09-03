@@ -113,6 +113,22 @@ summary {
   background: var(--darb-theme-primary);
 }
 
+.brand-logo {
+  display: grid;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+}
+
+.brand-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
 .header-tools {
   display: flex;
   align-items: center;
@@ -293,9 +309,40 @@ summary {
 }
 
 .hero-image img,
+.hero-image video,
 .item-card__image img,
 .item-dialog__image img {
   object-fit: cover;
+}
+
+.hero-image video {
+  height: 100%;
+  width: 100%;
+}
+
+.hero-video-control {
+  position: absolute;
+  z-index: 2;
+  inset: auto 1rem 1rem auto;
+  min-height: 2.75rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid color-mix(in srgb, white 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, #10271f 78%, transparent);
+  color: white;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
+}
+
+[dir="rtl"] .hero-video-control {
+  inset: auto auto 1rem 1rem;
+}
+
+.hero-video-control:focus-visible {
+  outline: 3px solid var(--darb-theme-accent);
+  outline-offset: 3px;
 }
 
 .hero--without-image {
