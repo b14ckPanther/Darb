@@ -70,12 +70,21 @@ An item/group assignment uses `minimum_selections` and `maximum_selections`. A m
 makes the group required; a maximum above one permits multiple selections. The database enforces
 non-negative minimums, positive maximums, a maximum of 100, and `minimum <= maximum`.
 
-## Media and locations
+## Media, branding, and locations
 
 Category and item images reference `core.media_assets` through `(business_id, id)`. A trigger
 accepts only an active image owned by the same business at attachment time. Later media archival
 retains the reference for history; renderers must treat archived media as unavailable. Restaurant
 stores neither upload paths nor storage identity.
+
+Customer-facing Restaurant branding uses the shared, module-aware media-assignment boundary rather
+than adding media columns to Restaurant content or appearance JSON. The platform registry currently
+governs two Restaurant roles: `logo` accepts images, while `hero` accepts images or video.
+`core.business_media_assignments` references the canonical business module, governed role, and
+existing `core.media_assets` row through tenant-aware keys. The database accepts only active,
+same-business assets of a role-compatible kind. Assign, replace, and remove use the idempotent
+`core.set_business_media_assignment(...)` RPC and emit redacted audit events only for actual
+changes.
 
 `item_location_availability` references canonical `core.locations` and stores only an explicit
 `available` or `sold_out` override. An absent row inherits the item's base availability. This does
@@ -187,9 +196,10 @@ function has an empty `search_path`, a narrow `anon`/`authenticated` execute gra
 `null` unless the business is active, the Restaurant module is enabled and available, Restaurant is
 publicly active, and an available Restaurant template resolves. It exposes only render-safe
 identity, enabled locales, active locations, resolved appearance, published visible content,
-active media fields, variants/modifiers, and location overrides. Internal names, actors, audit
-data, and administration timestamps are not in the contract. Raw Restaurant tables remain
-protected by their existing RLS and grants.
+active media fields, governed Restaurant branding, variants/modifiers, and location overrides.
+Internal names, original filenames, actors, audit data, and administration timestamps are not in
+the contract. Raw Restaurant and media-assignment tables remain protected by their existing RLS and
+grants.
 
 The `restaurant-signature` platform template is the current default Restaurant composition. The
 server validates its theme document, applies closed tenant overrides through `@darb/theme`, and
@@ -197,6 +207,14 @@ emits controlled CSS variables with Cairo, Heebo, or Ubuntu according to locale.
 Server Component-first; one small client controller owns native item-dialog opening, Escape,
 backdrop close, and focus restoration. A full menu arrives as one set-based projection, so the UI
 does not issue per-category/item queries.
+
+Assigned tenant media is resolved alongside—but remains separate from—the selected template and
+theme tokens. An assigned logo replaces the template Restaurant symbol. An assigned hero image or
+muted inline video takes precedence over the existing first-content-image fallback; the template
+motif remains the final fallback. Archived assignments fail closed at projection time. Video uses
+metadata-only preload, exposes a localized play/pause control, and does not autoplay for reduced-
+motion users. Public Restaurant identity remains tenant-first; Darb corporate artwork is not used
+as tenant branding.
 
 Customer presentation separates base price, absolute variant prices, non-negative modifier deltas,
 and sold-out availability without implying cart selection. JSON-LD describes only factual

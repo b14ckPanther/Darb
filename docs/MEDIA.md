@@ -1,7 +1,8 @@
 # Shared media
 
-Status: shared image/video metadata, reproducible Storage buckets, secure upload coordination, and
-the tenant admin surface are implemented. Engine references and media processing are deferred.
+Status: shared image/video metadata, reproducible Storage buckets, secure upload coordination, the
+tenant admin surface, and governed Restaurant branding assignments are implemented. Media
+processing remains deferred.
 
 ## Data and ownership
 
@@ -50,9 +51,32 @@ Alt-text changes and archive are idempotent, active-business, permission-checked
 `business.media_updated` and `business.media_archived` with narrow metadata. Archive deliberately
 retains the object; controlled physical deletion and recovery policy need a later operational design.
 
+## Governed branding assignments
+
+`core.module_media_roles` is the platform-owned registry for module presentation roles and their
+allowed media kinds. It is migration-managed; tenant clients cannot invent or edit role keys.
+`core.business_media_assignments` joins one business/module/role to one existing media asset. It
+does not copy an object, accept a URL, or create a second upload path.
+
+Restaurant currently defines `logo` (image only) and `hero` (image or video). The audited
+`core.set_business_media_assignment(...)` function derives the actor, requires business-wide
+`appearance.manage`, an active business, and an effectively enabled Restaurant capability. It
+validates active same-tenant asset ownership and role compatibility in both the function and a
+private table trigger. Assign, replace, and remove are idempotent; no-op requests create no audit
+noise. The audit actions are `business.branding_media_assigned` and
+`business.branding_media_removed`, with role/module and asset identifiers but no bucket, path, MIME,
+or filename metadata.
+
+The public Restaurant projection resolves only active assigned assets and publishes the same narrow
+delivery fields already used for customer-facing menu imagery. Tenant Admin presents assignments as
+a visual picker over its RLS-visible Media Library; users never type IDs, paths, buckets, or URLs.
+Category and item images continue to use their Restaurant-domain references and are not duplicated
+as branding assignments.
+
 ## Performance readiness
 
-Image dimensions are captured when the browser can decode them, enabling future aspect-ratio and
+Image dimensions are captured when the browser can decode them, enabling aspect-ratio and
 responsive-image decisions. Admin previews use responsive sizing and local development bypasses
-server optimization only for loopback Storage URLs. CDN/image transformation, variants, cropping,
-folders, deduplication, and engine-specific presentation are not implemented.
+server optimization only for loopback Storage URLs. The Restaurant renderer uses responsive image
+sizes and a metadata-preloaded video island with reduced-motion handling. CDN image transformation,
+derived variants, cropping, folders, and deduplication are not implemented.

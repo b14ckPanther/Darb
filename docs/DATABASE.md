@@ -20,23 +20,25 @@ to the hosted project's exposed-schema allowlist before clients can address them
 
 ## Tables
 
-| Table                           | Responsibility                                                                     |
-| ------------------------------- | ---------------------------------------------------------------------------------- |
-| `core.profiles`                 | Minimal display identity and optional locale preference linked 1:1 to `auth.users` |
-| `core.businesses`               | Canonical tenant identity, lifecycle, locale, ISO currency, and IANA timezone      |
-| `core.locations`                | Reusable business locations with minimal postal fields and no engine-specific data |
-| `core.memberships`              | Unique user-to-business relationship with active or suspended lifecycle            |
-| `core.modules`                  | Platform-owned capability key, label, description, availability, and order         |
-| `core.permissions`              | Stable permission-key registry and allowed assignment scope                        |
-| `core.membership_permissions`   | Normalized business-wide or location-scoped permission assignments                 |
-| `core.business_modules`         | Data-driven module enablement per business, independent of billing                 |
-| `core.templates`                | Platform-owned template compositions and validated default semantic themes         |
-| `core.business_visual_settings` | Tenant template selection and partial theme overrides per module context           |
-| `core.media_assets`             | Shared business media metadata and immutable Storage object identity               |
-| `core.business_domains`         | Retained ownership claims plus explicit engine-target routing lifecycle            |
-| `core.business_locales`         | Per-business enabled locale set; business default remains canonical                |
-| `core.audit_events`             | Append-oriented sensitive-operation event foundation                               |
-| `private.super_admins`          | Revocable platform-wide administrators, separate from tenant access                |
+| Table                             | Responsibility                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------------- |
+| `core.profiles`                   | Minimal display identity and optional locale preference linked 1:1 to `auth.users` |
+| `core.businesses`                 | Canonical tenant identity, lifecycle, locale, ISO currency, and IANA timezone      |
+| `core.locations`                  | Reusable business locations with minimal postal fields and no engine-specific data |
+| `core.memberships`                | Unique user-to-business relationship with active or suspended lifecycle            |
+| `core.modules`                    | Platform-owned capability key, label, description, availability, and order         |
+| `core.permissions`                | Stable permission-key registry and allowed assignment scope                        |
+| `core.membership_permissions`     | Normalized business-wide or location-scoped permission assignments                 |
+| `core.business_modules`           | Data-driven module enablement per business, independent of billing                 |
+| `core.templates`                  | Platform-owned template compositions and validated default semantic themes         |
+| `core.business_visual_settings`   | Tenant template selection and partial theme overrides per module context           |
+| `core.media_assets`               | Shared business media metadata and immutable Storage object identity               |
+| `core.module_media_roles`         | Platform-owned module branding-role registry and allowed media kinds               |
+| `core.business_media_assignments` | Tenant branding-role assignment to a canonical shared media asset                  |
+| `core.business_domains`           | Retained ownership claims plus explicit engine-target routing lifecycle            |
+| `core.business_locales`           | Per-business enabled locale set; business default remains canonical                |
+| `core.audit_events`               | Append-oriented sensitive-operation event foundation                               |
+| `private.super_admins`            | Revocable platform-wide administrators, separate from tenant access                |
 
 Internal identifiers are UUIDs and slugs remain human-readable identifiers. All stored timestamps
 use `timestamptz`; business defaults are ILS and `Asia/Jerusalem`, while no naive local timestamp or
@@ -160,6 +162,15 @@ row-locking lifecycle transition that derives its actor and writes one redacted 
 same transaction. All functions revoke `public`, `anon`, and service-role execution and grant only
 `authenticated`; each still checks `private.is_super_admin()` internally.
 
+The Restaurant branding-media migration adds
+`core.set_business_media_assignment(business_id, module_key, role_key, media_asset_id)`. The
+authenticated function derives its actor, requires `appearance.manage`, active tenant lifecycle,
+effective module state, a governed available role, and an active same-business compatible asset.
+Passing `null` removes the assignment. Repeated assign/remove requests return `changed = false` and
+emit no audit event. A private validation trigger repeats the role, kind, lifecycle, and tenant
+checks for every trusted table writer. The Restaurant public projection composes these assignments
+onto its existing customer-safe graph without granting anonymous table access.
+
 Domain ownership and routing attestation are the only service-only application RPCs. They accept
 minimal evidence from trusted DNS or deployment-provider runtime, recheck that the initiating user
 still holds `domains.manage` (or explicit platform super-admin status), and record only reviewed
@@ -199,6 +210,12 @@ Direct authenticated writes to `core.templates` and `core.business_visual_settin
 Templates are platform reference data; visual settings are tenant-readable through active
 membership RLS and writable only through the audited authenticated RPCs. The service role retains
 technical access but is not used by ordinary appearance flows.
+
+Direct authenticated writes to `core.module_media_roles` and
+`core.business_media_assignments` are also withheld. Authenticated users may read the governed role
+registry and their RLS-visible tenant assignments; ordinary writes cross only the audited assignment
+RPC. Anonymous users receive neither table and see only active render-safe assignments nested in the
+existing Restaurant publication projection.
 
 Direct authenticated Restaurant writes are withheld across all 15 tables. RLS reads require
 `restaurant.read` or `restaurant.manage`, including explicit super-admin authorization through the
@@ -279,7 +296,10 @@ Phase 11 adds curated-publication coverage. Phase 12 adds exact-host routing, co
 state, target/module/lifecycle gates, cross-tenant and anonymous denial, service-only attestation,
 primary-host invariants, immediate disconnect revocation, and redacted domain audit assertions.
 Phase 13 adds discovery grant, definer/search-path, lifecycle/module/publication eligibility,
-locale, canonical-host, and raw-table-denial coverage. The full suite contains 503 assertions.
+locale, canonical-host, and raw-table-denial coverage. Restaurant branding media adds 37 assertions
+for governed-role grants, direct-write denial, assignment idempotency, lifecycle/module/permission
+gates, tenant-safe media relationships, redacted audits, and public fallback behavior. The full
+suite contains 596 assertions.
 
 ## Intentionally deferred
 

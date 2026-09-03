@@ -59,10 +59,12 @@ lives in the dedicated `apps/rest` deployment.
 curated anonymous projection. It never reads Restaurant administration tables directly. The
 projection combines the active tenant,
 effective Restaurant capability, public configuration, enabled locales, active locations, resolved
-template/theme, published menu graph, safe media fields, modifiers, and location overrides. A null
-projection fails closed. Host routing uses an anonymous-safe exact-host resolver and an internal
-Next.js rewrite; custom and platform routes share one renderer. Canonical origin prefers the
-primary live Restaurant hostname and otherwise falls back to `rest.darb.co.il`.
+template/theme, governed tenant branding media, published menu graph, safe media fields, modifiers,
+and location overrides. Branding assignments reuse canonical shared media assets and remain
+separate from theme tokens and Restaurant content-image relationships. A null projection fails
+closed. Host routing uses an anonymous-safe exact-host resolver and an internal Next.js rewrite;
+custom and platform routes share one renderer. Canonical origin prefers the primary live Restaurant
+hostname and otherwise falls back to `rest.darb.co.il`.
 
 Search discovery uses a second narrow anonymous projection rather than raw table access. It returns
 only indexable Restaurant slugs, locales, and trusted primary hostnames. Metadata, language

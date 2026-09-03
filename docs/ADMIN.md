@@ -80,8 +80,12 @@ target, connect request, primary, and disconnect remain normal authenticated ope
 updates use one atomic `business.manage` RPC.
 
 Appearance uses normal authenticated reads plus narrow save/reset RPCs. Template selection and
-semantic overrides commit with redacted audit events. The live preview uses `@darb/theme`, the same
-typed resolution contract reserved for future renderers; no privileged client is involved.
+semantic overrides commit with redacted audit events. When Restaurant is enabled, the page also
+manages its governed `logo` and `hero` assignments through a visual, role-filtered view of the
+existing Media Library. Assign, replace, and confirmed remove use the request-scoped user client and
+one audited RPC; removing an assignment leaves the asset intact and restores the public fallback.
+The live preview uses `@darb/theme`, the same typed resolution contract used by the Restaurant
+renderer; no privileged client is involved.
 
 Business currency is read-only until monetary workflows provide a safe product policy. Tenant admins
 may select `active` or `archived`; `suspended` remains platform-controlled. Locations can be active,

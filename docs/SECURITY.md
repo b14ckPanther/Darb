@@ -173,6 +173,15 @@ requires business-wide `appearance.manage`, rechecks active tenant and enabled-m
 validates template context, accepts only a closed semantic JSON contract, and rejects critical
 contrast failure. URL/CSS/script-shaped values cannot enter the persisted theme model.
 
+Restaurant branding assignments reuse this permission but cross a separate audited media RPC.
+Tenants cannot write the platform role registry or assignment table directly. The RPC derives the
+actor, resolves an available role, locks the active business, requires an effectively enabled
+module, and accepts only an active role-compatible asset owned by that business. Tenant-aware
+foreign keys plus a private validation trigger prevent cross-business or incompatible assignment
+even for trusted writers. Anonymous callers cannot read assignment tables; the existing Restaurant
+publication function exposes only active customer-safe media fields and no filename, actor, or
+audit metadata.
+
 Restaurant administration uses the normal request-scoped authenticated client. Its Server Actions
 re-resolve the RLS-visible business, active lifecycle, module state, and Restaurant permission
 before calling the existing narrow RPCs; direct table writes remain withheld. Those RPCs require
@@ -260,6 +269,10 @@ Phase 11 proves the curated public Restaurant projection exposes only published 
 Phase 12 adds exact-host resolution, verified/live/capability/lifecycle fail-closed gates,
 permission and cross-tenant denial, service-only routing attestation, idempotent disconnect,
 primary-domain invariants, and credential-free audit coverage.
+Restaurant branding-media coverage adds governed-role grants, direct-write denial, exact
+`appearance.manage` enforcement, incompatible and inactive-asset denial, cross-tenant rejection,
+idempotent assignment/removal, redacted audits, lifecycle/module gates, and customer-safe projection
+fallbacks.
 Database fixtures are transaction-scoped and rolled back; browser fixtures are local-only and
 removed after the suite.
 

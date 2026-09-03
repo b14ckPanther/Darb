@@ -27,6 +27,12 @@ selected template and a validated partial override document. No row means: use t
 platform default template and its default tokens. Selecting a different template does not mutate
 the template definition. Disabling a module retains appearance state for a later re-enable.
 
+Branding media is a separate governed layer. Module-role assignments reference shared
+`core.media_assets`; they are not URLs or arbitrary values inside theme JSON. Customer renderers
+compose the resolved template, closed theme tokens, and valid branding assignments at read time.
+For Restaurant, `logo` and `hero` are managed beside appearance because that is the clearest tenant
+workflow, while their database ownership and validation remain in the shared media boundary.
+
 If a selected template becomes unavailable, the row is retained and reads resolve to the available
 default for that module. Unavailable templates cannot be newly selected. If no available default
 exists, the application fails closed; `@darb/theme` also provides a renderer emergency fallback,
@@ -84,6 +90,11 @@ modules and registered templates. Accessible hex/swatch controls validate canoni
 individual values, control groups, or all overrides can return to template defaults. The live
 Arabic/Hebrew/English preview resolves the same template default + tenant override pipeline future
 server-rendered customer experiences will consume.
+
+When Restaurant is effectively enabled, the same page also shows its current logo and hero, plus a
+visual picker filtered to eligible active assets from that tenant's Media Library. Removing an
+assignment deliberately restores the renderer's existing template/content fallback; it does not
+delete the underlying media asset.
 
 A future engine route must separately require authenticated tenant access, effective module
 enablement, and engine-specific permission. Appearance is presentation state, not authorization.
