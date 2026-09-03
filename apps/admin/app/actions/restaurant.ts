@@ -62,7 +62,7 @@ export async function saveRestaurantMenuAction(
 
   const { data, error } = await guarded.supabase
     .schema("restaurant")
-    .rpc("save_menu", {
+    .rpc("save_localized_menu", {
       requested_display_order: parsed.data.displayOrder,
       requested_internal_name: parsed.data.internalName,
       requested_lifecycle_status: parsed.data.lifecycleStatus,
@@ -97,7 +97,7 @@ export async function saveRestaurantCategoryAction(
 
   const { data, error } = await guarded.supabase
     .schema("restaurant")
-    .rpc("save_category", {
+    .rpc("save_localized_category", {
       requested_display_order: parsed.data.displayOrder,
       requested_image_media_asset_id: nullableRpcUuid(parsed.data.imageMediaAssetId),
       requested_internal_name: parsed.data.internalName,
@@ -113,7 +113,7 @@ export async function saveRestaurantCategoryAction(
   revalidateRestaurantPaths(guarded.businessSlug);
   return {
     message: data.created
-      ? "Category created."
+      ? "Category created with its default-language customer name."
       : data.changed
         ? "Category details saved."
         : "Category details were already up to date.",
@@ -135,7 +135,7 @@ export async function saveRestaurantItemAction(
 
   const { data, error } = await guarded.supabase
     .schema("restaurant")
-    .rpc("save_item", {
+    .rpc("save_localized_item", {
       requested_availability_status: parsed.data.availabilityStatus,
       requested_base_price_minor: parsed.data.basePriceMinor,
       requested_display_order: parsed.data.displayOrder,
@@ -176,7 +176,7 @@ export async function saveRestaurantVariantAction(
 
   const { data, error } = await guarded.supabase
     .schema("restaurant")
-    .rpc("save_item_variant", {
+    .rpc("save_localized_item_variant", {
       requested_availability_status: parsed.data.availabilityStatus,
       requested_display_order: parsed.data.displayOrder,
       requested_internal_name: parsed.data.internalName,
@@ -193,7 +193,7 @@ export async function saveRestaurantVariantAction(
   revalidateRestaurantPaths(guarded.businessSlug);
   return {
     message: data.created
-      ? "Variant created."
+      ? "Variant created with its default-language customer name."
       : data.changed
         ? "Variant saved."
         : "Variant was already up to date.",
@@ -215,7 +215,7 @@ export async function saveRestaurantModifierGroupAction(
 
   const { data, error } = await guarded.supabase
     .schema("restaurant")
-    .rpc("save_modifier_group", {
+    .rpc("save_localized_modifier_group", {
       requested_internal_name: parsed.data.internalName,
       requested_lifecycle_status: parsed.data.lifecycleStatus,
       requested_visible: parsed.data.isVisible,
@@ -228,7 +228,7 @@ export async function saveRestaurantModifierGroupAction(
   revalidateRestaurantPaths(guarded.businessSlug);
   return {
     message: data.created
-      ? "Modifier group created."
+      ? "Modifier group created with its default-language customer name."
       : data.changed
         ? "Modifier group saved."
         : "Modifier group was already up to date.",
@@ -251,7 +251,7 @@ export async function saveRestaurantModifierAction(
 
   const { data, error } = await guarded.supabase
     .schema("restaurant")
-    .rpc("save_modifier", {
+    .rpc("save_localized_modifier", {
       requested_availability_status: parsed.data.availabilityStatus,
       requested_display_order: parsed.data.displayOrder,
       requested_internal_name: parsed.data.internalName,
@@ -268,7 +268,7 @@ export async function saveRestaurantModifierAction(
   revalidateRestaurantPaths(guarded.businessSlug);
   return {
     message: data.created
-      ? "Modifier option created."
+      ? "Modifier option created with its default-language customer name."
       : data.changed
         ? "Modifier option saved."
         : "Modifier option was already up to date.",

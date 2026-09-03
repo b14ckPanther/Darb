@@ -88,7 +88,8 @@ export default async function RestaurantItemEditorPage({
 
       {created ? (
         <p className={styles.feedback} role="status">
-          Item created. Add localized customer content and optional configuration next.
+          Item created with its default-language customer name. Add other translations and optional
+          configuration next.
         </p>
       ) : null}
       {!editable ? (

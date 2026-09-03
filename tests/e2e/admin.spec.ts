@@ -778,7 +778,9 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   await addCategory.getByLabel("Internal name").fill("Coffee");
   await addCategory.getByLabel("Display position").fill("10");
   await addCategory.getByRole("button", { name: "Create category" }).click();
-  await expect(addCategory.getByText("Category created.")).toBeVisible();
+  await expect(
+    addCategory.getByText("Category created with its default-language customer name."),
+  ).toBeVisible();
 
   const addItem = page.locator("details").filter({ hasText: "Add item" }).first();
   await addItem.locator("summary").click();
@@ -790,6 +792,14 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   await addItem.getByRole("button", { name: "Create item" }).click();
   await expect(page).toHaveURL(/\/restaurant\/items\/[0-9a-f-]+\?created=1$/);
   const itemUrl = page.url().replace(/\?created=1$/, "");
+
+  const publicRestaurant = await page.request.get(
+    `http://localhost:3002/${updatedBusinessSlug}/en`,
+  );
+  expect(publicRestaurant.ok()).toBe(true);
+  const publicRestaurantHtml = await publicRestaurant.text();
+  expect(publicRestaurantHtml).toContain("Coffee");
+  expect(publicRestaurantHtml).toContain("House espresso");
 
   const englishItem = page.locator('form[lang="en"]').first();
   await englishItem.getByLabel("Customer-facing name").fill("House espresso");
@@ -803,14 +813,18 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   await addVariant.getByLabel("Absolute price").fill("16.00");
   await addVariant.getByLabel("Display position").fill("10");
   await addVariant.getByRole("button", { name: "Add variant" }).click();
-  await expect(addVariant.getByText("Variant created.")).toBeVisible();
+  await expect(
+    addVariant.getByText("Variant created with its default-language customer name."),
+  ).toBeVisible();
 
   await page.getByRole("link", { name: "Modifier library" }).click();
   const createGroup = page.locator("details").filter({ hasText: "Create modifier group" }).first();
   await createGroup.locator("summary").click();
   await createGroup.getByLabel("Internal group name").fill("Milk choice");
   await createGroup.getByRole("button", { name: "Create modifier group" }).click();
-  await expect(createGroup.getByText("Modifier group created.")).toBeVisible();
+  await expect(
+    createGroup.getByText("Modifier group created with its default-language customer name."),
+  ).toBeVisible();
 
   const groupCard = page.locator("li").filter({ hasText: "Milk choice" }).first();
   await groupCard.getByText("Edit group, translations, and options").click();
@@ -820,7 +834,9 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   await addOption.getByLabel("Price add-on").fill("2.00");
   await addOption.getByLabel("Display position").fill("10");
   await addOption.getByRole("button", { name: "Add modifier option" }).click();
-  await expect(addOption.getByText("Modifier option created.")).toBeVisible();
+  await expect(
+    addOption.getByText("Modifier option created with its default-language customer name."),
+  ).toBeVisible();
 
   await page.goto(itemUrl);
   const assignmentForm = page
@@ -892,13 +908,43 @@ test("assigns, replaces, and removes Restaurant branding through the visual Medi
   const logo = branding.getByRole("article", { name: "Restaurant logo" });
   const hero = branding.getByRole("article", { name: "Hero media" });
 
-  await logo.getByRole("button", { name: "Choose media" }).click();
+  const logoChooser = logo.getByRole("button", { name: "Choose media" });
+  const heroChooser = hero.getByRole("button", { name: "Choose media" });
+  await expect(logoChooser).toBeEnabled();
+  await expect(heroChooser).toBeEnabled();
+  await expect
+    .poll(() => logoChooser.evaluate((button) => getComputedStyle(button).cursor))
+    .not.toBe("wait");
+
+  await logoChooser.click();
   let picker = page.getByRole("dialog", { name: "Choose restaurant logo" });
+  const assignLogo = picker.getByRole("button", { name: "Assign media" });
+  await expect(assignLogo).toBeDisabled();
+  await expect
+    .poll(() => assignLogo.evaluate((button) => getComputedStyle(button).cursor))
+    .toBe("not-allowed");
   await picker.locator("label").filter({ hasText: mediaFilename }).getByRole("radio").check();
-  await picker.getByRole("button", { name: "Assign media" }).click();
+  let interruptedAssignment = false;
+  await page.route(`**/b/${updatedBusinessSlug}/appearance`, async (route) => {
+    const request = route.request();
+    if (!interruptedAssignment && request.method() === "POST" && request.headers()["next-action"]) {
+      interruptedAssignment = true;
+      await route.abort("connectionfailed");
+      return;
+    }
+    await route.continue();
+  });
+  await assignLogo.click();
+  await expect(
+    logo.getByText("The branding request did not complete. Check your connection and try again."),
+  ).toBeVisible();
+  await expect(assignLogo).toBeEnabled();
+  await page.unroute(`**/b/${updatedBusinessSlug}/appearance`);
+
+  await assignLogo.click();
   await expect(logo.getByText("Restaurant logo updated.")).toBeVisible();
 
-  await hero.getByRole("button", { name: "Choose media" }).click();
+  await heroChooser.click();
   picker = page.getByRole("dialog", { name: "Choose hero media" });
   await picker
     .locator("label")

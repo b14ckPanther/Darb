@@ -189,6 +189,7 @@ function BrandingRoleCard({
           <button
             type="button"
             className="secondary-button"
+            aria-haspopup="dialog"
             onClick={() => {
               setSelectedId(assignedId ?? "");
               setPickerOpen(true);
@@ -276,7 +277,12 @@ function BrandingRoleCard({
             >
               Cancel
             </button>
-            <button type="submit" className="primary-button" disabled={pending || !selectedId}>
+            <button
+              type="submit"
+              className="primary-button"
+              aria-busy={pending}
+              disabled={pending || !selectedId}
+            >
               {pending ? "Assigning…" : "Assign media"}
             </button>
           </footer>
@@ -301,7 +307,7 @@ function BrandingRoleCard({
         <form onSubmit={submit}>
           <input type="hidden" name="role" value={role} />
           <input type="hidden" name="mediaAssetId" value="" />
-          <button type="submit" className="danger-button" disabled={pending}>
+          <button type="submit" className="danger-button" aria-busy={pending} disabled={pending}>
             {pending ? "Removing…" : "Remove assignment"}
           </button>
         </form>

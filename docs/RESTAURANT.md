@@ -46,6 +46,15 @@ relational translation tables. Menus, categories, items, and modifier groups may
 localized description. Operational `internal_name` values remain on their canonical entities for
 administration and are not the public fallback contract.
 
+Authenticated Admin saves use `save_localized_*` wrappers for every name-bearing Restaurant
+entity. Each wrapper delegates to the existing guarded mutation, then atomically creates a missing
+translation in the business default locale from the entered internal name. This makes newly
+created, otherwise-publishable content visible without a second hidden publication step. The
+fallback is insert-only: an explicit customer-facing translation is never overwritten when an
+internal name changes. The forward migration also repairs missing default-locale translations for
+existing records already marked published/visible; draft, hidden, and archived content is not
+backfilled.
+
 Locale codes use `core.locale_code`; `(business_id, locale_code)` references
 `core.business_locales`. A locale must be enabled when a translation is created or changed.
 Disabling it later retains existing content. Primary keys enforce one translation per entity and
@@ -124,6 +133,8 @@ The authenticated mutation API is intentionally explicit:
 
 - `save_configuration`, `save_menu`, `save_category`, `save_item`, `save_item_variant`;
 - `save_modifier_group`, `save_modifier`, and fixed-branch `save_translation`;
+- six `save_localized_*` Admin wrappers that atomically supply a missing default-locale public
+  name without replacing explicit localized content;
 - `set_item_modifier_group` and `remove_item_modifier_group`;
 - `set_item_location_availability`, where `null` removes the override.
 

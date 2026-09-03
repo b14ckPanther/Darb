@@ -171,6 +171,13 @@ emit no audit event. A private validation trigger repeats the role, kind, lifecy
 checks for every trusted table writer. The Restaurant public projection composes these assignments
 onto its existing customer-safe graph without granting anonymous table access.
 
+Restaurant Admin name-bearing writes now call six `restaurant.save_localized_*` wrappers. These
+preserve the original permission, lifecycle, module, ownership, validation, and audit boundaries,
+then create a missing business-default-locale translation in the same transaction. The private
+insert-only helper cannot overwrite an explicit public translation and has no client execute
+grant. A one-time forward data repair covers existing active records already marked for public
+delivery; draft, hidden, and archived records remain untouched.
+
 Domain ownership and routing attestation are the only service-only application RPCs. They accept
 minimal evidence from trusted DNS or deployment-provider runtime, recheck that the initiating user
 still holds `domains.manage` (or explicit platform super-admin status), and record only reviewed
@@ -299,7 +306,8 @@ Phase 13 adds discovery grant, definer/search-path, lifecycle/module/publication
 locale, canonical-host, and raw-table-denial coverage. Restaurant branding media adds 37 assertions
 for governed-role grants, direct-write denial, assignment idempotency, lifecycle/module/permission
 gates, tenant-safe media relationships, redacted audits, and public fallback behavior. The full
-suite contains 596 assertions.
+suite contains 618 assertions, including default-locale publication synchronization, wrapper
+grants/search paths, public projection delivery, and explicit-translation preservation.
 
 ## Intentionally deferred
 

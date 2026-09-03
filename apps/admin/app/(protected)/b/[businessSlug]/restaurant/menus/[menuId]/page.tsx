@@ -78,7 +78,8 @@ export default async function RestaurantMenuEditorPage({
 
       {created ? (
         <p className={styles.feedback} role="status">
-          Menu created. Add customer-facing translations and structure next.
+          Menu created with its default-language customer name. Add other translations and structure
+          next.
         </p>
       ) : null}
       {!editable ? (

@@ -2129,6 +2129,108 @@ export type Database = {
           variant_id: string;
         }[];
       };
+      save_localized_category: {
+        Args: {
+          requested_display_order: number;
+          requested_image_media_asset_id: string;
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_visible: boolean;
+          target_business_id: string;
+          target_category_id: string;
+          target_menu_id: string;
+        };
+        Returns: {
+          category_id: string;
+          changed: boolean;
+          created: boolean;
+        }[];
+      };
+      save_localized_item: {
+        Args: {
+          requested_availability_status: string;
+          requested_base_price_minor: number;
+          requested_display_order: number;
+          requested_image_media_asset_id: string;
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_visible: boolean;
+          target_business_id: string;
+          target_category_id: string;
+          target_item_id: string;
+          target_menu_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          created: boolean;
+          item_id: string;
+        }[];
+      };
+      save_localized_item_variant: {
+        Args: {
+          requested_availability_status: string;
+          requested_display_order: number;
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_price_minor: number;
+          requested_visible: boolean;
+          target_business_id: string;
+          target_item_id: string;
+          target_variant_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          created: boolean;
+          variant_id: string;
+        }[];
+      };
+      save_localized_menu: {
+        Args: {
+          requested_display_order: number;
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_publication_status: string;
+          target_business_id: string;
+          target_menu_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          created: boolean;
+          menu_id: string;
+        }[];
+      };
+      save_localized_modifier: {
+        Args: {
+          requested_availability_status: string;
+          requested_display_order: number;
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_price_delta_minor: number;
+          requested_visible: boolean;
+          target_business_id: string;
+          target_modifier_group_id: string;
+          target_modifier_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          created: boolean;
+          modifier_id: string;
+        }[];
+      };
+      save_localized_modifier_group: {
+        Args: {
+          requested_internal_name: string;
+          requested_lifecycle_status: string;
+          requested_visible: boolean;
+          target_business_id: string;
+          target_modifier_group_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          created: boolean;
+          modifier_group_id: string;
+        }[];
+      };
       save_menu: {
         Args: {
           requested_display_order: number;
