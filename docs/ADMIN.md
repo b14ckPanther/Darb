@@ -118,6 +118,13 @@ language hints and mixed-direction data retains explicit direction handling. The
 semantic landmarks, skip navigation, visible focus,
 touch-sized actions, `aria-current`, reduced-motion handling, and responsive layout behavior.
 
+The Admin interface is available in Arabic, Hebrew, and English through the shared `@darb/i18n`
+locale contract and an Admin-owned message catalogue. The shell language control persists an
+authenticated user's choice to `core.profiles.preferred_locale` through the ordinary RLS-bound
+client and keeps request rendering synchronized with an HTTP-only same-site cookie. It is a personal
+UI preference only: switching Admin language does not mutate the business default or public locale
+set. Login may use the same cookie before authentication.
+
 ## Static engine extension contract
 
 `AdminEngineContribution` is the lightweight application-level contract for engine-owned

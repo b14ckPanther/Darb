@@ -219,6 +219,12 @@ Server Component-first; one small client controller owns native item-dialog open
 backdrop close, and focus restoration. A full menu arrives as one set-based projection, so the UI
 does not issue per-category/item queries.
 
+Darb-owned public controls and system states use the three-language Restaurant catalogue, including
+the engine landing, loading, error, not-found, locale and location controls, sold-out and
+availability text, item dialogs, and media controls. Tenant-authored names and descriptions continue
+to resolve exclusively through the Restaurant translation tables and retain their source language
+metadata. No Darb corporate copy or identity is injected into a tenant presentation.
+
 Assigned tenant media is resolved alongside—but remains separate from—the selected template and
 theme tokens. An assigned logo replaces the template Restaurant symbol. An assigned hero image or
 muted inline video takes precedence over the existing first-content-image fallback; the template
