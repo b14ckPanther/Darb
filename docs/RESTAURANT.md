@@ -179,6 +179,20 @@ before calling the existing audited RPCs. Ordinary tenant administration never u
 client or writes Restaurant tables directly. Business switching preserves only the Restaurant
 section root, so resource identifiers from one tenant never carry into another.
 
+The menu editor is the operational content workspace. Its responsive item inventory searches both
+localized and management names, filters by category, availability, and image state, and exposes
+image, price, visibility, variant, and modifier-assignment signals without loading another query per
+row. Availability can be changed in place through the same full, validated item RPC; transport
+failures restore the control and produce an actionable inline error. Item editors have sticky
+section navigation for content, variants, modifiers, and location inheritance. Numeric display
+positions remain the deterministic, keyboard-accessible ordering mechanism; lower values render
+first.
+
+The Overview links to the public platform route, which then applies the existing trusted
+custom-domain canonicalization rules. It also highlights real missing-image, enabled-language, and
+sold-out counts. Restaurant media choices use business-authored alternative text rather than raw
+storage paths, identifiers, or filenames.
+
 `restaurant.read` provides useful read-only administration. Mutation controls require
 `restaurant.manage`, an active business, and an effectively enabled capability. A disabled
 capability redirects its stale admin route to the business Overview; unavailable capabilities and

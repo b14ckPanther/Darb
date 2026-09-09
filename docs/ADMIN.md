@@ -33,7 +33,8 @@ local storage.
 - `/b/[businessSlug]/locations/new` creates a reusable core location;
 - `/b/[businessSlug]/locations/[locationId]` edits or archives one accessible location.
 - `/b/[businessSlug]/restaurant` is the capability- and permission-gated Restaurant workspace;
-- `/b/[businessSlug]/restaurant/menus` manages menus, categories, items, and localized content;
+- `/b/[businessSlug]/restaurant/menus` manages menus, categories, localized content, and a
+  responsive searchable/filterable item inventory;
 - `/b/[businessSlug]/restaurant/items/[itemId]` manages variants, modifiers, and location state;
 - `/b/[businessSlug]/restaurant/modifiers` manages the reusable modifier library.
 
