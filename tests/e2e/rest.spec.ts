@@ -215,6 +215,13 @@ test("uses current Darb identity only on the Darb-owned Restaurant landing", asy
     "href",
     "https://darb.co.il",
   );
+  await page.getByRole("button", { name: "العربية" }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(
+    page.getByRole("heading", { name: "قائمة المطعم، بتجربة مرتّبة وواضحة." }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "تعرّف على درب" })).toBeVisible();
 
   const icon = await request.get("/icon.png");
   expect(icon.ok()).toBe(true);

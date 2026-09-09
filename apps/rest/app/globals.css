@@ -831,6 +831,35 @@ summary {
   text-transform: uppercase;
 }
 
+.system-languages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-block: 1rem 0.5rem;
+}
+
+.system-languages button {
+  min-height: 2.75rem;
+  padding-inline: 0.85rem;
+  border: 1px solid rgb(16 36 28 / 16%);
+  border-radius: 999px;
+  color: #33483f;
+  background: rgb(255 255 255 / 58%);
+  cursor: pointer;
+  font: inherit;
+}
+
+.system-languages button[aria-pressed="true"] {
+  border-color: #173c32;
+  color: #fff;
+  background: #173c32;
+}
+
+.system-languages button:focus-visible {
+  outline: 3px solid rgb(187 143 58 / 42%);
+  outline-offset: 2px;
+}
+
 .platform-landing h1,
 .system-state h1 {
   max-width: 15ch;

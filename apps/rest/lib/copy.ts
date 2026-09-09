@@ -9,7 +9,15 @@ interface RestaurantCopy {
   details: string;
   language: string;
   location: string;
+  loading: string;
   menu: string;
+  landingDescription: string;
+  landingTitle: string;
+  productName: string;
+  retry: string;
+  loadErrorDescription: string;
+  loadErrorTitle: string;
+  visitDarb: string;
   heroVideo: (businessName: string) => string;
   pauseHeroVideo: string;
   playHeroVideo: string;
@@ -31,31 +39,41 @@ interface RestaurantCopy {
 const copy: Record<SupportedLocale, RestaurantCopy> = {
   ar: {
     allLocations: "كل الفروع",
-    availableAt: "التوفر في هذا الفرع",
+    availableAt: "المتوفر بهالفرع",
     categories: "التصنيفات",
-    chooseLocation: "اختر الفرع",
-    close: "إغلاق",
+    chooseLocation: "اختار الفرع",
+    close: "سكّر",
     details: "التفاصيل",
     language: "اللغة",
     location: "الفرع",
+    loading: "عم نحمّل القائمة",
     menu: "القائمة",
+    landingDescription: "افتح رابط المطعم على درب عشان تشوف قائمته المنشورة.",
+    landingTitle: "قائمة المطعم، بتجربة مرتّبة وواضحة.",
+    productName: "درب للمطاعم",
+    retry: "جرّب كمان مرة",
+    loadErrorDescription: "ما قدرنا نحمّل القائمة هالمرة. جرّب كمان مرة.",
+    loadErrorTitle: "القائمة ما تحمّلت",
+    visitDarb: "تعرّف على درب",
     heroVideo: (businessName) => `فيديو الغلاف لـ ${businessName}`,
     pauseHeroVideo: "وقّف الفيديو",
     playHeroVideo: "شغّل الفيديو",
     modifierOptional: "اختياري",
     modifierRequired: "مطلوب",
-    noItems: "لا توجد أصناف منشورة في هذا القسم بعد.",
-    noMenusDescription: "لم تُنشر قائمة للعرض بعد. يرجى العودة لاحقًا.",
-    noMenusTitle: "القائمة قيد التحضير",
-    poweredBy: "مقدّم من درب",
+    noItems: "لسّه ما في أصناف منشورة بهالقسم.",
+    noMenusDescription: "لسّه ما اننشرت القائمة. ارجع شوفها بعد شوي.",
+    noMenusTitle: "القائمة عم تتحضّر",
+    poweredBy: "بدعم من درب",
     selections: (minimum, maximum) =>
-      minimum > 0 ? `اختر من ${minimum} إلى ${maximum}` : `اختر حتى ${maximum}`,
-    skipToMenu: "انتقل إلى القائمة",
-    soldOut: "نفدت الكمية",
-    unavailableDescription: "هذه الصفحة غير متاحة حاليًا.",
-    unavailableTitle: "المطعم غير متاح",
+      minimum > 0
+        ? `اختار من ${formatCount(minimum, "ar")} لـ ${formatCount(maximum, "ar")}`
+        : `اختار لحد ${formatCount(maximum, "ar")}`,
+    skipToMenu: "روح للقائمة",
+    soldOut: "خلص لليوم",
+    unavailableDescription: "الصفحة مش منشورة أو مش متاحة هلا.",
+    unavailableTitle: "المطعم مش متاح هلا",
     variants: "الأحجام والخيارات",
-    viewDetails: "عرض التفاصيل",
+    viewDetails: "شوف التفاصيل",
   },
   he: {
     allLocations: "כל הסניפים",
@@ -66,7 +84,15 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     details: "פרטים",
     language: "שפה",
     location: "סניף",
+    loading: "טוענים את התפריט",
     menu: "תפריט",
+    landingDescription: "פותחים את הקישור של המסעדה ב-Darb כדי לראות את התפריט שפורסם.",
+    landingTitle: "תפריט המסעדה, בחוויה ברורה ונעימה.",
+    productName: "Darb למסעדות",
+    retry: "לנסות שוב",
+    loadErrorDescription: "לא הצלחנו לטעון את התפריט כרגע. אפשר לנסות שוב.",
+    loadErrorTitle: "התפריט לא נטען",
+    visitDarb: "להכיר את Darb",
     heroVideo: (businessName) => `סרטון השער של ${businessName}`,
     pauseHeroVideo: "השהיית הסרטון",
     playHeroVideo: "הפעלת הסרטון",
@@ -77,10 +103,12 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     noMenusTitle: "התפריט בהכנה",
     poweredBy: "מופעל באמצעות Darb",
     selections: (minimum, maximum) =>
-      minimum > 0 ? `יש לבחור ${minimum} עד ${maximum}` : `עד ${maximum} בחירות`,
+      minimum > 0
+        ? `יש לבחור ${formatCount(minimum, "he")} עד ${formatCount(maximum, "he")}`
+        : `עד ${formatCount(maximum, "he")} בחירות`,
     skipToMenu: "דילוג לתפריט",
     soldOut: "אזל",
-    unavailableDescription: "העמוד הזה אינו זמין כרגע.",
+    unavailableDescription: "העמוד לא פורסם או שהוא לא זמין כרגע.",
     unavailableTitle: "המסעדה אינה זמינה",
     variants: "גדלים ואפשרויות",
     viewDetails: "הצגת פרטים",
@@ -94,7 +122,15 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     details: "Details",
     language: "Language",
     location: "Location",
+    loading: "Loading restaurant menu",
     menu: "Menu",
+    landingDescription: "Use a restaurant’s Darb link to view its published menu.",
+    landingTitle: "Restaurant experiences, thoughtfully served.",
+    productName: "Darb Restaurant",
+    retry: "Try again",
+    loadErrorDescription: "The menu could not be loaded. Please try again.",
+    loadErrorTitle: "We couldn’t load this menu",
+    visitDarb: "Visit Darb",
     heroVideo: (businessName) => `${businessName} hero video`,
     pauseHeroVideo: "Pause video",
     playHeroVideo: "Play video",
@@ -105,10 +141,12 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     noMenusTitle: "The menu is being prepared",
     poweredBy: "Powered by Darb",
     selections: (minimum, maximum) =>
-      minimum > 0 ? `Choose ${minimum} to ${maximum}` : `Choose up to ${maximum}`,
+      minimum > 0
+        ? `Choose ${formatCount(minimum, "en")} to ${formatCount(maximum, "en")}`
+        : `Choose up to ${formatCount(maximum, "en")}`,
     skipToMenu: "Skip to menu",
     soldOut: "Sold out",
-    unavailableDescription: "This page is not available right now.",
+    unavailableDescription: "This page is not published or is no longer available.",
     unavailableTitle: "Restaurant unavailable",
     variants: "Sizes and options",
     viewDetails: "View details",
@@ -117,4 +155,8 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
 
 export function getRestaurantCopy(locale: SupportedLocale): RestaurantCopy {
   return copy[locale];
+}
+
+function formatCount(value: number, locale: SupportedLocale): string {
+  return new Intl.NumberFormat(locale).format(value);
 }

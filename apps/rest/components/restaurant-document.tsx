@@ -6,6 +6,7 @@ import { cairo, heebo, ubuntu } from "../app/fonts";
 import "../app/globals.css";
 import { getRestaurantCopy } from "../lib/copy";
 import { resolveRestaurantTheme } from "../lib/theme";
+import { RestaurantLocaleProvider } from "./restaurant-locale";
 
 export function RestaurantDocument({
   children,
@@ -28,7 +29,7 @@ export function RestaurantDocument({
     >
       <body>
         <SkipLink href="#menu-content">{copy.skipToMenu}</SkipLink>
-        {children}
+        <RestaurantLocaleProvider locale={locale}>{children}</RestaurantLocaleProvider>
       </body>
     </html>
   );
