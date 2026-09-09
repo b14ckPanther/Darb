@@ -107,6 +107,14 @@ export default async function RestaurantItemEditorPage({
         </PermissionNotice>
       ) : null}
 
+      <nav className={styles.editorNav} aria-label={t("Item editor sections")}>
+        <a href="#item-core-heading">{t("Core details")}</a>
+        <a href="#item-translations-heading">{t("Languages")}</a>
+        <a href="#item-variants-heading">{t("Variants")}</a>
+        <a href="#item-modifiers-heading">{t("Modifiers")}</a>
+        <a href="#item-locations-heading">{t("Locations")}</a>
+      </nav>
+
       <section className={styles.panel} aria-labelledby="item-core-heading">
         <div className={styles.panelHeader}>
           <div>
@@ -204,6 +212,12 @@ export default async function RestaurantItemEditorPage({
               itemId={snapshot.item.id}
             />
           </details>
+        ) : null}
+        {snapshot.variants.length === 0 ? (
+          <div className={styles.compactEmpty}>
+            <strong>{t("No variants configured")}</strong>
+            <p>{t("Keep the base item as-is, or add sizes and other priced choices here.")}</p>
+          </div>
         ) : null}
         <ul className={styles.entityList}>
           {snapshot.variants.map((variant) => {
@@ -309,6 +323,12 @@ export default async function RestaurantItemEditorPage({
           <p className={styles.hint}>
             {t("Create a modifier group in the library before assigning one.")}
           </p>
+        ) : null}
+        {snapshot.assignments.length === 0 && snapshot.modifierGroups.length > 0 ? (
+          <div className={styles.compactEmpty}>
+            <strong>{t("No modifier groups assigned")}</strong>
+            <p>{t("Assign only the choices customers need for this item.")}</p>
+          </div>
         ) : null}
         <ul className={styles.entityList}>
           {snapshot.assignments.map((assignment) => {

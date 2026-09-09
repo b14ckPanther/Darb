@@ -1,6 +1,97 @@
 import type { AdminTranslations } from "./i18n";
 
 export const actionMessages = {
+  "The Restaurant request did not complete. Check your connection and try again.": {
+    ar: "طلب المطعم ما اكتمل. افحص اتصالك وجرّب كمان مرة.",
+    he: "בקשת המסעדה לא הושלמה. בדקו את החיבור ונסו שוב.",
+  },
+  "Assignment was already up to date.": {
+    ar: "ربط مجموعة الإضافات كان محدّث من قبل.",
+    he: "שיוך קבוצת התוספות כבר היה מעודכן.",
+  },
+  "Category created with its default-language customer name.": {
+    ar: "انعمل التصنيف باسمه بلغة الشغل الأساسية.",
+    he: "הקטגוריה נוצרה עם שם הלקוח בשפת ברירת המחדל.",
+  },
+  "Category details saved.": { ar: "انحفظت تفاصيل التصنيف.", he: "פרטי הקטגוריה נשמרו." },
+  "Category details were already up to date.": {
+    ar: "تفاصيل التصنيف كانت محدّثة من قبل.",
+    he: "פרטי הקטגוריה כבר היו מעודכנים.",
+  },
+  "Item details saved.": { ar: "انحفظت تفاصيل الصنف.", he: "פרטי הפריט נשמרו." },
+  "Item details were already up to date.": {
+    ar: "تفاصيل الصنف كانت محدّثة من قبل.",
+    he: "פרטי הפריט כבר היו מעודכנים.",
+  },
+  "Localized content saved.": { ar: "انحفظ محتوى اللغة.", he: "התוכן המתורגם נשמר." },
+  "Localized content was already up to date.": {
+    ar: "محتوى اللغة كان محدّث من قبل.",
+    he: "התוכן המתורגם כבר היה מעודכן.",
+  },
+  "Location availability saved.": {
+    ar: "انحفظ توفر الصنف بالفرع.",
+    he: "זמינות הפריט בסניף נשמרה.",
+  },
+  "Location availability was already up to date.": {
+    ar: "توفر الصنف بالفرع كان محدّث من قبل.",
+    he: "זמינות הפריט בסניף כבר הייתה מעודכנת.",
+  },
+  "Menu details saved.": { ar: "انحفظت تفاصيل المنيو.", he: "פרטי התפריט נשמרו." },
+  "Menu details were already up to date.": {
+    ar: "تفاصيل المنيو كانت محدّثة من قبل.",
+    he: "פרטי התפריט כבר היו מעודכנים.",
+  },
+  "Modifier group assignment saved.": {
+    ar: "انحفظ ربط مجموعة الإضافات.",
+    he: "שיוך קבוצת התוספות נשמר.",
+  },
+  "Modifier group created with its default-language customer name.": {
+    ar: "انعملت مجموعة الإضافات باسمها بلغة الشغل الأساسية.",
+    he: "קבוצת התוספות נוצרה עם שם הלקוח בשפת ברירת המחדל.",
+  },
+  "Modifier group removed from item.": {
+    ar: "انشال ربط مجموعة الإضافات عن الصنف.",
+    he: "קבוצת התוספות הוסרה מהפריט.",
+  },
+  "Modifier group saved.": { ar: "انحفظت مجموعة الإضافات.", he: "קבוצת התוספות נשמרה." },
+  "Modifier group was already up to date.": {
+    ar: "مجموعة الإضافات كانت محدّثة من قبل.",
+    he: "קבוצת התוספות כבר הייתה מעודכנת.",
+  },
+  "Modifier option created with its default-language customer name.": {
+    ar: "انعمل خيار الإضافة باسمه بلغة الشغل الأساسية.",
+    he: "אפשרות התוספת נוצרה עם שם הלקוח בשפת ברירת המחדל.",
+  },
+  "Modifier option saved.": { ar: "انحفظ خيار الإضافة.", he: "אפשרות התוספת נשמרה." },
+  "Modifier option was already up to date.": {
+    ar: "خيار الإضافة كان محدّث من قبل.",
+    he: "אפשרות התוספת כבר הייתה מעודכנת.",
+  },
+  "Restaurant configuration was already up to date.": {
+    ar: "إعدادات المطعم كانت محدّثة من قبل.",
+    he: "הגדרות המסעדה כבר היו מעודכנות.",
+  },
+  "Restaurant public experience marked active.": {
+    ar: "تجربة المطعم للزبائن صارت فعّالة.",
+    he: "חוויית המסעדה הציבורית סומנה כפעילה.",
+  },
+  "Restaurant public experience marked inactive.": {
+    ar: "تجربة المطعم للزبائن صارت متوقفة.",
+    he: "חוויית המסעדה הציבורית סומנה כלא פעילה.",
+  },
+  "The group was not assigned.": {
+    ar: "مجموعة الإضافات مش مربوطة بهالصنف.",
+    he: "קבוצת התוספות לא הייתה משויכת.",
+  },
+  "Variant created with its default-language customer name.": {
+    ar: "انعمل الخيار باسمه بلغة الشغل الأساسية.",
+    he: "הווריאציה נוצרה עם שם הלקוח בשפת ברירת המחדל.",
+  },
+  "Variant saved.": { ar: "انحفظ الخيار.", he: "הווריאציה נשמרה." },
+  "Variant was already up to date.": {
+    ar: "الخيار كان محدّث من قبل.",
+    he: "הווריאציה כבר הייתה מעודכנת.",
+  },
   "Alternative text saved.": { ar: "انحفظ النص البديل.", he: "הטקסט החלופי נשמר." },
   "Appearance cannot be changed while this business is not active.": {
     ar: "ما بتقدر تغيّر المظهر طول ما الشغل مش فعّال.",

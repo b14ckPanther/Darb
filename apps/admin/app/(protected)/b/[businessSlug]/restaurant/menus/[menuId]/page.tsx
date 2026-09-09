@@ -1,8 +1,7 @@
 import { getAdminI18n } from "../../../../../../../lib/i18n-server";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { ArrowRightIcon, PlusIcon, RestaurantIcon, TranslationIcon } from "@darb/icons";
+import { PlusIcon, RestaurantIcon, TranslationIcon } from "@darb/icons";
 
 import { PageHeader } from "../../../../../../_components/page-header";
 import { PermissionNotice } from "../../../../../../_components/permission-notice";
@@ -29,6 +28,7 @@ import {
   MenuForm,
   TranslationEditor,
 } from "../../restaurant-forms";
+import { MenuContentWorkspace } from "../../menu-content-workspace";
 import styles from "../../restaurant.module.css";
 
 export default async function RestaurantMenuEditorPage({
@@ -57,6 +57,17 @@ export default async function RestaurantMenuEditorPage({
       locale: translation.locale_code,
       name: translation.name,
     }));
+  const categoryNames = new Map(
+    snapshot.categories.map((category) => [
+      category.id,
+      snapshot.categoryTranslations.find(
+        (translation) =>
+          translation.category_id === category.id &&
+          translation.locale_code === business.default_locale,
+      )?.name ?? category.internal_name,
+    ]),
+  );
+  const mediaById = new Map(media.map((asset) => [asset.id, asset]));
 
   return (
     <div className={styles.page}>
@@ -99,7 +110,7 @@ export default async function RestaurantMenuEditorPage({
         <div className={styles.panelHeader}>
           <div>
             <h2 id="menu-details-heading">{t("Menu details")}</h2>
-            <p>{t("Internal identity, publication intent, and deterministic display position.")}</p>
+            <p>{t("Management name, publication state, and deterministic display position.")}</p>
           </div>
           <StatusBadge status={snapshot.menu.lifecycle_status} />
         </div>
@@ -176,6 +187,12 @@ export default async function RestaurantMenuEditorPage({
               media={media}
             />
           </details>
+        ) : null}
+        {snapshot.categories.length === 0 ? (
+          <div className={styles.compactEmpty}>
+            <strong>{t("No categories in this menu")}</strong>
+            <p>{t("Add the first section customers will use to scan this menu.")}</p>
+          </div>
         ) : null}
         <ul className={styles.entityList}>
           {snapshot.categories.map((category) => {
@@ -302,33 +319,47 @@ export default async function RestaurantMenuEditorPage({
             </p>
           </div>
         ) : (
-          <ul className={styles.entityList}>
-            {snapshot.items.map((item) => {
-              const translation = snapshot.itemTranslations.find(
-                (candidate) =>
-                  candidate.item_id === item.id &&
-                  candidate.locale_code === business.default_locale,
-              );
-              return (
-                <li className={styles.entityCard} key={item.id}>
-                  <div className={styles.entitySummary}>
-                    <span>
-                      <strong dir="auto">{translation?.name ?? item.internal_name}</strong>
-                      <small>
-                        {item.internal_name} ·{" "}
-                        {item.availability_status === "sold_out" ? t("Sold out") : t("Available")}
-                      </small>
-                    </span>
-                    <StatusBadge status={item.lifecycle_status} />
-                    <Link className={styles.entityLink} href={`${base}/items/${item.id}`}>
-                      {t("Open item")}
-                      <ArrowRightIcon size={15} />
-                    </Link>
-                  </div>
-                </li>
-              );
+          <MenuContentWorkspace
+            businessId={business.id}
+            businessSlug={business.slug}
+            categories={snapshot.categories
+              .filter((category) => category.lifecycle_status === "active")
+              .map((category) => ({ id: category.id, name: categoryNames.get(category.id)! }))}
+            currencyCode={business.currency_code}
+            editable={editable}
+            menuId={snapshot.menu.id}
+            items={snapshot.items.map((item) => {
+              const image = item.image_media_asset_id
+                ? mediaById.get(item.image_media_asset_id)
+                : null;
+              return {
+                availabilityStatus: item.availability_status,
+                basePriceMinor: item.base_price_minor,
+                categoryId: item.category_id,
+                categoryName: categoryNames.get(item.category_id) ?? t("Archived category"),
+                displayOrder: item.display_order,
+                hasImage: image !== null && image !== undefined,
+                id: item.id,
+                imageAlt: image?.alt ?? null,
+                imageId: item.image_media_asset_id,
+                imageUrl: image?.url ?? null,
+                internalName: item.internal_name,
+                isVisible: item.is_visible,
+                lifecycleStatus: item.lifecycle_status,
+                localizedName:
+                  snapshot.itemTranslations.find(
+                    (translation) =>
+                      translation.item_id === item.id &&
+                      translation.locale_code === business.default_locale,
+                  )?.name ?? item.internal_name,
+                modifierGroupCount: snapshot.assignments.filter(
+                  (assignment) => assignment.item_id === item.id,
+                ).length,
+                variantCount: snapshot.variants.filter((variant) => variant.item_id === item.id)
+                  .length,
+              };
             })}
-          </ul>
+          />
         )}
       </section>
     </div>

@@ -4,8 +4,11 @@ import Link from "next/link";
 import {
   ArrowRightIcon,
   CheckmarkCircleIcon,
+  ExternalLinkIcon,
+  ImageIcon,
   InformationCircleIcon,
   RestaurantIcon,
+  TranslationIcon,
 } from "@darb/icons";
 
 import { PageHeader } from "../../../../_components/page-header";
@@ -31,7 +34,12 @@ export default async function RestaurantOverviewPage({
   const context = await requireRestaurantAdminContext(businessSlug);
   const { business } = context.businessContext;
   const supabase = await createServerComponentSupabaseClient();
-  const snapshot = await loadRestaurantOverview(supabase, business.id);
+  const snapshot = await loadRestaurantOverview(
+    supabase,
+    business.id,
+    business.slug,
+    business.default_locale,
+  );
   const editable = canMutateRestaurant(context);
   const restaurantBase = `${businessPath(business.slug)}/restaurant`;
 
@@ -54,10 +62,21 @@ export default async function RestaurantOverviewPage({
           />
         }
         actions={
-          <Link className="primary-link" href={`${restaurantBase}/menus`}>
-            {t("Manage menus")}
-            <ArrowRightIcon size={17} />
-          </Link>
+          <div className={styles.headerActions}>
+            <a
+              className="secondary-link"
+              href={snapshot.publicUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t("View public menu")}
+              <ExternalLinkIcon size={16} />
+            </a>
+            <Link className="primary-link" href={`${restaurantBase}/menus`}>
+              {t("Manage menus")}
+              <ArrowRightIcon size={17} />
+            </Link>
+          </div>
         }
       />
 
@@ -135,6 +154,36 @@ export default async function RestaurantOverviewPage({
           />
         </section>
       </div>
+
+      <section className={styles.attentionPanel} aria-labelledby="restaurant-attention-heading">
+        <div className={styles.panelHeader}>
+          <div>
+            <h2 id="restaurant-attention-heading">{t("Needs your attention")}</h2>
+            <p>{t("Practical content gaps you can improve before customers see the menu.")}</p>
+          </div>
+          <Link className={styles.entityLink} href={`${restaurantBase}/menus`}>
+            {t("Review menu content")}
+            <ArrowRightIcon size={15} />
+          </Link>
+        </div>
+        <div className={styles.attentionGrid}>
+          <div>
+            <ImageIcon size={19} />
+            <strong>{snapshot.itemsMissingImageCount}</strong>
+            <span>{t("Items missing images")}</span>
+          </div>
+          <div>
+            <TranslationIcon size={19} />
+            <strong>{snapshot.itemsMissingTranslationsCount}</strong>
+            <span>{t("Items missing enabled-language content")}</span>
+          </div>
+          <div>
+            <RestaurantIcon size={19} />
+            <strong>{snapshot.soldOutItemCount}</strong>
+            <span>{t("Items currently sold out")}</span>
+          </div>
+        </div>
+      </section>
 
       <section className={styles.panel} aria-labelledby="restaurant-detail-heading">
         <div className={styles.panelHeader}>

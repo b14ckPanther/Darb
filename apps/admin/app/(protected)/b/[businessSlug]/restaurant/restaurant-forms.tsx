@@ -3,7 +3,7 @@
 import { useAdminI18n } from "../../../../../lib/i18n-client";
 
 import Image from "next/image";
-import { useActionState, useId, useState } from "react";
+import { useCallback, useId, useState } from "react";
 
 import { ArchiveIcon, CheckmarkCircleIcon, ImageIcon } from "@darb/icons";
 import { formatMinorMoneyInput } from "@darb/restaurant";
@@ -23,7 +23,7 @@ import {
   setRestaurantItemModifierGroupAction,
   setRestaurantLocationAvailabilityAction,
 } from "../../../../actions/restaurant";
-import { initialFormState, type FormState } from "../../../../../lib/forms";
+import type { FormState } from "../../../../../lib/forms";
 import type {
   RestaurantCategory,
   RestaurantItem,
@@ -34,6 +34,7 @@ import type {
   RestaurantModifierGroup,
 } from "../../../../../lib/restaurant";
 import styles from "./restaurant.module.css";
+import { useRestaurantActionState } from "./use-restaurant-action-state";
 
 export interface RestaurantMediaOption {
   alt: string;
@@ -63,7 +64,7 @@ export function ConfigurationForm({
 }) {
   const { t } = useAdminI18n();
   const action = saveRestaurantConfigurationAction.bind(null, businessId, businessSlug);
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const [state, formAction, pending] = useRestaurantActionState(action);
 
   return (
     <form className={styles.form} action={formAction}>
@@ -72,6 +73,7 @@ export function ConfigurationForm({
         <input
           type="checkbox"
           name="publiclyActive"
+          aria-label={t("Public Restaurant experience active")}
           defaultChecked={publiclyActive}
           disabled={!editable}
         />
@@ -106,14 +108,14 @@ export function MenuForm({
 }) {
   const { t } = useAdminI18n();
   const action = saveRestaurantMenuAction.bind(null, businessId, businessSlug, menu?.id ?? null);
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const [state, formAction, pending] = useRestaurantActionState(action);
   const archived = menu?.lifecycle_status === "archived";
 
   return (
     <form className={styles.form} action={formAction}>
       <FormFeedback state={state} />
       <div className={styles.formGrid}>
-        <Field label={t("Internal name")} error={state.fieldErrors?.internalName} wide>
+        <Field label={t("Management name")} error={state.fieldErrors?.internalName} wide>
           <input
             name="internalName"
             defaultValue={menu?.internal_name ?? ""}
@@ -141,6 +143,7 @@ export function MenuForm({
             max={1_000_000}
             disabled={!editable || archived}
           />
+          <small className={styles.hint}>{t("Lower numbers appear first.")}</small>
         </Field>
       </div>
       <input type="hidden" name="lifecycleStatus" value="active" />
@@ -177,7 +180,7 @@ export function CategoryForm({
     businessSlug,
     category?.id ?? null,
   );
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const [state, formAction, pending] = useRestaurantActionState(action);
   const archived = category?.lifecycle_status === "archived";
 
   return (
@@ -186,7 +189,7 @@ export function CategoryForm({
       <input type="hidden" name="menuId" value={menuId} />
       <input type="hidden" name="lifecycleStatus" value="active" />
       <div className={styles.formGrid}>
-        <Field label={t("Internal name")} error={state.fieldErrors?.internalName} wide>
+        <Field label={t("Management name")} error={state.fieldErrors?.internalName} wide>
           <input
             name="internalName"
             defaultValue={category?.internal_name ?? ""}
@@ -194,6 +197,7 @@ export function CategoryForm({
             required
             disabled={!editable || archived}
           />
+          <small className={styles.hint}>{t("Lower numbers appear first.")}</small>
         </Field>
         <Field label={t("Display position")} error={state.fieldErrors?.displayOrder}>
           <input
@@ -255,7 +259,7 @@ export function ItemForm({
 }) {
   const { t } = useAdminI18n();
   const action = saveRestaurantItemAction.bind(null, businessId, businessSlug, item?.id ?? null);
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const [state, formAction, pending] = useRestaurantActionState(action);
   const archived = item?.lifecycle_status === "archived";
 
   return (
@@ -264,7 +268,7 @@ export function ItemForm({
       <input type="hidden" name="menuId" value={menuId} />
       <input type="hidden" name="lifecycleStatus" value="active" />
       <div className={styles.formGrid}>
-        <Field label={t("Internal name")} error={state.fieldErrors?.internalName} wide>
+        <Field label={t("Management name")} error={state.fieldErrors?.internalName} wide>
           <input
             name="internalName"
             defaultValue={item?.internal_name ?? ""}
@@ -272,6 +276,7 @@ export function ItemForm({
             required
             disabled={!editable || archived}
           />
+          <small className={styles.hint}>{t("Lower numbers appear first.")}</small>
         </Field>
         <Field label={t("Category")} error={state.fieldErrors?.categoryId}>
           <select
@@ -322,6 +327,7 @@ export function ItemForm({
             max={1_000_000}
             disabled={!editable || archived}
           />
+          <small className={styles.hint}>{t("Lower numbers appear first.")}</small>
         </Field>
         <div className={styles.field}>
           <span className={styles.checkRow}>
@@ -373,7 +379,7 @@ export function VariantForm({
     itemId,
     variant?.id ?? null,
   );
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const [state, formAction, pending] = useRestaurantActionState(action);
   const archived = variant?.lifecycle_status === "archived";
 
   return (
@@ -458,14 +464,14 @@ export function ModifierGroupForm({
     businessSlug,
     group?.id ?? null,
   );
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const [state, formAction, pending] = useRestaurantActionState(action);
   const archived = group?.lifecycle_status === "archived";
   return (
     <form className={styles.form} action={formAction}>
       <FormFeedback state={state} />
       <input type="hidden" name="lifecycleStatus" value="active" />
       <div className={styles.formGrid}>
-        <Field label={t("Internal group name")} error={state.fieldErrors?.internalName}>
+        <Field label={t("Management group name")} error={state.fieldErrors?.internalName}>
           <input
             name="internalName"
             defaultValue={group?.internal_name ?? ""}
@@ -515,7 +521,7 @@ export function ModifierForm({
     groupId,
     modifier?.id ?? null,
   );
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const [state, formAction, pending] = useRestaurantActionState(action);
   const archived = modifier?.lifecycle_status === "archived";
   return (
     <form className={styles.form} action={formAction}>
@@ -559,6 +565,7 @@ export function ModifierForm({
             defaultValue={modifier?.display_order ?? 0}
             disabled={!editable || archived}
           />
+          <small className={styles.hint}>{t("Lower numbers appear first.")}</small>
         </Field>
         <label className={styles.checkRow}>
           <input
@@ -641,7 +648,7 @@ function TranslationLocaleForm({
   supportsDescription: boolean;
 }) {
   const { t, locale: adminLocale } = useAdminI18n();
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const [state, formAction, pending] = useRestaurantActionState(action);
   return (
     <form
       className={`${styles.form} ${styles.translationCard}`}
@@ -711,7 +718,7 @@ export function ModifierAssignmentForm({
 }) {
   const { t } = useAdminI18n();
   const action = setRestaurantItemModifierGroupAction.bind(null, businessId, businessSlug, itemId);
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const [state, formAction, pending] = useRestaurantActionState(action);
   return (
     <form className={styles.form} action={formAction}>
       <FormFeedback state={state} />
@@ -807,11 +814,8 @@ export function AssignedModifierGroupForm({
     itemId,
     group.id,
   );
-  const [saveState, saveFormAction, savePending] = useActionState(saveAction, initialFormState);
-  const [removeState, removeFormAction, removePending] = useActionState(
-    removeAction,
-    initialFormState,
-  );
+  const [saveState, saveFormAction, savePending] = useRestaurantActionState(saveAction);
+  const [removeState, removeFormAction, removePending] = useRestaurantActionState(removeAction);
   return (
     <div className={styles.entityCard}>
       <strong>{group.internal_name}</strong>
@@ -897,7 +901,7 @@ export function LocationAvailabilityForm({
     itemId,
     locationId,
   );
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const [state, formAction, pending] = useRestaurantActionState(action);
   return (
     <form className={styles.locationRow} action={formAction}>
       <span>
@@ -945,7 +949,15 @@ export function ArchiveControl({
 }) {
   const { t } = useAdminI18n();
   const [open, setOpen] = useState(false);
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+  const archiveAction = useCallback(
+    async (previousState: FormState, formData: FormData) => {
+      const result = await action(previousState, formData);
+      if (result.status === "success") setOpen(false);
+      return result;
+    },
+    [action],
+  );
+  const [state, formAction, pending] = useRestaurantActionState(archiveAction);
   return (
     <>
       <FormFeedback state={state} />

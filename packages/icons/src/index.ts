@@ -27,6 +27,7 @@ import {
   Menu02Icon,
   PlusSignIcon,
   RefreshIcon,
+  Search01Icon,
   Settings02Icon,
   Shield01Icon,
   TextFontIcon,
@@ -171,6 +172,10 @@ export function VisibilityOffIcon(props: DarbIconProps): ReactElement {
 
 export function ResetIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(RefreshIcon, props);
+}
+
+export function SearchIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(Search01Icon, props);
 }
 
 export function SettingsIcon(props: DarbIconProps): ReactElement {

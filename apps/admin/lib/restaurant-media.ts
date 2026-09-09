@@ -18,7 +18,7 @@ export function createRestaurantMediaOptions(
   return assets.map((asset) => ({
     alt: asset.alt_text || "Business media image",
     id: asset.id,
-    label: asset.original_filename,
+    label: asset.alt_text || "Business media image",
     url: buildPublicMediaUrl(url, asset.storage_bucket, asset.storage_path),
   }));
 }

@@ -9,6 +9,7 @@ import { listBusinessLocales, mapBusinessLocaleState } from "./business-locales"
 import type { AccessibleLocation } from "./auth";
 import type { AccessibleMediaAsset } from "./media";
 import { listBusinessMediaAssets } from "./media";
+import { buildRestaurantPublicUrl } from "./restaurant-operations";
 
 type RestaurantTables = Database["restaurant"]["Tables"];
 export type RestaurantConfiguration = RestaurantTables["configurations"]["Row"];
@@ -35,10 +36,13 @@ export interface RestaurantOverviewSnapshot {
   configured: boolean;
   enabledLocaleCount: number;
   itemWithImageCount: number;
+  itemsMissingImageCount: number;
+  itemsMissingTranslationsCount: number;
   locationOverrideCount: number;
   modifierGroupCount: number;
   publishedMenuCount: number;
   publiclyActive: boolean;
+  publicUrl: string;
   readiness: RestaurantReadinessItem[];
   soldOutItemCount: number;
   translatedItemCount: number;
@@ -53,10 +57,12 @@ export interface RestaurantMenuListSnapshot {
 }
 
 export interface RestaurantMenuEditorSnapshot extends RestaurantMenuListSnapshot {
+  assignments: RestaurantItemModifierGroup[];
   categoryTranslations: RestaurantCategoryTranslation[];
   itemTranslations: RestaurantItemTranslation[];
   media: AccessibleMediaAsset[];
   menu: RestaurantMenu;
+  variants: RestaurantItemVariant[];
 }
 
 export interface RestaurantItemEditorSnapshot {
@@ -86,6 +92,8 @@ export interface RestaurantModifierLibrarySnapshot {
 export async function loadRestaurantOverview(
   supabase: DarbServerSupabaseClient,
   businessId: string,
+  businessSlug: string,
+  defaultLocale: Database["core"]["Enums"]["locale_code"],
 ): Promise<RestaurantOverviewSnapshot> {
   const [
     configuration,
@@ -111,6 +119,12 @@ export async function loadRestaurantOverview(
   const activeItems = items.filter((item) => item.lifecycle_status === "active");
   const enabledLocaleCount = locales.filter((locale) => locale.is_enabled).length;
   const translatedItemCount = new Set(translations.map((translation) => translation.item_id)).size;
+  const enabledLocales = locales
+    .filter((locale) => locale.is_enabled)
+    .map((locale) => locale.locale_code);
+  const itemWithImageCount = activeItems.filter(
+    (item) => item.image_media_asset_id !== null,
+  ).length;
   const readinessInput = {
     activeCategoryCount: activeCategories.length,
     activeItemCount: activeItems.length,
@@ -126,9 +140,24 @@ export async function loadRestaurantOverview(
 
   return {
     ...readinessInput,
-    itemWithImageCount: activeItems.filter((item) => item.image_media_asset_id !== null).length,
+    itemWithImageCount,
+    itemsMissingImageCount: activeItems.length - itemWithImageCount,
+    itemsMissingTranslationsCount: activeItems.filter((item) =>
+      enabledLocales.some(
+        (locale) =>
+          !translations.some(
+            (translation) => translation.item_id === item.id && translation.locale_code === locale,
+          ),
+      ),
+    ).length,
     locationOverrideCount: overrides.length,
     readiness: deriveRestaurantReadiness(readinessInput),
+    publicUrl: buildRestaurantPublicUrl({
+      businessSlug,
+      defaultLocale,
+      locale: defaultLocale,
+      primaryHostname: null,
+    }),
     soldOutItemCount: activeItems.filter((item) => item.availability_status === "sold_out").length,
     translatedItemCount,
   };
@@ -154,24 +183,33 @@ export async function loadRestaurantMenuEditor(
   businessId: string,
   menuId: string,
 ): Promise<RestaurantMenuEditorSnapshot | null> {
-  const [snapshot, categoryTranslations, itemTranslations, media] = await Promise.all([
-    loadRestaurantMenuList(supabase, businessId),
-    selectCategoryTranslations(supabase, businessId),
-    selectItemTranslations(supabase, businessId),
-    listBusinessMediaAssets(supabase, businessId),
-  ]);
+  const [snapshot, categoryTranslations, itemTranslations, variants, assignments, media] =
+    await Promise.all([
+      loadRestaurantMenuList(supabase, businessId),
+      selectCategoryTranslations(supabase, businessId),
+      selectItemTranslations(supabase, businessId),
+      selectItemVariants(supabase, businessId),
+      selectItemModifierGroups(supabase, businessId),
+      listBusinessMediaAssets(supabase, businessId),
+    ]);
   const menu = snapshot.menus.find((candidate) => candidate.id === menuId);
 
   if (!menu) return null;
 
   return {
     ...snapshot,
+    assignments: assignments.filter((assignment) =>
+      snapshot.items.some((item) => item.menu_id === menu.id && item.id === assignment.item_id),
+    ),
     categories: snapshot.categories.filter((category) => category.menu_id === menu.id),
     categoryTranslations,
     itemTranslations,
     items: snapshot.items.filter((item) => item.menu_id === menu.id),
     media: media.filter((asset) => asset.status === "active" && asset.media_kind === "image"),
     menu,
+    variants: variants.filter((variant) =>
+      snapshot.items.some((item) => item.menu_id === menu.id && item.id === variant.item_id),
+    ),
   };
 }
 

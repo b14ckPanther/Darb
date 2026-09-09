@@ -106,7 +106,7 @@ export default async function RestaurantMenusPage({
                     <span>
                       <strong dir="auto">{customerName ?? menu.internal_name}</strong>
                       <small>
-                        {t("Internal: {name} · Categories: {categories} · Items: {items}", {
+                        {t("Admin name: {name} · Categories: {categories} · Items: {items}", {
                           name: menu.internal_name,
                           categories: categoryCount,
                           items: itemCount,
