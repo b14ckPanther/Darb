@@ -85,10 +85,11 @@ describe("public copy", () => {
     const allArabicCopy = JSON.stringify(copy);
 
     expect(copy.nav.story).toBe("شو هو درب");
-    expect(copy.hero.titleLead).toBe("شغلك.");
-    expect(copy.hero.description).toContain("الأدوات اللي بتحتاجها اليوم");
-    expect(copy.story.principle).toBe("أساس واحد. شغل مختلف. وكل واحد إله طريقه.");
-    expect(copy.products.honestNote).toContain("مش متاحة هلا");
+    expect(copy.hero.titleLead).toBe("مجالات كثيرة.");
+    expect(copy.hero.titleAccent).toBe("درب واحد.");
+    expect(copy.hero.description).toContain("درب ببني لشغلك عالمه الرقمي الخاص");
+    expect(copy.story.principle).toBe("كل مجال إله منطقه. ودرب مبني على هالفكرة.");
+    expect(copy.products.honestNote).toContain("درب عنده أكثر بكثير ليقدّمه");
 
     for (const formalPhrase of ["تعذّر", "يمكنك", "انتقل إلى", "صُمم", "تمنح الأعمال"]) {
       expect(allArabicCopy).not.toContain(formalPhrase);

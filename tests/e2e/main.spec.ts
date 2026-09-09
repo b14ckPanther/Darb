@@ -1,23 +1,18 @@
 import { expect, test } from "@playwright/test";
+import { mainSiteCopy } from "../../apps/main/lib/copy";
 
 const localeCases = [
   {
     locale: "ar",
     direction: "rtl",
-    heading: "شغلك. بطريقك.",
-    title: "درب — الأساس الرقمي اللي بمشي مع شغلك",
   },
   {
     locale: "he",
     direction: "rtl",
-    heading: "העסק שלך. בדרך שלך.",
-    title: "Darb — בסיס דיגיטלי בדרך של העסק שלך",
   },
   {
     locale: "en",
     direction: "ltr",
-    heading: "Your business. Your way.",
-    title: "Darb — A digital foundation, your way",
   },
 ] as const;
 
@@ -27,7 +22,9 @@ test("resolves the root intentionally to the Arabic public experience", async ({
   await expect(page).toHaveURL(/\/ar$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-  await expect(page.getByRole("heading", { level: 1, name: "شغلك. بطريقك." })).toBeVisible();
+  await expect(page.locator("#hero-title")).toHaveText(
+    `${mainSiteCopy.ar.hero.titleLead}${mainSiteCopy.ar.hero.titleAccent}`,
+  );
 });
 
 for (const localeCase of localeCases) {
@@ -38,8 +35,12 @@ for (const localeCase of localeCases) {
 
     await expect(page.locator("html")).toHaveAttribute("lang", localeCase.locale);
     await expect(page.locator("html")).toHaveAttribute("dir", localeCase.direction);
-    await expect(page).toHaveTitle(localeCase.title);
-    await expect(page.getByRole("heading", { level: 1, name: localeCase.heading })).toBeVisible();
+    const copy = mainSiteCopy[localeCase.locale];
+    await expect(page).toHaveTitle(copy.metadata.title);
+    await expect(page.locator("#hero-title")).toHaveText(
+      `${copy.hero.titleLead}${copy.hero.titleAccent}`,
+    );
+    await expect(page.locator(".hero__description")).toHaveText(copy.hero.description);
     await expect(page.locator('[data-darb-mark="current"]').first()).toBeVisible();
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
@@ -71,9 +72,9 @@ test("switches locale through stable public routes", async ({ page }) => {
   await page.getByRole("link", { name: "English", exact: true }).first().click();
   await expect(page).toHaveURL(/\/en$/);
   await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Your business. Your way." }),
-  ).toBeVisible();
+  await expect(page.locator("#hero-title")).toHaveText(
+    `${mainSiteCopy.en.hero.titleLead}${mainSiteCopy.en.hero.titleAccent}`,
+  );
 });
 
 test("selects typography by rendered script instead of page locale", async ({ page }) => {
@@ -111,7 +112,7 @@ test("provides a focus-managed mobile navigation", async ({ page }) => {
 
   const opener = page.getByRole("button", { name: "Open menu" });
   await opener.click();
-  const dialog = page.getByRole("dialog", { name: "Business Experience Platform" });
+  const dialog = page.getByRole("dialog", { name: mainSiteCopy.en.brandDescriptor });
   await expect(dialog).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-navigation-open", "true");
 
@@ -150,7 +151,9 @@ test("reflows without document overflow and respects reduced motion", async ({ p
     .locator(".hero__scroll-line")
     .evaluate((element) => getComputedStyle(element, "::after").animationDuration);
   expect(Number.parseFloat(animationDuration)).toBeLessThanOrEqual(0.00001);
-  await expect(page.getByRole("heading", { level: 1, name: "העסק שלך. בדרך שלך." })).toBeVisible();
+  await expect(page.locator("#hero-title")).toHaveText(
+    `${mainSiteCopy.he.hero.titleLead}${mainSiteCopy.he.hero.titleAccent}`,
+  );
 });
 
 test("publishes index, sitemap, manifest, health, and hardened headers", async ({ request }) => {
