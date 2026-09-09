@@ -160,6 +160,40 @@ tenant-isolation tests and document security-sensitive decisions.
 - Avoid empty abstractions, placeholder packages, and files whose only purpose is to make the
   repository look larger.
 
+## Progress tracking
+
+Before implementing any non-trivial task, break its complete lifecycle into concrete milestones and
+maintain a compact live checklist throughout execution. Report an approximate completion percentage
+after each meaningful milestone or major state change. Base that percentage on work actually
+completed—not elapsed time, command duration, context usage, or token usage—and treat it as an
+informed completion estimate rather than a time estimate. Do not estimate remaining minutes without
+genuinely sufficient evidence.
+
+The milestone plan and percentage must account for every applicable part of the task: analysis and
+audit, implementation, integration, debugging, migrations, automated tests, builds, E2E tests,
+browser and visual QA, accessibility and responsive verification, cleanup, documentation, final
+diff and security review, commits, and final verification. Revise both the milestones and percentage
+when bugs or additional required work expand the scope; never preserve an obsolete percentage
+artificially, and never report 100% before all required implementation and verification are complete.
+
+When practical, use this compact format:
+
+```text
+Progress: 65%
+
+[x] Analyze existing implementation
+[x] Implement core changes
+[x] Integrate affected components
+[ ] Run automated tests
+[ ] Perform E2E / visual QA
+[ ] Final cleanup and verification
+```
+
+For resumed or interrupted work, recover milestone state from the worktree and prior execution
+context, preserve completed work, and recalculate progress from what actually remains instead of
+resetting to zero. A long-running command alone does not advance progress. Progress reports may be
+omitted for genuinely trivial tasks and should remain compact enough not to interrupt execution.
+
 ## Git and documentation professionalism
 
 Never add AI co-author attribution, Codex attribution, Cursor attribution, Antigravity attribution,
