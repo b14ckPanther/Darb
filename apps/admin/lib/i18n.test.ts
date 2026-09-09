@@ -21,6 +21,10 @@ describe("Admin localization", () => {
   it("translates and interpolates without changing unknown technical values", () => {
     const t = createAdminTranslator("ar", getAdminMessages("ar"));
     expect(t("Business settings")).toBe("إعدادات الشغل");
+    expect(t("Category created with its default-language customer name.")).toBe(
+      "انعمل التصنيف باسمه بلغة الشغل الأساسية.",
+    );
+    expect(t("Search by customer or internal name")).toBe("دوّر بالاسم الظاهر أو الداخلي");
     expect(t("{count} locations", { count: 3 })).toContain("3");
     expect(t("restaurant.manage")).toBe("restaurant.manage");
   });

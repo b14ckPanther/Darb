@@ -924,7 +924,7 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   await page.getByRole("link", { name: "Menus & items" }).click();
   const createMenu = page.locator("details").filter({ hasText: "Create a menu" }).first();
   await createMenu.locator("summary").click();
-  await createMenu.getByLabel("Internal name").fill("All day menu");
+  await createMenu.getByLabel("Management name").fill("All day menu");
   await createMenu.getByLabel("Publication").selectOption("published");
   await createMenu.getByLabel("Display position").fill("10");
   await createMenu.getByRole("button", { name: "Create menu" }).click();
@@ -939,7 +939,7 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
 
   const addCategory = page.locator("details").filter({ hasText: "Add category" }).first();
   await addCategory.locator("summary").click();
-  await addCategory.getByLabel("Internal name").fill("Coffee");
+  await addCategory.getByLabel("Management name").fill("Coffee");
   await addCategory.getByLabel("Display position").fill("10");
   await addCategory.getByRole("button", { name: "Create category" }).click();
   await expect(
@@ -948,11 +948,11 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
 
   const addItem = page.locator("details").filter({ hasText: "Add item" }).first();
   await addItem.locator("summary").click();
-  await addItem.getByLabel("Internal name").fill("House espresso");
+  await addItem.getByLabel("Management name").fill("House espresso");
   await addItem.getByLabel("Category").selectOption({ label: "Coffee" });
   await addItem.getByLabel("Base price").fill("12.50");
   await addItem.getByLabel("Display position").fill("10");
-  await addItem.getByRole("radio", { name: mediaFilename }).check();
+  await addItem.getByRole("radio", { name: "Updated accessible Darb asset" }).check();
   await addItem.getByRole("button", { name: "Create item" }).click();
   await expect(page).toHaveURL(/\/restaurant\/items\/[0-9a-f-]+\?created=1$/);
   const itemUrl = page.url().replace(/\?created=1$/, "");
@@ -984,7 +984,7 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   await page.getByRole("link", { name: "Modifier library" }).click();
   const createGroup = page.locator("details").filter({ hasText: "Create modifier group" }).first();
   await createGroup.locator("summary").click();
-  await createGroup.getByLabel("Internal group name").fill("Milk choice");
+  await createGroup.getByLabel("Management group name").fill("Milk choice");
   await createGroup.getByRole("button", { name: "Create modifier group" }).click();
   await expect(
     createGroup.getByText("Modifier group created with its default-language customer name."),
@@ -1038,6 +1038,58 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
     .toBeLessThanOrEqual(44);
   await confirmation.getByRole("button", { name: "Cancel" }).click();
   await expect(archiveItem).toBeFocused();
+
+  await page.goto(menuUrl);
+  const inventory = page.getByRole("search", { name: "Filter menu items" });
+  await expect(inventory).toBeVisible();
+  await inventory.getByPlaceholder("Search by customer or internal name").fill("espresso");
+  await expect(page.getByText("House espresso", { exact: true })).toBeVisible();
+  await inventory.getByLabel("Filter by image").selectOption("without_image");
+  await expect(page.getByText("No items match these filters")).toBeVisible();
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(page.getByRole("img", { name: "Updated accessible Darb asset" })).toBeVisible();
+
+  const availability = page.getByRole("button", { name: "Available", exact: true }).last();
+  let interruptedAvailability = false;
+  await page.route(`**/b/${updatedBusinessSlug}/restaurant/menus/**`, async (route) => {
+    const request = route.request();
+    if (
+      !interruptedAvailability &&
+      request.method() === "POST" &&
+      request.headers()["next-action"]
+    ) {
+      interruptedAvailability = true;
+      await route.abort("connectionfailed");
+      return;
+    }
+    await route.continue();
+  });
+  await availability.click();
+  await expect(
+    page.getByText("The Restaurant request did not complete. Check your connection and try again."),
+  ).toBeVisible();
+  await expect(availability).toBeEnabled();
+  await page.unroute(`**/b/${updatedBusinessSlug}/restaurant/menus/**`);
+
+  await availability.click();
+  await expect(page.getByRole("button", { name: "Sold out", exact: true }).last()).toBeVisible();
+  await page.reload();
+  const soldOut = page.getByRole("button", { name: "Sold out", exact: true }).last();
+  await expect(soldOut).toBeVisible();
+  await soldOut.click();
+  await expect(page.getByRole("button", { name: "Available", exact: true }).last()).toBeVisible();
+
+  for (const viewport of [
+    { height: 844, width: 390 },
+    { height: 1024, width: 768 },
+    { height: 900, width: 1440 },
+    { height: 1080, width: 1920 },
+  ]) {
+    await page.setViewportSize(viewport);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      viewport.width + 1,
+    );
+  }
 
   await page.getByLabel("Current business").selectOption(secondBusinessSlug);
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}$`));
