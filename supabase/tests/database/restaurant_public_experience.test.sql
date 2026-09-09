@@ -54,14 +54,17 @@ select is(
 );
 select results_eq(
   $$select key, module_key, is_default, is_available
-    from core.templates where module_key = 'restaurant'$$,
-  $$values ('restaurant-signature'::text, 'restaurant'::text, true, true)$$,
-  'Restaurant has one available platform-owned default composition'
+    from core.templates where module_key = 'restaurant' order by sort_order$$,
+  $$values
+      ('restaurant-signature'::text, 'restaurant'::text, true, true),
+      ('restaurant-editorial'::text, 'restaurant'::text, false, true),
+      ('restaurant-counter'::text, 'restaurant'::text, false, true)$$,
+  'Restaurant has three available platform-owned compositions and one default'
 );
 select ok(
-  (select private.theme_has_safe_critical_contrast(default_theme)
-   from core.templates where key = 'restaurant-signature'),
-  'the Restaurant default theme passes critical contrast checks'
+  (select bool_and(private.theme_has_safe_critical_contrast(default_theme))
+   from core.templates where module_key = 'restaurant'),
+  'every Restaurant template theme passes critical contrast checks'
 );
 
 insert into core.businesses (id, slug, display_name, default_locale, status)
