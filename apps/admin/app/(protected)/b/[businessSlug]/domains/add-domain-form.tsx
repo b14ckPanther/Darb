@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import { useActionState } from "react";
 
 import { DomainIcon } from "@darb/icons";
@@ -13,6 +15,7 @@ interface AddDomainFormProps {
 }
 
 export function AddDomainForm({ businessId, businessSlug }: AddDomainFormProps) {
+  const { t } = useAdminI18n();
   const action = addBusinessDomainAction.bind(null, businessId, businessSlug);
   const [state, formAction, pending] = useActionState(action, initialFormState);
 
@@ -23,13 +26,13 @@ export function AddDomainForm({ businessId, businessSlug }: AddDomainFormProps) 
           <DomainIcon size={23} />
         </span>
         <div>
-          <h2 id="add-domain-heading">Claim a hostname</h2>
-          <p>Enter only the hostname. Darb will normalize it and generate DNS proof.</p>
+          <h2 id="add-domain-heading">{t("Claim a hostname")}</h2>
+          <p>{t("Enter only the hostname. Darb will normalize it and generate DNS proof.")}</p>
         </div>
       </div>
       <form action={formAction}>
         <div className="field-group">
-          <label htmlFor="domain-hostname">Hostname</label>
+          <label htmlFor="domain-hostname">{t("Hostname")}</label>
           <input
             id="domain-hostname"
             name="hostname"
@@ -43,21 +46,21 @@ export function AddDomainForm({ businessId, businessSlug }: AddDomainFormProps) 
             required
           />
           <p id="domain-hostname-hint" className="field-hint">
-            No https://, path, or port.
+            {t("No https://, path, or port.")}
           </p>
           {state.fieldErrors?.hostname ? (
             <p id="domain-hostname-error" className="field-error">
-              {state.fieldErrors.hostname}
+              {t(state.fieldErrors.hostname)}
             </p>
           ) : null}
         </div>
         <button type="submit" className="primary-button" disabled={pending}>
-          {pending ? "Adding securely…" : "Add domain"}
+          {pending ? t("Adding securely…") : t("Add domain")}
         </button>
       </form>
       {state.message ? (
         <p className={state.status === "success" ? "success-alert" : "form-alert"} role="status">
-          {state.message}
+          {t(state.message)}
         </p>
       ) : null}
     </section>

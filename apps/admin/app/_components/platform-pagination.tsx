@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+
+import { useAdminI18n } from "../../lib/i18n-client";
 
 interface PlatformPaginationProps {
   currentPage: number;
@@ -15,21 +19,22 @@ export function PlatformPagination({
   total,
   pageSize = 25,
 }: PlatformPaginationProps) {
+  const { t } = useAdminI18n();
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   if (totalPages === 1) return null;
 
   return (
-    <nav className="platform-pagination" aria-label="Pagination">
+    <nav className="platform-pagination" aria-label={t("Pagination")}>
       <Link
         className={`secondary-button${currentPage <= 1 ? " is-disabled" : ""}`}
         href={buildPageHref(pathname, searchParams, Math.max(1, currentPage - 1))}
         aria-disabled={currentPage <= 1}
         tabIndex={currentPage <= 1 ? -1 : undefined}
       >
-        Previous
+        {t("Previous")}
       </Link>
       <p aria-live="polite">
-        Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+        {t("Page {currentPage} of {totalPages}", { currentPage, totalPages })}
       </p>
       <Link
         className={`secondary-button${currentPage >= totalPages ? " is-disabled" : ""}`}
@@ -37,7 +42,7 @@ export function PlatformPagination({
         aria-disabled={currentPage >= totalPages}
         tabIndex={currentPage >= totalPages ? -1 : undefined}
       >
-        Next
+        {t("Next")}
       </Link>
     </nav>
   );

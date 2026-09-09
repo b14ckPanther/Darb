@@ -1,11 +1,13 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import Image from "next/image";
 import { useActionState, useId, useState } from "react";
 
 import { ArchiveIcon, CheckmarkCircleIcon, ImageIcon } from "@darb/icons";
 import { formatMinorMoneyInput } from "@darb/restaurant";
-import { getTextDirection, type SupportedLocale } from "@darb/i18n";
+import { getTextDirection, localeNames, type SupportedLocale } from "@darb/i18n";
 
 import { ConfirmationDialog } from "../../../../_components/confirmation-dialog";
 import {
@@ -59,6 +61,7 @@ export function ConfigurationForm({
   editable: boolean;
   publiclyActive: boolean;
 }) {
+  const { t } = useAdminI18n();
   const action = saveRestaurantConfigurationAction.bind(null, businessId, businessSlug);
   const [state, formAction, pending] = useActionState(action, initialFormState);
 
@@ -73,16 +76,16 @@ export function ConfigurationForm({
           disabled={!editable}
         />
         <span>
-          <strong>Public Restaurant experience active</strong>
+          <strong>{t("Public Restaurant experience active")}</strong>
           <small className={styles.hint}>
-            Operational intent only. Phase 11 will add the safe public renderer.
+            {t("Customers can view published, visible menu content when this is active.")}
           </small>
         </span>
       </label>
       {editable ? (
         <div className={styles.actions}>
           <button className="primary-button" type="submit" disabled={pending}>
-            {pending ? "Saving configuration…" : "Save configuration"}
+            {pending ? t("Saving configuration…") : t("Save configuration")}
           </button>
         </div>
       ) : null}
@@ -101,6 +104,7 @@ export function MenuForm({
   editable: boolean;
   menu?: RestaurantMenu;
 }) {
+  const { t } = useAdminI18n();
   const action = saveRestaurantMenuAction.bind(null, businessId, businessSlug, menu?.id ?? null);
   const [state, formAction, pending] = useActionState(action, initialFormState);
   const archived = menu?.lifecycle_status === "archived";
@@ -109,7 +113,7 @@ export function MenuForm({
     <form className={styles.form} action={formAction}>
       <FormFeedback state={state} />
       <div className={styles.formGrid}>
-        <Field label="Internal name" error={state.fieldErrors?.internalName} wide>
+        <Field label={t("Internal name")} error={state.fieldErrors?.internalName} wide>
           <input
             name="internalName"
             defaultValue={menu?.internal_name ?? ""}
@@ -118,17 +122,17 @@ export function MenuForm({
             disabled={!editable || archived}
           />
         </Field>
-        <Field label="Publication" error={state.fieldErrors?.publicationStatus}>
+        <Field label={t("Publication")} error={state.fieldErrors?.publicationStatus}>
           <select
             name="publicationStatus"
             defaultValue={menu?.publication_status ?? "draft"}
             disabled={!editable || archived}
           >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
+            <option value="draft">{t("Draft")}</option>
+            <option value="published">{t("Published")}</option>
           </select>
         </Field>
-        <Field label="Display position" error={state.fieldErrors?.displayOrder}>
+        <Field label={t("Display position")} error={state.fieldErrors?.displayOrder}>
           <input
             type="number"
             name="displayOrder"
@@ -143,7 +147,7 @@ export function MenuForm({
       {editable && !archived ? (
         <div className={styles.actions}>
           <button className="primary-button" type="submit" disabled={pending}>
-            {pending ? "Saving menu…" : menu ? "Save menu" : "Create menu"}
+            {pending ? t("Saving menu…") : menu ? t("Save menu") : t("Create menu")}
           </button>
         </div>
       ) : null}
@@ -166,6 +170,7 @@ export function CategoryForm({
   media: RestaurantMediaOption[];
   menuId: string;
 }) {
+  const { t } = useAdminI18n();
   const action = saveRestaurantCategoryAction.bind(
     null,
     businessId,
@@ -181,7 +186,7 @@ export function CategoryForm({
       <input type="hidden" name="menuId" value={menuId} />
       <input type="hidden" name="lifecycleStatus" value="active" />
       <div className={styles.formGrid}>
-        <Field label="Internal name" error={state.fieldErrors?.internalName} wide>
+        <Field label={t("Internal name")} error={state.fieldErrors?.internalName} wide>
           <input
             name="internalName"
             defaultValue={category?.internal_name ?? ""}
@@ -190,7 +195,7 @@ export function CategoryForm({
             disabled={!editable || archived}
           />
         </Field>
-        <Field label="Display position" error={state.fieldErrors?.displayOrder}>
+        <Field label={t("Display position")} error={state.fieldErrors?.displayOrder}>
           <input
             type="number"
             name="displayOrder"
@@ -210,7 +215,7 @@ export function CategoryForm({
               disabled={!editable || archived}
             />
             <label htmlFor={`category-visible-${category?.id ?? "new"}`}>
-              Visible to customers
+              {t("Visible to customers")}
             </label>
           </span>
         </div>
@@ -223,7 +228,7 @@ export function CategoryForm({
       {editable && !archived ? (
         <div className={styles.actions}>
           <button className="primary-button" type="submit" disabled={pending}>
-            {pending ? "Saving category…" : category ? "Save category" : "Create category"}
+            {pending ? t("Saving category…") : category ? t("Save category") : t("Create category")}
           </button>
         </div>
       ) : null}
@@ -248,6 +253,7 @@ export function ItemForm({
   media: RestaurantMediaOption[];
   menuId: string;
 }) {
+  const { t } = useAdminI18n();
   const action = saveRestaurantItemAction.bind(null, businessId, businessSlug, item?.id ?? null);
   const [state, formAction, pending] = useActionState(action, initialFormState);
   const archived = item?.lifecycle_status === "archived";
@@ -258,7 +264,7 @@ export function ItemForm({
       <input type="hidden" name="menuId" value={menuId} />
       <input type="hidden" name="lifecycleStatus" value="active" />
       <div className={styles.formGrid}>
-        <Field label="Internal name" error={state.fieldErrors?.internalName} wide>
+        <Field label={t("Internal name")} error={state.fieldErrors?.internalName} wide>
           <input
             name="internalName"
             defaultValue={item?.internal_name ?? ""}
@@ -267,7 +273,7 @@ export function ItemForm({
             disabled={!editable || archived}
           />
         </Field>
-        <Field label="Category" error={state.fieldErrors?.categoryId}>
+        <Field label={t("Category")} error={state.fieldErrors?.categoryId}>
           <select
             name="categoryId"
             defaultValue={item?.category_id ?? ""}
@@ -275,7 +281,7 @@ export function ItemForm({
             disabled={!editable || archived}
           >
             <option value="" disabled>
-              Choose category
+              {t("Choose category")}
             </option>
             {categories
               .filter((category) => category.lifecycle_status === "active")
@@ -286,7 +292,7 @@ export function ItemForm({
               ))}
           </select>
         </Field>
-        <Field label="Base price" error={state.fieldErrors?.price}>
+        <Field label={t("Base price")} error={state.fieldErrors?.price}>
           <input
             name="price"
             inputMode="decimal"
@@ -297,17 +303,17 @@ export function ItemForm({
             disabled={!editable || archived}
           />
         </Field>
-        <Field label="Availability" error={state.fieldErrors?.availabilityStatus}>
+        <Field label={t("Availability")} error={state.fieldErrors?.availabilityStatus}>
           <select
             name="availabilityStatus"
             defaultValue={item?.availability_status ?? "available"}
             disabled={!editable || archived}
           >
-            <option value="available">Available</option>
-            <option value="sold_out">Sold out</option>
+            <option value="available">{t("Available")}</option>
+            <option value="sold_out">{t("Sold out")}</option>
           </select>
         </Field>
-        <Field label="Display position" error={state.fieldErrors?.displayOrder}>
+        <Field label={t("Display position")} error={state.fieldErrors?.displayOrder}>
           <input
             type="number"
             name="displayOrder"
@@ -326,7 +332,7 @@ export function ItemForm({
               defaultChecked={item?.is_visible ?? true}
               disabled={!editable || archived}
             />
-            <label htmlFor={`item-visible-${item?.id ?? "new"}`}>Visible to customers</label>
+            <label htmlFor={`item-visible-${item?.id ?? "new"}`}>{t("Visible to customers")}</label>
           </span>
         </div>
         <MediaPicker
@@ -338,7 +344,7 @@ export function ItemForm({
       {editable && !archived ? (
         <div className={styles.actions}>
           <button className="primary-button" type="submit" disabled={pending}>
-            {pending ? "Saving item…" : item ? "Save item" : "Create item"}
+            {pending ? t("Saving item…") : item ? t("Save item") : t("Create item")}
           </button>
         </div>
       ) : null}
@@ -359,6 +365,7 @@ export function VariantForm({
   itemId: string;
   variant?: RestaurantItemVariant;
 }) {
+  const { t } = useAdminI18n();
   const action = saveRestaurantVariantAction.bind(
     null,
     businessId,
@@ -374,7 +381,7 @@ export function VariantForm({
       <FormFeedback state={state} />
       <input type="hidden" name="lifecycleStatus" value="active" />
       <div className={styles.formGrid}>
-        <Field label="Variant name" error={state.fieldErrors?.internalName}>
+        <Field label={t("Variant name")} error={state.fieldErrors?.internalName}>
           <input
             name="internalName"
             defaultValue={variant?.internal_name ?? ""}
@@ -382,7 +389,7 @@ export function VariantForm({
             disabled={!editable || archived}
           />
         </Field>
-        <Field label="Absolute price" error={state.fieldErrors?.price}>
+        <Field label={t("Absolute price")} error={state.fieldErrors?.price}>
           <input
             name="price"
             inputMode="decimal"
@@ -392,17 +399,17 @@ export function VariantForm({
             disabled={!editable || archived}
           />
         </Field>
-        <Field label="Availability" error={state.fieldErrors?.availabilityStatus}>
+        <Field label={t("Availability")} error={state.fieldErrors?.availabilityStatus}>
           <select
             name="availabilityStatus"
             defaultValue={variant?.availability_status ?? "available"}
             disabled={!editable || archived}
           >
-            <option value="available">Available</option>
-            <option value="sold_out">Sold out</option>
+            <option value="available">{t("Available")}</option>
+            <option value="sold_out">{t("Sold out")}</option>
           </select>
         </Field>
-        <Field label="Display position" error={state.fieldErrors?.displayOrder}>
+        <Field label={t("Display position")} error={state.fieldErrors?.displayOrder}>
           <input
             type="number"
             name="displayOrder"
@@ -419,13 +426,13 @@ export function VariantForm({
             defaultChecked={variant?.is_visible ?? true}
             disabled={!editable || archived}
           />
-          Visible to customers
+          {t("Visible to customers")}
         </label>
       </div>
       {editable && !archived ? (
         <div className={styles.actions}>
           <button className="primary-button" type="submit" disabled={pending}>
-            {pending ? "Saving variant…" : variant ? "Save variant" : "Add variant"}
+            {pending ? t("Saving variant…") : variant ? t("Save variant") : t("Add variant")}
           </button>
         </div>
       ) : null}
@@ -444,6 +451,7 @@ export function ModifierGroupForm({
   editable: boolean;
   group?: RestaurantModifierGroup;
 }) {
+  const { t } = useAdminI18n();
   const action = saveRestaurantModifierGroupAction.bind(
     null,
     businessId,
@@ -457,7 +465,7 @@ export function ModifierGroupForm({
       <FormFeedback state={state} />
       <input type="hidden" name="lifecycleStatus" value="active" />
       <div className={styles.formGrid}>
-        <Field label="Internal group name" error={state.fieldErrors?.internalName}>
+        <Field label={t("Internal group name")} error={state.fieldErrors?.internalName}>
           <input
             name="internalName"
             defaultValue={group?.internal_name ?? ""}
@@ -472,13 +480,13 @@ export function ModifierGroupForm({
             defaultChecked={group?.is_visible ?? true}
             disabled={!editable || archived}
           />
-          Visible to customers
+          {t("Visible to customers")}
         </label>
       </div>
       {editable && !archived ? (
         <div className={styles.actions}>
           <button className="primary-button" type="submit" disabled={pending}>
-            {pending ? "Saving group…" : group ? "Save group" : "Create modifier group"}
+            {pending ? t("Saving group…") : group ? t("Save group") : t("Create modifier group")}
           </button>
         </div>
       ) : null}
@@ -499,6 +507,7 @@ export function ModifierForm({
   groupId: string;
   modifier?: RestaurantModifier;
 }) {
+  const { t } = useAdminI18n();
   const action = saveRestaurantModifierAction.bind(
     null,
     businessId,
@@ -513,7 +522,7 @@ export function ModifierForm({
       <FormFeedback state={state} />
       <input type="hidden" name="lifecycleStatus" value="active" />
       <div className={styles.formGrid}>
-        <Field label="Option name" error={state.fieldErrors?.internalName}>
+        <Field label={t("Option name")} error={state.fieldErrors?.internalName}>
           <input
             name="internalName"
             defaultValue={modifier?.internal_name ?? ""}
@@ -521,7 +530,7 @@ export function ModifierForm({
             disabled={!editable || archived}
           />
         </Field>
-        <Field label="Price add-on" error={state.fieldErrors?.priceDelta}>
+        <Field label={t("Price add-on")} error={state.fieldErrors?.priceDelta}>
           <input
             name="priceDelta"
             inputMode="decimal"
@@ -531,17 +540,17 @@ export function ModifierForm({
             disabled={!editable || archived}
           />
         </Field>
-        <Field label="Availability" error={state.fieldErrors?.availabilityStatus}>
+        <Field label={t("Availability")} error={state.fieldErrors?.availabilityStatus}>
           <select
             name="availabilityStatus"
             defaultValue={modifier?.availability_status ?? "available"}
             disabled={!editable || archived}
           >
-            <option value="available">Available</option>
-            <option value="sold_out">Sold out</option>
+            <option value="available">{t("Available")}</option>
+            <option value="sold_out">{t("Sold out")}</option>
           </select>
         </Field>
-        <Field label="Display position" error={state.fieldErrors?.displayOrder}>
+        <Field label={t("Display position")} error={state.fieldErrors?.displayOrder}>
           <input
             type="number"
             name="displayOrder"
@@ -558,13 +567,13 @@ export function ModifierForm({
             defaultChecked={modifier?.is_visible ?? true}
             disabled={!editable || archived}
           />
-          Visible to customers
+          {t("Visible to customers")}
         </label>
       </div>
       {editable && !archived ? (
         <div className={styles.actions}>
           <button className="primary-button" type="submit" disabled={pending}>
-            {pending ? "Saving option…" : modifier ? "Save option" : "Add modifier option"}
+            {pending ? t("Saving option…") : modifier ? t("Save option") : t("Add modifier option")}
           </button>
         </div>
       ) : null}
@@ -631,27 +640,32 @@ function TranslationLocaleForm({
   locale: SupportedLocale;
   supportsDescription: boolean;
 }) {
+  const { t, locale: adminLocale } = useAdminI18n();
   const [state, formAction, pending] = useActionState(action, initialFormState);
-  const localeNames = { ar: "العربية", en: "English", he: "עברית" } as const;
   return (
     <form
       className={`${styles.form} ${styles.translationCard}`}
       action={formAction}
-      lang={locale}
-      dir={getTextDirection(locale)}
+      lang={adminLocale}
+      dir={getTextDirection(adminLocale)}
+      data-content-locale={locale}
     >
       <header>
         <strong>
-          {localeNames[locale]}
-          {locale === defaultLocale ? " · Default" : ""}
+          <span lang={locale} dir={getTextDirection(locale)}>
+            {localeNames[locale]}
+          </span>
+          {locale === defaultLocale ? ` · ${t("Default")}` : ""}
         </strong>
         <span className={styles.localeCode}>{locale}</span>
       </header>
       <input type="hidden" name="entityType" value={entityType} />
       <input type="hidden" name="locale" value={locale} />
-      <Field label="Customer-facing name" error={state.fieldErrors?.name}>
+      <Field label={t("Customer-facing name")} error={state.fieldErrors?.name}>
         <input
           name="name"
+          lang={locale}
+          dir={getTextDirection(locale)}
           defaultValue={current?.name ?? ""}
           required
           maxLength={160}
@@ -659,9 +673,11 @@ function TranslationLocaleForm({
         />
       </Field>
       {supportsDescription ? (
-        <Field label="Description" error={state.fieldErrors?.description}>
+        <Field label={t("Description")} error={state.fieldErrors?.description}>
           <textarea
             name="description"
+            lang={locale}
+            dir={getTextDirection(locale)}
             defaultValue={current?.description ?? ""}
             maxLength={4000}
             disabled={!editable}
@@ -672,7 +688,7 @@ function TranslationLocaleForm({
       {editable ? (
         <div className={styles.actions}>
           <button className="secondary-button" type="submit" disabled={pending}>
-            {pending ? "Saving…" : `Save ${locale.toUpperCase()}`}
+            {pending ? t("Saving…") : t("Save {language}", { language: locale.toUpperCase() })}
           </button>
         </div>
       ) : null}
@@ -693,22 +709,23 @@ export function ModifierAssignmentForm({
   groups: RestaurantModifierGroup[];
   itemId: string;
 }) {
+  const { t } = useAdminI18n();
   const action = setRestaurantItemModifierGroupAction.bind(null, businessId, businessSlug, itemId);
   const [state, formAction, pending] = useActionState(action, initialFormState);
   return (
     <form className={styles.form} action={formAction}>
       <FormFeedback state={state} />
       <div className={styles.formGrid}>
-        <Field label="Modifier group">
+        <Field label={t("Modifier group")}>
           <select
             name="modifierGroupId"
             required
             disabled={!editable}
             defaultValue=""
-            aria-label="Modifier group"
+            aria-label={t("Modifier group")}
           >
             <option value="" disabled>
-              Choose group
+              {t("Choose group")}
             </option>
             {groups
               .filter((group) => group.lifecycle_status === "active")
@@ -719,7 +736,7 @@ export function ModifierAssignmentForm({
               ))}
           </select>
         </Field>
-        <Field label="Minimum selections">
+        <Field label={t("Minimum selections")}>
           <input
             type="number"
             name="minimumSelections"
@@ -729,7 +746,7 @@ export function ModifierAssignmentForm({
             disabled={!editable}
           />
         </Field>
-        <Field label="Maximum selections">
+        <Field label={t("Maximum selections")}>
           <input
             type="number"
             name="maximumSelections"
@@ -739,7 +756,7 @@ export function ModifierAssignmentForm({
             disabled={!editable}
           />
         </Field>
-        <Field label="Display position">
+        <Field label={t("Display position")}>
           <input
             type="number"
             name="displayOrder"
@@ -753,7 +770,7 @@ export function ModifierAssignmentForm({
       {editable ? (
         <div className={styles.actions}>
           <button className="primary-button" type="submit" disabled={pending}>
-            {pending ? "Assigning…" : "Assign modifier group"}
+            {pending ? t("Assigning…") : t("Assign modifier group")}
           </button>
         </div>
       ) : null}
@@ -776,6 +793,7 @@ export function AssignedModifierGroupForm({
   group: RestaurantModifierGroup;
   itemId: string;
 }) {
+  const { t } = useAdminI18n();
   const saveAction = setRestaurantItemModifierGroupAction.bind(
     null,
     businessId,
@@ -800,7 +818,7 @@ export function AssignedModifierGroupForm({
       <form className={styles.form} action={saveFormAction}>
         <input type="hidden" name="modifierGroupId" value={group.id} />
         <div className={styles.formGrid}>
-          <Field label="Minimum">
+          <Field label={t("Minimum")}>
             <input
               type="number"
               name="minimumSelections"
@@ -810,7 +828,7 @@ export function AssignedModifierGroupForm({
               disabled={!editable}
             />
           </Field>
-          <Field label="Maximum">
+          <Field label={t("Maximum")}>
             <input
               type="number"
               name="maximumSelections"
@@ -820,7 +838,7 @@ export function AssignedModifierGroupForm({
               disabled={!editable}
             />
           </Field>
-          <Field label="Position">
+          <Field label={t("Position")}>
             <input
               type="number"
               name="displayOrder"
@@ -835,7 +853,7 @@ export function AssignedModifierGroupForm({
         {editable ? (
           <div className={styles.actions}>
             <button className="secondary-button" type="submit" disabled={savePending}>
-              {savePending ? "Saving…" : "Save assignment"}
+              {savePending ? t("Saving…") : t("Save assignment")}
             </button>
           </div>
         ) : null}
@@ -843,7 +861,7 @@ export function AssignedModifierGroupForm({
       {editable ? (
         <form className={styles.actions} action={removeFormAction}>
           <button className="danger-button" type="submit" disabled={removePending}>
-            {removePending ? "Removing…" : "Remove assignment"}
+            {removePending ? t("Removing…") : t("Remove assignment")}
           </button>
         </form>
       ) : null}
@@ -871,6 +889,7 @@ export function LocationAvailabilityForm({
   locationName: string;
   override: "available" | "sold_out" | null;
 }) {
+  const { t } = useAdminI18n();
   const action = setRestaurantLocationAvailabilityAction.bind(
     null,
     businessId,
@@ -885,23 +904,25 @@ export function LocationAvailabilityForm({
         <strong dir="auto">{locationName}</strong>
         <small>
           {override
-            ? "Explicit override"
-            : `Inherits ${baseAvailability === "available" ? "available" : "sold out"}`}
+            ? t("Explicit override")
+            : baseAvailability === "available"
+              ? t("Inherits available")
+              : t("Inherits sold out")}
         </small>
       </span>
       <select
         name="availabilityStatus"
         defaultValue={override ?? "inherit"}
         disabled={!editable}
-        aria-label={`${locationName} availability`}
+        aria-label={t("{location} availability", { location: locationName })}
       >
-        <option value="inherit">Inherit item</option>
-        <option value="available">Available</option>
-        <option value="sold_out">Sold out</option>
+        <option value="inherit">{t("Inherit item")}</option>
+        <option value="available">{t("Available")}</option>
+        <option value="sold_out">{t("Sold out")}</option>
       </select>
       {editable ? (
         <button className="secondary-button" type="submit" disabled={pending}>
-          {pending ? "Saving…" : "Save"}
+          {pending ? t("Saving…") : t("Save")}
         </button>
       ) : null}
       <FormFeedback state={state} />
@@ -922,6 +943,7 @@ export function ArchiveControl({
   label: string;
   title: string;
 }) {
+  const { t } = useAdminI18n();
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(action, initialFormState);
   return (
@@ -944,7 +966,7 @@ export function ArchiveControl({
           onClick={() => setOpen(false)}
           disabled={pending}
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <form action={formAction}>
           {Object.entries(fields).map(([name, value]) => (
@@ -956,7 +978,7 @@ export function ArchiveControl({
             />
           ))}
           <button type="submit" className="danger-button" disabled={pending}>
-            {pending ? "Archiving…" : label}
+            {pending ? t("Archiving…") : label}
           </button>
         </form>
       </ConfirmationDialog>
@@ -973,10 +995,11 @@ function MediaPicker({
   disabled: boolean;
   media: RestaurantMediaOption[];
 }) {
+  const { t } = useAdminI18n();
   const id = useId();
   return (
     <fieldset className={`${styles.field} ${styles.wide}`}>
-      <legend>Image</legend>
+      <legend>{t("Image")}</legend>
       <div className={styles.mediaGrid}>
         <label className={styles.mediaChoice}>
           <input
@@ -989,7 +1012,7 @@ function MediaPicker({
           <span className={styles.mediaBlank}>
             <ImageIcon size={22} />
           </span>
-          <span>No image</span>
+          <span>{t("No image")}</span>
         </label>
         {media.map((asset) => (
           <label className={styles.mediaChoice} key={asset.id}>
@@ -1014,7 +1037,7 @@ function MediaPicker({
       </div>
       {media.length === 0 ? (
         <p className={styles.hint}>
-          No active business images are available. Add one in Media first.
+          {t("No active business images are available. Add one in Media first.")}
         </p>
       ) : null}
     </fieldset>
@@ -1041,16 +1064,18 @@ function Field({
   label: string;
   wide?: boolean;
 }) {
+  const { t } = useAdminI18n();
   return (
     <label className={`${styles.field}${wide ? ` ${styles.wide}` : ""}`}>
       <span>{label}</span>
       {children}
-      {error ? <p className={styles.error}>{error}</p> : null}
+      {error ? <p className={styles.error}>{t(error)}</p> : null}
     </label>
   );
 }
 
 function FormFeedback({ state }: { state: FormState }) {
+  const { t } = useAdminI18n();
   if (!state.message) return null;
   return (
     <p
@@ -1058,7 +1083,7 @@ function FormFeedback({ state }: { state: FormState }) {
       role={state.status === "error" ? "alert" : "status"}
     >
       {state.status === "success" ? <CheckmarkCircleIcon size={17} /> : null}
-      {state.message}
+      {t(state.message)}
     </p>
   );
 }

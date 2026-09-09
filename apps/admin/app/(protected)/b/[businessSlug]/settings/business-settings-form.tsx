@@ -1,10 +1,12 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import { useActionState } from "react";
 
 import { darbApplications } from "@darb/config/platform";
 import { CheckmarkCircleIcon, InformationCircleIcon, SettingsIcon } from "@darb/icons";
-import { getTextDirection, supportedLocales } from "@darb/i18n";
+import { getTextDirection, localeNames, supportedLocales } from "@darb/i18n";
 
 import { updateBusinessSettingsAction } from "../../../../actions/core-admin";
 import type { AccessibleBusiness } from "../../../../../lib/auth";
@@ -16,9 +18,8 @@ interface BusinessSettingsFormProps {
   timezones: string[];
 }
 
-const localeNames = { ar: "العربية", en: "English", he: "עברית" } as const;
-
 export function BusinessSettingsForm({ business, editable, timezones }: BusinessSettingsFormProps) {
+  const { t } = useAdminI18n();
   const action = updateBusinessSettingsAction.bind(null, business.id, business.slug);
   const [state, formAction, pending] = useActionState(action, initialFormState);
 
@@ -30,7 +31,7 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
           role={state.status === "success" ? "status" : "alert"}
         >
           {state.status === "success" ? <CheckmarkCircleIcon size={18} /> : null}
-          {state.message}
+          {t(state.message)}
         </p>
       ) : null}
 
@@ -40,13 +41,13 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
             <SettingsIcon size={19} />
           </span>
           <div>
-            <h2 id="business-identity-heading">Business identity</h2>
-            <p>The core name and URL identifier used across Darb administration.</p>
+            <h2 id="business-identity-heading">{t("Business identity")}</h2>
+            <p>{t("The core name and URL identifier used across Darb administration.")}</p>
           </div>
         </div>
         <div className="form-grid form-grid--two">
           <div className="field-group">
-            <label htmlFor="business-display-name">Display name</label>
+            <label htmlFor="business-display-name">{t("Display name")}</label>
             <div className="field-control">
               <input
                 id="business-display-name"
@@ -62,14 +63,16 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
             </div>
             {state.fieldErrors?.displayName ? (
               <p id="business-display-name-error" className="field-error">
-                {state.fieldErrors.displayName}
+                {t(state.fieldErrors.displayName)}
               </p>
             ) : null}
           </div>
           <div className="field-group">
-            <label htmlFor="business-slug">Business slug</label>
+            <label htmlFor="business-slug">{t("Business slug")}</label>
             <div className="field-control field-control--prefix">
-              <span className="field-prefix">{darbApplications.admin.productionHost}/b/</span>
+              <span className="field-prefix" dir="ltr">
+                {darbApplications.admin.productionHost}/b/
+              </span>
               <input
                 id="business-slug"
                 name="slug"
@@ -84,11 +87,11 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
               />
             </div>
             <p id="business-slug-hint" className="field-hint">
-              Changing this updates the canonical admin URL.
+              {t("Changing this updates the canonical admin URL.")}
             </p>
             {state.fieldErrors?.slug ? (
               <p id="business-slug-error" className="field-error">
-                {state.fieldErrors.slug}
+                {t(state.fieldErrors.slug)}
               </p>
             ) : null}
           </div>
@@ -101,15 +104,17 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
             <InformationCircleIcon size={19} />
           </span>
           <div>
-            <h2 id="business-regional-heading">Regional defaults</h2>
+            <h2 id="business-regional-heading">{t("Regional defaults")}</h2>
             <p>
-              Defaults for future Darb experiences; individual locations may use another timezone.
+              {t(
+                "Defaults for future Darb experiences; individual locations may use another timezone.",
+              )}
             </p>
           </div>
         </div>
         <div className="form-grid form-grid--three">
           <div className="field-group">
-            <label htmlFor="business-default-locale">Default language</label>
+            <label htmlFor="business-default-locale">{t("Default language")}</label>
             <div className="select-control">
               <select
                 id="business-default-locale"
@@ -126,7 +131,7 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
             </div>
           </div>
           <div className="field-group">
-            <label htmlFor="business-timezone">Timezone</label>
+            <label htmlFor="business-timezone">{t("Timezone")}</label>
             <div className="select-control">
               <select
                 id="business-timezone"
@@ -143,11 +148,11 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
               </select>
             </div>
             {state.fieldErrors?.timezone ? (
-              <p className="field-error">{state.fieldErrors.timezone}</p>
+              <p className="field-error">{t(state.fieldErrors.timezone)}</p>
             ) : null}
           </div>
           <div className="field-group">
-            <label htmlFor="business-currency">Currency</label>
+            <label htmlFor="business-currency">{t("Currency")}</label>
             <div className="field-control field-control--readonly">
               <input
                 id="business-currency"
@@ -157,7 +162,7 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
               />
             </div>
             <p className="field-hint">
-              Currency changes are deferred until monetary workflows exist.
+              {t("Currency changes are deferred until monetary workflows exist.")}
             </p>
           </div>
         </div>
@@ -172,15 +177,16 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
             <InformationCircleIcon size={19} />
           </span>
           <div>
-            <h2 id="business-lifecycle-heading">Lifecycle</h2>
+            <h2 id="business-lifecycle-heading">{t("Lifecycle")}</h2>
             <p>
-              Archived businesses retain their data and can be reactivated. Suspension is controlled
-              by Darb platform administration.
+              {t(
+                "Archived businesses retain their data and can be reactivated. Suspension is controlled by Darb platform administration.",
+              )}
             </p>
           </div>
         </div>
         <div className="field-group field-group--compact">
-          <label htmlFor="business-status">Business status</label>
+          <label htmlFor="business-status">{t("Business status")}</label>
           <div className="select-control">
             <select
               id="business-status"
@@ -188,13 +194,13 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
               defaultValue={business.status === "suspended" ? "active" : business.status}
               disabled={!editable}
             >
-              <option value="active">Active</option>
-              <option value="archived">Archived</option>
+              <option value="active">{t("Active")}</option>
+              <option value="archived">{t("Archived")}</option>
             </select>
           </div>
           {business.status === "suspended" ? (
             <p className="field-error">
-              This business is suspended by Darb platform administration.
+              {t("This business is suspended by Darb platform administration.")}
             </p>
           ) : null}
         </div>
@@ -203,7 +209,7 @@ export function BusinessSettingsForm({ business, editable, timezones }: Business
       {editable ? (
         <div className="form-actions">
           <button className="primary-button primary-button--fit" type="submit" disabled={pending}>
-            {pending ? "Saving settings…" : "Save business settings"}
+            {pending ? t("Saving settings…") : t("Save business settings")}
           </button>
         </div>
       ) : null}

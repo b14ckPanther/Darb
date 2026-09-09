@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -44,15 +46,17 @@ export function RestaurantBrandingManager({
   heroOptions,
   logoOptions,
 }: RestaurantBrandingManagerProps) {
+  const { t } = useAdminI18n();
   return (
     <section className={styles.brandingManager} aria-labelledby="restaurant-branding-heading">
       <header className={styles.brandingHeader}>
         <div>
-          <p className="eyebrow">Restaurant identity</p>
-          <h2 id="restaurant-branding-heading">Brand media</h2>
+          <p className="eyebrow">{t("Restaurant identity")}</p>
+          <h2 id="restaurant-branding-heading">{t("Brand media")}</h2>
           <p>
-            Assign approved Media Library assets to stable Restaurant roles. Removing an assignment
-            restores the template fallback without deleting the asset.
+            {t(
+              "Assign approved Media Library assets to stable Restaurant roles. Removing an assignment restores the template fallback without deleting the asset.",
+            )}
           </p>
         </div>
         <span className={styles.contextKey} dir="ltr">
@@ -92,6 +96,7 @@ function BrandingRoleCard({
   options: BrandingMediaOption[];
   role: RestaurantBrandingRole;
 }) {
+  const { t } = useAdminI18n();
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
@@ -104,6 +109,7 @@ function BrandingRoleCard({
   const action = useMemo(() => setBusinessBrandingMediaAction.bind(null, businessId), [businessId]);
   const assigned = options.find((option) => option.id === assignedId) ?? null;
   const copy = roleCopy[role];
+  const localizedTitle = t(copy.title);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -175,11 +181,15 @@ function BrandingRoleCard({
         )}
       </div>
       <div className={styles.brandingCopy}>
-        <span>{assigned ? `${assigned.kind} assigned` : "Template fallback"}</span>
-        <h3 id={`${role}-branding-title`}>{copy.title}</h3>
-        <p>{copy.description}</p>
+        <span>
+          {assigned
+            ? t(assigned.kind === "video" ? "Video assigned" : "Image assigned")
+            : t("Template fallback")}
+        </span>
+        <h3 id={`${role}-branding-title`}>{localizedTitle}</h3>
+        <p>{t(copy.description)}</p>
         {!assigned ? (
-          <small>{copy.fallback}</small>
+          <small>{t(copy.fallback)}</small>
         ) : (
           <small title={assigned.label}>{assigned.label}</small>
         )}
@@ -195,16 +205,16 @@ function BrandingRoleCard({
               setPickerOpen(true);
             }}
           >
-            {assigned ? "Replace" : "Choose media"}
+            {assigned ? t("Replace") : t("Choose media")}
           </button>
           {assigned ? (
             <button type="button" className="text-button" onClick={() => setConfirmRemove(true)}>
-              Remove assignment
+              {t("Remove assignment")}
             </button>
           ) : null}
         </div>
       ) : (
-        <p className={styles.brandingReadOnly}>Read-only</p>
+        <p className={styles.brandingReadOnly}>{t("Read-only")}</p>
       )}
 
       {state.message ? (
@@ -213,7 +223,7 @@ function BrandingRoleCard({
           role={state.status === "error" ? "alert" : "status"}
         >
           {state.status === "success" ? <CheckmarkCircleIcon size={17} /> : null}
-          {state.message}
+          {t(state.message)}
         </p>
       ) : null}
 
@@ -226,8 +236,10 @@ function BrandingRoleCard({
           <input type="hidden" name="role" value={role} />
           <header>
             <div>
-              <p className="eyebrow">Media Library</p>
-              <h2 id={`${role}-picker-title`}>Choose {copy.title.toLowerCase()}</h2>
+              <p className="eyebrow">{t("Media Library")}</p>
+              <h2 id={`${role}-picker-title`}>
+                {t(role === "logo" ? "Choose restaurant logo" : "Choose hero media")}
+              </h2>
             </div>
             <button
               type="button"
@@ -235,12 +247,12 @@ function BrandingRoleCard({
               disabled={pending}
               onClick={() => setPickerOpen(false)}
             >
-              Close
+              {t("Close")}
             </button>
           </header>
           {options.length > 0 ? (
             <fieldset className={styles.brandingMediaGrid}>
-              <legend>Compatible active media</legend>
+              <legend>{t("Compatible active media")}</legend>
               {options.map((asset) => (
                 <label key={asset.id} className={styles.brandingMediaChoice}>
                   <input
@@ -261,10 +273,13 @@ function BrandingRoleCard({
           ) : (
             <div className={styles.brandingEmpty}>
               <ImageIcon size={28} />
-              <h3>No compatible active media</h3>
+              <h3>{t("No compatible active media")}</h3>
               <p>
-                Add an approved {role === "logo" ? "image" : "image or video"} in Media Library
-                first.
+                {t(
+                  role === "logo"
+                    ? "Add an approved image in Media Library first."
+                    : "Add an approved image or video in Media Library first.",
+                )}
               </p>
             </div>
           )}
@@ -275,7 +290,7 @@ function BrandingRoleCard({
               disabled={pending}
               onClick={() => setPickerOpen(false)}
             >
-              Cancel
+              {t("Cancel")}
             </button>
             <button
               type="submit"
@@ -283,18 +298,22 @@ function BrandingRoleCard({
               aria-busy={pending}
               disabled={pending || !selectedId}
             >
-              {pending ? "Assigning…" : "Assign media"}
+              {pending ? t("Assigning…") : t("Assign media")}
             </button>
           </footer>
         </form>
       </dialog>
 
       <ConfirmationDialog
-        description={`This removes the ${copy.title.toLowerCase()} assignment and restores the safe template fallback. The Media Library asset is retained.`}
+        description={t(
+          role === "logo"
+            ? "This removes the restaurant logo assignment and restores the safe template fallback. The Media Library asset is retained."
+            : "This removes the hero media assignment and restores the safe template fallback. The Media Library asset is retained.",
+        )}
         onClose={() => setConfirmRemove(false)}
         open={confirmRemove}
         pending={pending}
-        title={`Remove ${copy.title.toLowerCase()}?`}
+        title={t(role === "logo" ? "Remove restaurant logo?" : "Remove hero media?")}
       >
         <button
           type="button"
@@ -302,13 +321,13 @@ function BrandingRoleCard({
           disabled={pending}
           onClick={() => setConfirmRemove(false)}
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <form onSubmit={submit}>
           <input type="hidden" name="role" value={role} />
           <input type="hidden" name="mediaAssetId" value="" />
           <button type="submit" className="danger-button" aria-busy={pending} disabled={pending}>
-            {pending ? "Removing…" : "Remove assignment"}
+            {pending ? t("Removing…") : t("Remove assignment")}
           </button>
         </form>
       </ConfirmationDialog>

@@ -1,8 +1,10 @@
 import Link from "next/link";
 
 import { AdminState } from "./_components/admin-state";
+import { getAdminI18n } from "../lib/i18n-server";
 
-export default function AdminNotFound() {
+export default async function AdminNotFound() {
+  const { t } = await getAdminI18n();
   return (
     <main id="main-content" className="route-state-page">
       <AdminState
@@ -13,7 +15,7 @@ export default function AdminNotFound() {
         description="The address may be outdated, or the workspace may no longer be accessible."
         action={
           <Link className="secondary-button" href="/">
-            Return to Darb Admin
+            {t("Return to Darb Admin")}
           </Link>
         }
       />

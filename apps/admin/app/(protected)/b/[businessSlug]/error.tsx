@@ -6,6 +6,7 @@ import { reportOperationalError } from "@darb/config/observability";
 import { ResetIcon } from "@darb/icons";
 
 import { AdminState } from "../../../_components/admin-state";
+import { useAdminI18n } from "../../../../lib/i18n-client";
 
 interface BusinessErrorProps {
   error: Error & { digest?: string };
@@ -13,6 +14,7 @@ interface BusinessErrorProps {
 }
 
 export default function BusinessError({ error, retry }: BusinessErrorProps) {
+  const { t } = useAdminI18n();
   useEffect(() => {
     reportOperationalError({
       application: "admin",
@@ -30,7 +32,7 @@ export default function BusinessError({ error, retry }: BusinessErrorProps) {
       action={
         <button type="button" className="primary-button primary-button--fit" onClick={retry}>
           <ResetIcon size={18} />
-          Try again
+          {t("Try again")}
         </button>
       }
     />

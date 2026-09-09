@@ -6,11 +6,14 @@ import { ArrowRightIcon, AuditIcon, BuildingIcon, LogoutIcon } from "@darb/icons
 import { signOutAction } from "../actions/auth";
 import { DarbAdminBrand, DarbPublicSiteLink } from "../_components/brand";
 import { StatusBadge } from "../_components/status-badge";
+import { AdminLanguageSwitcher } from "../_components/language-switcher";
 import { getAdminAccessSnapshot } from "../../lib/auth";
 import { businessPath, getProtectedAdminDestination } from "../../lib/navigation";
 import { getPlatformAdminContext } from "../../lib/platform";
+import { getAdminI18n } from "../../lib/i18n-server";
 
 export default async function BusinessChooserPage() {
+  const { t } = await getAdminI18n();
   const [snapshot, platformContext] = await Promise.all([
     getAdminAccessSnapshot(),
     getPlatformAdminContext(),
@@ -36,11 +39,12 @@ export default async function BusinessChooserPage() {
       <header className="chooser-header">
         <DarbAdminBrand />
         <div className="chooser-header__actions">
+          <AdminLanguageSwitcher />
           <DarbPublicSiteLink className="chooser-public-link" />
           <form action={signOutAction}>
             <button className="quiet-button" type="submit">
               <LogoutIcon size={18} />
-              Sign out
+              {t("Sign out")}
             </button>
           </form>
         </div>
@@ -49,19 +53,23 @@ export default async function BusinessChooserPage() {
       <main id="main-content" className="business-chooser-content">
         <header className="page-header page-header--chooser">
           <div>
-            <p className="eyebrow">Authorized workspaces</p>
+            <p className="eyebrow">{t("Authorized workspaces")}</p>
             <h1>
-              {platformContext ? "Choose your operating context." : "Choose a business to manage."}
+              {t(
+                platformContext ? "Choose your operating context." : "Choose a business to manage.",
+              )}
             </h1>
             <p className="page-header__summary">
-              {platformContext
-                ? "Platform operations and tenant workspaces stay visibly separate, while your real identity remains unchanged."
-                : "Each workspace keeps its own settings, locations, permissions, and audit history."}
+              {t(
+                platformContext
+                  ? "Platform operations and tenant workspaces stay visibly separate, while your real identity remains unchanged."
+                  : "Each workspace keeps its own settings, locations, permissions, and audit history.",
+              )}
             </p>
           </div>
         </header>
 
-        <ul className="chooser-grid" aria-label="Accessible businesses">
+        <ul className="chooser-grid" aria-label={t("Accessible businesses")}>
           {platformContext ? (
             <li className="chooser-card--platform">
               <Link href="/platform">
@@ -69,10 +77,10 @@ export default async function BusinessChooserPage() {
                   <AuditIcon size={23} />
                 </span>
                 <span className="chooser-card__body">
-                  <strong>Darb Platform Administration</strong>
-                  <small>Cross-tenant operations</small>
+                  <strong>{t("Darb Platform Administration")}</strong>
+                  <small>{t("Cross-tenant operations")}</small>
                 </span>
-                <StatusBadge status="available" label="Platform" />
+                <StatusBadge status="available" label={t("Platform")} />
                 <ArrowRightIcon className="chooser-card__arrow" size={19} />
               </Link>
             </li>

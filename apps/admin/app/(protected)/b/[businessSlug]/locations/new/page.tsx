@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../../lib/i18n-server";
 import Link from "next/link";
 
 import { ArrowRightIcon } from "@darb/icons";
@@ -14,6 +15,7 @@ interface NewLocationPageProps {
 }
 
 export default async function NewLocationPage({ params }: NewLocationPageProps) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
 
@@ -21,16 +23,20 @@ export default async function NewLocationPage({ params }: NewLocationPageProps) 
     <>
       <Link className="back-link" href={businessSectionPath(context.business.slug, "locations")}>
         <ArrowRightIcon size={17} />
-        Back to locations
+        {t("Back to locations")}
       </Link>
       <PageHeader
-        eyebrow="New core location"
-        title="Create a location"
-        summary="Add only the reusable identity and address details needed by the core platform."
+        eyebrow={t("New core location")}
+        title={t("Create a location")}
+        summary={t(
+          "Add only the reusable identity and address details needed by the core platform.",
+        )}
       />
       {!context.access.canManageAllLocations ? (
-        <PermissionNotice title="Business-wide permission required.">
-          A location-scoped permission can manage an assigned location but cannot create another.
+        <PermissionNotice title={t("Business-wide permission required.")}>
+          {t(
+            "A location-scoped permission can manage an assigned location but cannot create another.",
+          )}
         </PermissionNotice>
       ) : (
         <LocationForm business={context.business} editable timezones={getSupportedTimezones()} />

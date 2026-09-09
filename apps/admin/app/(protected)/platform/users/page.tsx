@@ -8,6 +8,7 @@ import { PlatformPagination } from "../../../_components/platform-pagination";
 import { PlatformSectionHeading } from "../../../_components/platform-summary";
 import { StatusBadge } from "../../../_components/status-badge";
 import { listPlatformSuperAdmins, listPlatformUsers } from "../../../../lib/platform";
+import { getAdminI18n } from "../../../../lib/i18n-server";
 import { parsePositivePage, platformPaths } from "../../../../lib/platform-model";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -16,9 +17,10 @@ export default async function PlatformUsersPage({ searchParams }: { searchParams
   const params = await searchParams;
   const query = readParam(params.q, 160);
   const page = parsePositivePage(params.page);
-  const [users, superAdmins] = await Promise.all([
+  const [users, superAdmins, { locale, t }] = await Promise.all([
     listPlatformUsers(query, page),
     listPlatformSuperAdmins(),
+    getAdminI18n(),
   ]);
 
   return (
@@ -44,11 +46,11 @@ export default async function PlatformUsersPage({ searchParams }: { searchParams
                 <strong>
                   <bdi>{administrator.email ?? administrator.userId}</bdi>
                 </strong>
-                <p>Granted {formatDate(administrator.grantedAt)}</p>
+                <p>{t("Granted {date}", { date: formatDate(administrator.grantedAt, locale) })}</p>
               </div>
               <StatusBadge
                 status={administrator.state === "active" ? "active" : "disabled"}
-                label={administrator.state === "active" ? "Active operator" : "Revoked"}
+                label={t(administrator.state === "active" ? "Active operator" : "Revoked")}
               />
             </article>
           ))}
@@ -59,23 +61,25 @@ export default async function PlatformUsersPage({ searchParams }: { searchParams
         <PlatformSectionHeading
           id="user-directory-heading"
           title="User directory"
-          description={`${users.total.toLocaleString("en-IL")} Auth identities match this view.`}
+          description={t("{count} Auth identities match this view.", {
+            count: users.total.toLocaleString(locale),
+          })}
         />
         <form
           className="platform-filter-bar platform-filter-bar--compact"
           method="get"
-          aria-label="Search users"
+          aria-label={t("Search users")}
         >
           <label className="platform-filter-search">
-            <span>Email or exact user ID</span>
-            <input name="q" defaultValue={query} placeholder="Search users" maxLength={160} />
+            <span>{t("Email or exact user ID")}</span>
+            <input name="q" defaultValue={query} placeholder={t("Search users")} maxLength={160} />
           </label>
           <div className="platform-filter-actions">
             <button className="primary-button primary-button--fit" type="submit">
-              Search
+              {t("Search")}
             </button>
             <Link className="secondary-button" href={platformPaths.users}>
-              Clear
+              {t("Clear")}
             </Link>
           </div>
         </form>
@@ -90,39 +94,41 @@ export default async function PlatformUsersPage({ searchParams }: { searchParams
         ) : (
           <div className="platform-table-shell">
             <table className="platform-table">
-              <caption className="visually-hidden">Darb platform users</caption>
+              <caption className="visually-hidden">{t("Darb platform users")}</caption>
               <thead>
                 <tr>
-                  <th scope="col">Identity</th>
-                  <th scope="col">Platform</th>
-                  <th scope="col">Memberships</th>
-                  <th scope="col">Created</th>
+                  <th scope="col">{t("Identity")}</th>
+                  <th scope="col">{t("Platform")}</th>
+                  <th scope="col">{t("Memberships")}</th>
+                  <th scope="col">{t("Created")}</th>
                 </tr>
               </thead>
               <tbody>
                 {users.items.map((user) => (
                   <tr key={user.id}>
-                    <td data-label="Identity">
+                    <td data-label={t("Identity")}>
                       <strong>
-                        <bdi>{user.email ?? "Email unavailable"}</bdi>
+                        <bdi>{user.email ?? t("Email unavailable")}</bdi>
                       </strong>
                       <small>
                         <bdi>{user.id}</bdi>
                       </small>
                     </td>
-                    <td data-label="Platform">
+                    <td data-label={t("Platform")}>
                       {user.isSuperAdmin ? (
-                        <StatusBadge status="active" label="Super admin" />
+                        <StatusBadge status="active" label={t("Super admin")} />
                       ) : (
-                        <span className="platform-muted-value">Tenant user</span>
+                        <span className="platform-muted-value">{t("Tenant user")}</span>
                       )}
                     </td>
-                    <td data-label="Memberships">
-                      <strong>{user.businessCount} businesses</strong>
+                    <td data-label={t("Memberships")}>
+                      <strong>{t("{count} businesses", { count: user.businessCount })}</strong>
                       <details className="platform-membership-details">
-                        <summary>{user.activeMembershipCount} active · inspect</summary>
+                        <summary>
+                          {t("{count} active · inspect", { count: user.activeMembershipCount })}
+                        </summary>
                         {user.memberships.length === 0 ? (
-                          <p>No business memberships.</p>
+                          <p>{t("No business memberships.")}</p>
                         ) : (
                           <ul>
                             {user.memberships.map((membership) => (
@@ -131,8 +137,10 @@ export default async function PlatformUsersPage({ searchParams }: { searchParams
                                   {membership.businessName}
                                 </Link>
                                 <span>
-                                  {membership.status} · {membership.permissionKeys.length} business
-                                  permissions
+                                  {t("{status} · {count} business permissions", {
+                                    status: membership.status,
+                                    count: membership.permissionKeys.length,
+                                  })}
                                 </span>
                               </li>
                             ))}
@@ -140,8 +148,8 @@ export default async function PlatformUsersPage({ searchParams }: { searchParams
                         )}
                       </details>
                     </td>
-                    <td data-label="Created">
-                      <time dateTime={user.createdAt}>{formatDate(user.createdAt)}</time>
+                    <td data-label={t("Created")}>
+                      <time dateTime={user.createdAt}>{formatDate(user.createdAt, locale)}</time>
                     </td>
                   </tr>
                 ))}
@@ -165,6 +173,6 @@ function readParam(value: string | string[] | undefined, maxLength: number): str
   return candidate && candidate.length <= maxLength ? candidate : undefined;
 }
 
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en-IL", { dateStyle: "medium" }).format(new Date(value));
+function formatDate(value: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(value));
 }

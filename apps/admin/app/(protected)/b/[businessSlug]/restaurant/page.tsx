@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../lib/i18n-server";
 import Link from "next/link";
 
 import {
@@ -25,6 +26,7 @@ export default async function RestaurantOverviewPage({
 }: {
   params: Promise<{ businessSlug: string }>;
 }) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireRestaurantAdminContext(businessSlug);
   const { business } = context.businessContext;
@@ -37,21 +39,24 @@ export default async function RestaurantOverviewPage({
     <div className={styles.page}>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(business.slug), label: "Overview" },
-          { label: "Restaurant" },
+          { href: businessPath(business.slug), label: t("Overview") },
+          { label: t("Restaurant") },
         ]}
-        eyebrow="Restaurant Engine"
-        title="Restaurant"
-        summary="Operate menus, localized content, availability, variants, and modifiers from one tenant-safe workspace."
+        eyebrow={t("Restaurant Engine")}
+        title={t("Restaurant")}
+        summary={t(
+          "Operate menus, localized content, availability, variants, and modifiers from one tenant-safe workspace.",
+        )}
         status={
           <StatusBadge
             status={context.capabilityEffective ? "enabled" : "unavailable"}
-            label={context.capabilityEffective ? "Capability active" : "Retained · read-only"}
+            label={context.capabilityEffective ? t("Capability active") : t("Retained · read-only")}
           />
         }
         actions={
           <Link className="primary-link" href={`${restaurantBase}/menus`}>
-            Manage menus <ArrowRightIcon size={17} />
+            {t("Manage menus")}
+            <ArrowRightIcon size={17} />
           </Link>
         }
       />
@@ -59,35 +64,40 @@ export default async function RestaurantOverviewPage({
       <section className={styles.boundary} aria-labelledby="restaurant-public-boundary">
         <InformationCircleIcon size={20} />
         <div>
-          <h2 id="restaurant-public-boundary">Administration is live; public delivery is next</h2>
+          <h2 id="restaurant-public-boundary">{t("Manage what customers see")}</h2>
           <p>
-            This is the authenticated Restaurant workspace. Phase 11 will add a deliberately safe
-            public menu read model and renderer; no customer route is implied here.
+            {t(
+              "The public menu shows published, visible content while the Restaurant experience is active. Draft and archived content stays private.",
+            )}
           </p>
         </div>
       </section>
 
       {!editable ? (
-        <PermissionNotice title="Restaurant is read-only.">
+        <PermissionNotice title={t("Restaurant is read-only.")}>
           {!context.access.canManage
-            ? "The restaurant.manage permission is required to change Restaurant content."
-            : "Restaurant mutations require an active business and an available, enabled capability."}
+            ? t("The restaurant.manage permission is required to change Restaurant content.")
+            : t(
+                "Restaurant mutations require an active business and an available, enabled capability.",
+              )}
         </PermissionNotice>
       ) : null}
 
-      <section className={styles.metricGrid} aria-label="Restaurant content totals">
-        <Metric label="Active menus" value={snapshot.activeMenuCount} />
-        <Metric label="Categories" value={snapshot.activeCategoryCount} />
-        <Metric label="Items" value={snapshot.activeItemCount} />
-        <Metric label="Sold out" value={snapshot.soldOutItemCount} />
+      <section className={styles.metricGrid} aria-label={t("Restaurant content totals")}>
+        <Metric label={t("Active menus")} value={snapshot.activeMenuCount} />
+        <Metric label={t("Categories")} value={snapshot.activeCategoryCount} />
+        <Metric label={t("Items")} value={snapshot.activeItemCount} />
+        <Metric label={t("Sold out")} value={snapshot.soldOutItemCount} />
       </section>
 
       <div className={styles.workspaceGrid}>
         <section className={styles.panel} aria-labelledby="restaurant-readiness-heading">
           <div className={styles.panelHeader}>
             <div>
-              <h2 id="restaurant-readiness-heading">Operational readiness</h2>
-              <p>Factual requirements and optional enhancements—without a fabricated score.</p>
+              <h2 id="restaurant-readiness-heading">{t("Operational readiness")}</h2>
+              <p>
+                {t("Factual requirements and optional enhancements—without a fabricated score.")}
+              </p>
             </div>
           </div>
           <ul className={styles.readinessList}>
@@ -100,8 +110,8 @@ export default async function RestaurantOverviewPage({
                   <CheckmarkCircleIcon size={17} />
                 </span>
                 <span>
-                  <strong>{item.label}</strong>
-                  <small>{item.ready ? "Configured" : "Needs attention"}</small>
+                  <strong>{t(item.label)}</strong>
+                  <small>{item.ready ? t("Configured") : t("Needs attention")}</small>
                 </span>
                 <StatusBadge status={item.requirement} />
               </li>
@@ -112,8 +122,8 @@ export default async function RestaurantOverviewPage({
         <section className={styles.panel} aria-labelledby="restaurant-configuration-heading">
           <div className={styles.panelHeader}>
             <div>
-              <h2 id="restaurant-configuration-heading">Engine configuration</h2>
-              <p>Keep operational activation separate from menu publication.</p>
+              <h2 id="restaurant-configuration-heading">{t("Engine configuration")}</h2>
+              <p>{t("Keep operational activation separate from menu publication.")}</p>
             </div>
             <RestaurantIcon size={21} />
           </div>
@@ -129,18 +139,19 @@ export default async function RestaurantOverviewPage({
       <section className={styles.panel} aria-labelledby="restaurant-detail-heading">
         <div className={styles.panelHeader}>
           <div>
-            <h2 id="restaurant-detail-heading">Content foundation</h2>
-            <p>Real state currently stored for this business.</p>
+            <h2 id="restaurant-detail-heading">{t("Content foundation")}</h2>
+            <p>{t("Real state currently stored for this business.")}</p>
           </div>
           <Link className={styles.entityLink} href={`${restaurantBase}/modifiers`}>
-            Modifier library <ArrowRightIcon size={15} />
+            {t("Modifier library")}
+            <ArrowRightIcon size={15} />
           </Link>
         </div>
         <div className={styles.metricGrid}>
-          <Metric label="Published menus" value={snapshot.publishedMenuCount} />
-          <Metric label="Items with translation" value={snapshot.translatedItemCount} />
-          <Metric label="Items with media" value={snapshot.itemWithImageCount} />
-          <Metric label="Location overrides" value={snapshot.locationOverrideCount} />
+          <Metric label={t("Published menus")} value={snapshot.publishedMenuCount} />
+          <Metric label={t("Items with translation")} value={snapshot.translatedItemCount} />
+          <Metric label={t("Items with media")} value={snapshot.itemWithImageCount} />
+          <Metric label={t("Location overrides")} value={snapshot.locationOverrideCount} />
         </div>
       </section>
     </div>

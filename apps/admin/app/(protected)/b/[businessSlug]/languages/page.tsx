@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../lib/i18n-server";
 import { LanguagesSettingsIcon } from "@darb/icons";
 
 import { PageHeader } from "../../../../_components/page-header";
@@ -13,6 +14,7 @@ interface LanguagesPageProps {
 }
 
 export default async function LanguagesPage({ params }: LanguagesPageProps) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
   const supabase = await createServerComponentSupabaseClient();
@@ -24,19 +26,21 @@ export default async function LanguagesPage({ params }: LanguagesPageProps) {
     <>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(context.business.slug), label: "Overview" },
-          { label: "Languages" },
+          { href: businessPath(context.business.slug), label: t("Overview") },
+          { label: t("Languages") },
         ]}
-        eyebrow="Language availability"
-        title="Languages"
-        summary="Choose the languages this business supports and one canonical default. Content translation remains owned by each future engine."
+        eyebrow={t("Language availability")}
+        title={t("Languages")}
+        summary={t(
+          "Choose the languages this business supports and one canonical default. Content translation remains owned by each future engine.",
+        )}
       />
 
       {!editable ? (
-        <PermissionNotice title="Language settings are read-only.">
+        <PermissionNotice title={t("Language settings are read-only.")}>
           {context.business.status !== "active"
-            ? "Languages cannot be changed while this business is suspended or archived."
-            : "The business.manage permission is required to change enabled languages."}
+            ? t("Languages cannot be changed while this business is suspended or archived.")
+            : t("The business.manage permission is required to change enabled languages.")}
         </PermissionNotice>
       ) : null}
 
@@ -45,9 +49,11 @@ export default async function LanguagesPage({ params }: LanguagesPageProps) {
           <LanguagesSettingsIcon size={22} />
         </span>
         <div>
-          <h2 id="language-foundation-heading">A stable platform invariant</h2>
+          <h2 id="language-foundation-heading">{t("A stable platform invariant")}</h2>
           <p>
-            The default language is always enabled. Arabic and Hebrew use RTL; English uses LTR.
+            {t(
+              "The default language is always enabled. Arabic and Hebrew use RTL; English uses LTR.",
+            )}
           </p>
         </div>
       </section>

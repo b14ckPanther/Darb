@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import Image from "next/image";
 import { useActionState, useState } from "react";
 
@@ -25,6 +27,7 @@ export function MediaAssetCard({
   editable,
   publicUrl,
 }: MediaAssetCardProps) {
+  const { t } = useAdminI18n();
   const [confirmingArchive, setConfirmingArchive] = useState(false);
   const updateAction = updateMediaAltTextAction.bind(null, businessId, businessSlug, asset.id);
   const archiveAction = archiveMediaAssetAction.bind(null, businessId, businessSlug, asset.id);
@@ -77,7 +80,7 @@ export function MediaAssetCard({
 
         {active && editable ? (
           <form action={updateFormAction} className="media-alt-form">
-            <label htmlFor={`alt-${asset.id}`}>Alternative text</label>
+            <label htmlFor={`alt-${asset.id}`}>{t("Alternative text")}</label>
             <textarea
               id={`alt-${asset.id}`}
               name="altText"
@@ -88,7 +91,7 @@ export function MediaAssetCard({
               disabled={updatePending}
             />
             <button type="submit" className="secondary-button" disabled={updatePending}>
-              {updatePending ? "Saving…" : "Save description"}
+              {updatePending ? t("Saving…") : t("Save description")}
             </button>
           </form>
         ) : asset.alt_text ? (
@@ -101,14 +104,14 @@ export function MediaAssetCard({
             className={updateState.status === "success" ? "inline-success" : "inline-error"}
             role={updateState.status === "success" ? "status" : "alert"}
           >
-            {updateState.message}
+            {t(updateState.message)}
           </p>
         ) : null}
 
         {editable && asset.status !== "archived" ? (
           confirmingArchive ? (
-            <div className="inline-confirmation" role="group" aria-label="Archive media">
-              <p>Archive this asset without deleting its stored object?</p>
+            <div className="inline-confirmation" role="group" aria-label={t("Archive media")}>
+              <p>{t("Archive this asset without deleting its stored object?")}</p>
               <div>
                 <button
                   type="button"
@@ -116,11 +119,11 @@ export function MediaAssetCard({
                   onClick={() => setConfirmingArchive(false)}
                   disabled={archivePending}
                 >
-                  Keep asset
+                  {t("Keep asset")}
                 </button>
                 <form action={archiveFormAction}>
                   <button type="submit" className="danger-button" disabled={archivePending}>
-                    {archivePending ? "Archiving…" : "Confirm archive"}
+                    {archivePending ? t("Archiving…") : t("Confirm archive")}
                   </button>
                 </form>
               </div>
@@ -132,7 +135,7 @@ export function MediaAssetCard({
               onClick={() => setConfirmingArchive(true)}
             >
               <ArchiveIcon size={17} />
-              Archive asset
+              {t("Archive asset")}
             </button>
           )
         ) : null}
@@ -142,7 +145,7 @@ export function MediaAssetCard({
             className={archiveState.status === "success" ? "inline-success" : "inline-error"}
             role="status"
           >
-            {archiveState.message}
+            {t(archiveState.message)}
           </p>
         ) : null}
       </div>

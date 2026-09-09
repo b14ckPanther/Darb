@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import { useActionState, useState } from "react";
 
 import { CheckmarkCircleIcon, ModulesIcon } from "@darb/icons";
@@ -18,6 +20,7 @@ interface ModuleCardProps {
 }
 
 export function ModuleCard({ businessId, businessSlug, editable, module }: ModuleCardProps) {
+  const { t } = useAdminI18n();
   const [confirmingDisable, setConfirmingDisable] = useState(false);
   const action = setBusinessModuleEnabledAction.bind(null, businessId, businessSlug);
   const [state, formAction, pending] = useActionState(action, initialFormState);
@@ -48,7 +51,7 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
                 ? "disabled"
                 : "unavailable"
           }
-          label={statusLabel}
+          label={t(statusLabel)}
         />
       </div>
 
@@ -56,15 +59,17 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
         <p className="module-card__key" dir="ltr">
           {module.key}
         </p>
-        <h2 id={`module-${module.key}-heading`}>{module.displayName}</h2>
-        <p>{module.description}</p>
+        <h2 id={`module-${module.key}-heading`}>{t(module.displayName)}</h2>
+        <p>{t(module.description)}</p>
       </div>
 
       <div className="module-card__footer">
         <p className="module-card__boundary">
           {module.isEnabled && !module.isAvailable
-            ? "Stored state is retained, but the capability is inactive while platform-unavailable."
-            : "No engine route or product workflow is created by this setting."}
+            ? t(
+                "Stored state is retained, but the capability is inactive while platform-unavailable.",
+              )
+            : t("No engine route or product workflow is created by this setting.")}
         </p>
 
         {state.message ? (
@@ -75,7 +80,7 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
             role={state.status === "success" ? "status" : "alert"}
           >
             {state.status === "success" ? <CheckmarkCircleIcon size={17} /> : null}
-            {state.message}
+            {t(state.message)}
           </p>
         ) : null}
 
@@ -85,14 +90,14 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
             className="secondary-button module-card__action"
             onClick={() => setConfirmingDisable(true)}
           >
-            Disable capability
+            {t("Disable capability")}
           </button>
         ) : canEnable ? (
           <form action={formAction}>
             <input type="hidden" name="moduleKey" value={module.key} />
             <input type="hidden" name="enabled" value="true" />
             <button type="submit" className="primary-button module-card__action" disabled={pending}>
-              {pending ? "Enabling…" : "Enable capability"}
+              {pending ? t("Enabling…") : t("Enable capability")}
             </button>
           </form>
         ) : null}
@@ -102,8 +107,10 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
         open={canDisable && confirmingDisable}
         pending={pending}
         onClose={() => setConfirmingDisable(false)}
-        title={`Disable ${module.displayName}?`}
-        description="Disable this capability for the current business? Existing retained foundation data is not deleted, and no engine route is created or removed."
+        title={t("Disable {name}?", { name: t(module.displayName) })}
+        description={t(
+          "Disable this capability for the current business? Existing retained foundation data is not deleted, and no engine route is created or removed.",
+        )}
       >
         <button
           type="button"
@@ -111,13 +118,13 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
           onClick={() => setConfirmingDisable(false)}
           disabled={pending}
         >
-          Keep enabled
+          {t("Keep enabled")}
         </button>
         <form action={formAction}>
           <input type="hidden" name="moduleKey" value={module.key} />
           <input type="hidden" name="enabled" value="false" />
           <button type="submit" className="danger-button" disabled={pending}>
-            {pending ? "Disabling…" : "Confirm disable"}
+            {pending ? t("Disabling…") : t("Confirm disable")}
           </button>
         </form>
       </ConfirmationDialog>

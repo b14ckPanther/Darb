@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import { useActionState, useState } from "react";
 import { CopyIcon, DomainIcon } from "@darb/icons";
 import {
@@ -28,6 +30,7 @@ interface DomainCardProps {
 }
 
 export function DomainCard({ businessId, businessSlug, domain, editable }: DomainCardProps) {
+  const { t } = useAdminI18n();
   const [confirmingDisable, setConfirmingDisable] = useState(false);
   const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
   const [copied, setCopied] = useState<string>();
@@ -106,12 +109,15 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
           <h3 id={`domain-${domain.id}`} dir="ltr">
             {domain.hostname}
           </h3>
-          <p>{domain.is_primary ? "Primary Restaurant hostname" : "Custom domain"}</p>
+          <p>{domain.is_primary ? t("Primary Restaurant hostname") : t("Custom domain")}</p>
         </div>
-        <div className="domain-card__statuses" aria-label="Domain states">
-          <StatusBadge label={`Ownership: ${domain.status}`} status={domain.status} />
+        <div className="domain-card__statuses" aria-label={t("Domain states")}>
           <StatusBadge
-            label={`Routing: ${routingLabel(domain.routing_status)}`}
+            label={t("Ownership: {status}", { status: t(domain.status) })}
+            status={domain.status}
+          />
+          <StatusBadge
+            label={t("Routing: {status}", { status: t(routingLabel(domain.routing_status)) })}
             status={domain.routing_status}
           />
         </div>
@@ -119,31 +125,35 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
 
       {domain.status !== "disabled" ? (
         <div className="dns-instructions">
-          <p>Ownership TXT record</p>
+          <p>{t("Ownership TXT record")}</p>
           <CopyField
-            label="Host / name"
+            label={t("Host / name")}
             value={dnsName}
             copied={copied === "name"}
             onCopy={() => copyValue("name", dnsName)}
           />
           <CopyField
-            label="TXT value"
+            label={t("TXT value")}
             value={dnsValue}
             copied={copied === "value"}
             onCopy={() => copyValue("value", dnsValue)}
           />
         </div>
       ) : (
-        <p className="domain-card__disabled-note">This ownership claim is retained but disabled.</p>
+        <p className="domain-card__disabled-note">
+          {t("This ownership claim is retained but disabled.")}
+        </p>
       )}
 
       {domain.status === "verified" ? (
-        <section className="domain-routing" aria-label="Public routing">
+        <section className="domain-routing" aria-label={t("Public routing")}>
           <div>
-            <p className="eyebrow">Public destination</p>
-            <h4>{domain.target_module_key === "restaurant" ? "Restaurant" : "Not assigned"}</h4>
+            <p className="eyebrow">{t("Public destination")}</p>
+            <h4>
+              {domain.target_module_key === "restaurant" ? t("Restaurant") : t("Not assigned")}
+            </h4>
           </div>
-          <p>{routingDescription(domain.routing_status, domain.target_module_key)}</p>
+          <p>{t(routingDescription(domain.routing_status, domain.target_module_key))}</p>
         </section>
       ) : null}
 
@@ -152,7 +162,7 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
           className={feedback.status === "success" ? "inline-success" : "inline-error"}
           role="status"
         >
-          {feedback.message}
+          {t(feedback.message)}
         </p>
       ) : null}
 
@@ -161,7 +171,7 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
           {(domain.status === "pending" || domain.status === "failed") && (
             <form action={verifyAction}>
               <button type="submit" className="primary-button" disabled={pending}>
-                {verifyPending ? "Checking DNS…" : "Verify ownership"}
+                {verifyPending ? t("Checking DNS…") : t("Verify ownership")}
               </button>
             </form>
           )}
@@ -169,7 +179,7 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
             <form action={targetAction}>
               <input type="hidden" name="moduleKey" value="restaurant" />
               <button type="submit" className="primary-button" disabled={pending}>
-                {targetPending ? "Assigning…" : "Use for Restaurant"}
+                {targetPending ? t("Assigning…") : t("Use for Restaurant")}
               </button>
             </form>
           )}
@@ -178,7 +188,7 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
             ["unconfigured", "disconnected"].includes(domain.routing_status) && (
               <form action={connectAction}>
                 <button type="submit" className="primary-button" disabled={pending}>
-                  {connectPending ? "Connecting…" : "Connect deployment"}
+                  {connectPending ? t("Connecting…") : t("Connect deployment")}
                 </button>
               </form>
             )}
@@ -187,21 +197,25 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
             ["provisioning", "failed"].includes(domain.routing_status) && (
               <form action={checkAction}>
                 <button type="submit" className="primary-button" disabled={pending}>
-                  {checkPending ? "Checking…" : "Check routing"}
+                  {checkPending ? t("Checking…") : t("Check routing")}
                 </button>
               </form>
             )}
           {domain.routing_status === "live" && !domain.is_primary && (
             <form action={primaryAction}>
               <button type="submit" className="secondary-button" disabled={pending}>
-                {primaryPending ? "Updating…" : "Make primary"}
+                {primaryPending ? t("Updating…") : t("Make primary")}
               </button>
             </form>
           )}
           {["live", "provisioning", "failed"].includes(domain.routing_status) &&
             (confirmingDisconnect ? (
-              <div className="inline-confirmation" role="group" aria-label="Disconnect deployment">
-                <p>Stop Darb routing before removing this hostname from the deployment?</p>
+              <div
+                className="inline-confirmation"
+                role="group"
+                aria-label={t("Disconnect deployment")}
+              >
+                <p>{t("Stop Darb routing before removing this hostname from the deployment?")}</p>
                 <div>
                   <button
                     type="button"
@@ -209,11 +223,11 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
                     onClick={() => setConfirmingDisconnect(false)}
                     disabled={pending}
                   >
-                    Keep connected
+                    {t("Keep connected")}
                   </button>
                   <form action={disconnectAction}>
                     <button type="submit" className="danger-button" disabled={pending}>
-                      {disconnectPending ? "Disconnecting…" : "Confirm disconnect"}
+                      {disconnectPending ? t("Disconnecting…") : t("Confirm disconnect")}
                     </button>
                   </form>
                 </div>
@@ -224,18 +238,18 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
                 className="text-danger-button"
                 onClick={() => setConfirmingDisconnect(true)}
               >
-                Disconnect deployment
+                {t("Disconnect deployment")}
               </button>
             ))}
           {domain.status === "disabled" ? (
             <form action={restartAction}>
               <button type="submit" className="secondary-button" disabled={pending}>
-                {restartPending ? "Restarting…" : "Restart verification"}
+                {restartPending ? t("Restarting…") : t("Restart verification")}
               </button>
             </form>
           ) : confirmingDisable ? (
-            <div className="inline-confirmation" role="group" aria-label="Disable domain">
-              <p>Disable ownership and routing while retaining this domain for history?</p>
+            <div className="inline-confirmation" role="group" aria-label={t("Disable domain")}>
+              <p>{t("Disable ownership and routing while retaining this domain for history?")}</p>
               <div>
                 <button
                   type="button"
@@ -243,11 +257,11 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
                   onClick={() => setConfirmingDisable(false)}
                   disabled={pending}
                 >
-                  Keep active
+                  {t("Keep active")}
                 </button>
                 <form action={disableAction}>
                   <button type="submit" className="danger-button" disabled={pending}>
-                    {disablePending ? "Disabling…" : "Confirm disable"}
+                    {disablePending ? t("Disabling…") : t("Confirm disable")}
                   </button>
                 </form>
               </div>
@@ -258,7 +272,7 @@ export function DomainCard({ businessId, businessSlug, domain, editable }: Domai
               className="text-danger-button"
               onClick={() => setConfirmingDisable(true)}
             >
-              Disable domain
+              {t("Disable domain")}
             </button>
           )}
         </div>
@@ -302,13 +316,14 @@ function CopyField({
   onCopy: () => void;
   value: string;
 }) {
+  const { t } = useAdminI18n();
   return (
     <div className="copy-field">
       <span>{label}</span>
       <code dir="ltr">{value}</code>
-      <button type="button" onClick={onCopy} aria-label={`Copy ${label.toLowerCase()}`}>
+      <button type="button" onClick={onCopy} aria-label={t("Copy {name}", { name: label })}>
         <CopyIcon size={16} />
-        <span>{copied ? "Copied" : "Copy"}</span>
+        <span>{copied ? t("Copied") : t("Copy")}</span>
       </button>
     </div>
   );

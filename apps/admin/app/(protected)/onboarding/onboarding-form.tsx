@@ -5,10 +5,8 @@ import { useActionState } from "react";
 import { ArrowRightIcon, BuildingIcon } from "@darb/icons";
 
 import { bootstrapBusinessAction } from "../../actions/onboarding";
-import { adminAuthCopy } from "../../../lib/copy";
 import { initialFormState } from "../../../lib/forms";
-
-const copy = adminAuthCopy.en.onboarding;
+import { useAdminI18n } from "../../../lib/i18n-client";
 
 const localeOptions = [
   { label: "العربية", lang: "ar", value: "ar" },
@@ -17,12 +15,13 @@ const localeOptions = [
 ] as const;
 
 export function OnboardingForm() {
+  const { t } = useAdminI18n();
   const [state, action, pending] = useActionState(bootstrapBusinessAction, initialFormState);
 
   return (
     <form action={action} className="auth-form onboarding-form">
       <div className="field-group">
-        <label htmlFor="displayName">{copy.nameLabel}</label>
+        <label htmlFor="displayName">{t("Business name")}</label>
         <div className="field-control">
           <BuildingIcon size={19} />
           <input
@@ -40,17 +39,17 @@ export function OnboardingForm() {
           />
         </div>
         <p className="field-hint" id="display-name-hint">
-          {copy.nameHint}
+          {t("The name your team will recognize.")}
         </p>
         {state.fieldErrors?.displayName ? (
           <p className="field-error" id="display-name-error">
-            {state.fieldErrors.displayName}
+            {t(state.fieldErrors.displayName)}
           </p>
         ) : null}
       </div>
 
       <div className="field-group">
-        <label htmlFor="slug">{copy.slugLabel}</label>
+        <label htmlFor="slug">{t("Business slug")}</label>
         <div className="field-control field-control--prefix">
           <span className="field-prefix" aria-hidden="true">
             darb.co.il/
@@ -71,19 +70,19 @@ export function OnboardingForm() {
           />
         </div>
         <p className="field-hint" id="slug-hint">
-          {copy.slugHint}
+          {t("Lowercase letters, numbers, and hyphens. This must be unique on Darb.")}
         </p>
         {state.fieldErrors?.slug ? (
           <p className="field-error" id="slug-error">
-            {state.fieldErrors.slug}
+            {t(state.fieldErrors.slug)}
           </p>
         ) : null}
       </div>
 
       <fieldset className="locale-fieldset" aria-describedby="locale-hint">
-        <legend>{copy.localeLabel}</legend>
+        <legend>{t("Default language")}</legend>
         <p className="field-hint" id="locale-hint">
-          {copy.localeHint}
+          {t("This establishes a starting preference and can be changed later.")}
         </p>
         <div className="locale-options">
           {localeOptions.map((locale) => (
@@ -103,18 +102,18 @@ export function OnboardingForm() {
           ))}
         </div>
         {state.fieldErrors?.defaultLocale ? (
-          <p className="field-error">{state.fieldErrors.defaultLocale}</p>
+          <p className="field-error">{t(state.fieldErrors.defaultLocale)}</p>
         ) : null}
       </fieldset>
 
       {state.message ? (
         <p className="form-alert" role="alert">
-          {state.message}
+          {t(state.message)}
         </p>
       ) : null}
 
       <button className="primary-button" type="submit" disabled={pending}>
-        <span>{pending ? copy.submitting : copy.submit}</span>
+        <span>{t(pending ? "Creating securely…" : "Create business")}</span>
         <ArrowRightIcon size={20} />
       </button>
     </form>

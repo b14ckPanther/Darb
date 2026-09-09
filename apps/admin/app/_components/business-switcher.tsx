@@ -6,6 +6,7 @@ import { ArrowDownIcon, BuildingIcon } from "@darb/icons";
 
 import type { AccessibleBusiness } from "../../lib/auth";
 import { getBusinessSwitchPath } from "../../lib/navigation";
+import { useAdminI18n } from "../../lib/i18n-client";
 
 interface BusinessSwitcherProps {
   businesses: AccessibleBusiness[];
@@ -18,6 +19,7 @@ export function BusinessSwitcher({
   currentBusiness,
   onNavigate,
 }: BusinessSwitcherProps) {
+  const { t } = useAdminI18n();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -25,13 +27,16 @@ export function BusinessSwitcher({
     <div className="business-switcher">
       <BuildingIcon size={19} />
       <label className="visually-hidden" htmlFor="business-switcher-select">
-        Current business
+        {t("Current business")}
       </label>
       <div className="business-switcher__field">
-        <span>Current business · {currentBusiness.status}</span>
+        <span>
+          {t("Current business")} ·{" "}
+          {t(currentBusiness.status[0]!.toUpperCase() + currentBusiness.status.slice(1))}
+        </span>
         <select
           id="business-switcher-select"
-          aria-label="Current business"
+          aria-label={t("Current business")}
           value={currentBusiness.slug}
           onChange={(event) => {
             onNavigate?.();

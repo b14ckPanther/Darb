@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { reportOperationalError } from "@darb/config/observability";
 
 import { AdminState } from "../../_components/admin-state";
+import { useAdminI18n } from "../../../lib/i18n-client";
 
 export default function PlatformError({
   error,
@@ -13,6 +14,7 @@ export default function PlatformError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useAdminI18n();
   useEffect(() => {
     reportOperationalError({
       application: "admin",
@@ -29,7 +31,7 @@ export default function PlatformError({
       description="No platform data was changed. Retry the request, or return to a business workspace while the issue is investigated."
       action={
         <button className="secondary-button" type="button" onClick={reset}>
-          Retry platform request
+          {t("Retry platform request")}
         </button>
       }
     />

@@ -22,6 +22,8 @@ import type { CurrentUser } from "../../lib/auth";
 import { platformPaths } from "../../lib/platform-model";
 import { signOutAction } from "../actions/auth";
 import { DarbAdminBrand, DarbPublicSiteLink } from "./brand";
+import { AdminLanguageSwitcher } from "./language-switcher";
+import { useAdminI18n } from "../../lib/i18n-client";
 
 interface PlatformShellProps {
   children: ReactNode;
@@ -81,6 +83,7 @@ const navigation = [
 ] as const;
 
 export function PlatformShell({ children, user }: PlatformShellProps) {
+  const { t } = useAdminI18n();
   const pathname = usePathname();
   const [navigationOpen, setNavigationOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
@@ -135,14 +138,14 @@ export function PlatformShell({ children, user }: PlatformShellProps) {
       <button
         type="button"
         className={`admin-shell-backdrop${navigationOpen ? " is-visible" : ""}`}
-        aria-label="Close platform navigation"
+        aria-label={t("Close platform navigation")}
         tabIndex={navigationOpen ? 0 : -1}
         onClick={() => setNavigationOpen(false)}
       />
       <aside
         ref={sidebarRef}
         className={`admin-sidebar platform-sidebar${navigationOpen ? " is-open" : ""}`}
-        aria-label="Darb platform administration navigation"
+        aria-label={t("Darb platform administration navigation")}
         aria-modal={navigationOpen || undefined}
         role={navigationOpen ? "dialog" : undefined}
       >
@@ -152,7 +155,7 @@ export function PlatformShell({ children, user }: PlatformShellProps) {
             ref={closeButtonRef}
             type="button"
             className="icon-button admin-sidebar__close"
-            aria-label="Close platform navigation"
+            aria-label={t("Close platform navigation")}
             onClick={() => setNavigationOpen(false)}
           >
             <CancelIcon size={20} />
@@ -163,17 +166,17 @@ export function PlatformShell({ children, user }: PlatformShellProps) {
             <AuditIcon size={19} />
           </span>
           <div>
-            <small>Active context</small>
-            <strong>Darb Platform</strong>
+            <small>{t("Active context")}</small>
+            <strong>{t("Darb Platform")}</strong>
           </div>
         </div>
-        <nav className="admin-navigation" aria-label="Platform administration">
+        <nav className="admin-navigation" aria-label={t("Platform administration")}>
           {["Platform", "Operations", "Registry", "Governance"].map((group) => {
             const items = navigation.filter((item) => item.group === group);
             if (items.length === 0) return null;
             return (
               <section className="admin-navigation__group" key={group}>
-                <h2 className="admin-navigation__label">{group}</h2>
+                <h2 className="admin-navigation__label">{t(group)}</h2>
                 <ul>
                   {items.map((item) => {
                     const active =
@@ -190,7 +193,7 @@ export function PlatformShell({ children, user }: PlatformShellProps) {
                           onClick={() => setNavigationOpen(false)}
                         >
                           <Icon size={19} />
-                          <span>{item.label}</span>
+                          <span>{t(item.label)}</span>
                         </Link>
                       </li>
                     );
@@ -201,21 +204,22 @@ export function PlatformShell({ children, user }: PlatformShellProps) {
           })}
         </nav>
         <div className="admin-sidebar__footer">
-          <DarbPublicSiteLink className="public-site-link" label="Darb public website" />
+          <AdminLanguageSwitcher />
+          <DarbPublicSiteLink className="public-site-link" label={t("Darb public website")} />
           <Link className="all-businesses-link" href="/" onClick={() => setNavigationOpen(false)}>
             <BuildingIcon size={18} />
-            Business workspaces
+            {t("Business workspaces")}
           </Link>
           <div className="account-summary">
             <span className="account-summary__avatar" aria-hidden="true">
               {(user.email?.[0] ?? "D").toUpperCase()}
             </span>
             <span className="account-summary__identity">
-              <small>Platform operator</small>
-              <bdi>{user.email ?? "Darb account"}</bdi>
+              <small>{t("Platform operator")}</small>
+              <bdi>{user.email ?? t("Darb account")}</bdi>
             </span>
             <form action={signOutAction}>
-              <button type="submit" className="icon-button" aria-label="Sign out">
+              <button type="submit" className="icon-button" aria-label={t("Sign out")}>
                 <LogoutIcon size={19} />
               </button>
             </form>
@@ -228,7 +232,7 @@ export function PlatformShell({ children, user }: PlatformShellProps) {
             ref={openButtonRef}
             type="button"
             className="icon-button"
-            aria-label="Open platform navigation"
+            aria-label={t("Open platform navigation")}
             aria-expanded={navigationOpen}
             onClick={openNavigation}
           >
@@ -237,8 +241,8 @@ export function PlatformShell({ children, user }: PlatformShellProps) {
           <div className="admin-mobile-context">
             <DarbMark size={24} aria-hidden="true" />
             <div>
-              <small>Platform administration</small>
-              <strong>Darb Platform</strong>
+              <small>{t("Platform administration")}</small>
+              <strong>{t("Darb Platform")}</strong>
             </div>
           </div>
           <span className="platform-mobile-mark">

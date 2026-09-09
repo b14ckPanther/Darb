@@ -95,6 +95,51 @@ test("redirects an unauthenticated admin request to login", async ({ page }) => 
   await expect(password).toHaveAttribute("type", "password");
 });
 
+test("switches and persists the Admin interface language with correct direction", async ({
+  page,
+}) => {
+  await page.goto("/login");
+
+  const language = page.getByLabel("Interface language");
+  await language.selectOption("ar");
+  await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.getByRole("heading", { name: "أهلًا برجعتك" })).toBeVisible();
+  await expect
+    .poll(() =>
+      page
+        .getByRole("heading", { name: "أهلًا برجعتك" })
+        .evaluate((element) => getComputedStyle(element).fontFamily),
+    )
+    .toContain("Cairo");
+
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+  await page.getByLabel("لغة الواجهة").selectOption("he");
+  await expect(page.locator("html")).toHaveAttribute("lang", "he");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.getByRole("heading", { name: "טוב שחזרת" })).toBeVisible();
+  await expect
+    .poll(() =>
+      page
+        .getByRole("heading", { name: "טוב שחזרת" })
+        .evaluate((element) => getComputedStyle(element).fontFamily),
+    )
+    .toContain("Heebo");
+
+  await page.getByLabel("שפת הממשק").selectOption("en");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  await expect
+    .poll(() =>
+      page
+        .getByRole("heading", { name: "Welcome back" })
+        .evaluate((element) => getComputedStyle(element).fontFamily),
+    )
+    .toContain("Ubuntu");
+});
+
 test("keeps Admin private at both metadata and response-header boundaries", async ({ request }) => {
   const [login, robots, health] = await Promise.all([
     request.get("/login"),
@@ -158,6 +203,45 @@ test("completes first-business onboarding and enters the canonical workspace rou
 
   primaryBusinessId = data.id;
   await provisionMultiBusinessFixture();
+});
+
+test("persists an authenticated user interface preference without changing business locale", async ({
+  page,
+}) => {
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${initialBusinessSlug}`);
+
+  const { data: businessBefore } = await adminClient
+    .schema("core")
+    .from("businesses")
+    .select("default_locale")
+    .eq("id", primaryBusinessId!)
+    .single();
+
+  await page.getByLabel("Interface language").selectOption("ar");
+  await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+
+  const [{ data: profile }, { data: business }] = await Promise.all([
+    adminClient
+      .schema("core")
+      .from("profiles")
+      .select("preferred_locale")
+      .eq("id", ownerUserId!)
+      .single(),
+    adminClient
+      .schema("core")
+      .from("businesses")
+      .select("default_locale")
+      .eq("id", primaryBusinessId!)
+      .single(),
+  ]);
+  expect(profile?.preferred_locale).toBe("ar");
+  expect(business?.default_locale).toBe(businessBefore?.default_locale);
+
+  await page.getByLabel("لغة الواجهة").selectOption("en");
+  await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
 });
 
 test("chooses and switches only between accessible business routes", async ({ page }) => {
@@ -748,7 +832,7 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}/restaurant`);
   await expect(page.getByRole("heading", { level: 1, name: "Restaurant" })).toBeVisible();
-  await expect(page.getByText("Administration is live; public delivery is next")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Manage what customers see" })).toBeVisible();
   await expect(
     page.getByRole("region", { name: "Restaurant content totals" }).locator("strong").first(),
   ).toHaveText("0");
@@ -767,7 +851,7 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   await expect(page).toHaveURL(/\/restaurant\/menus\/[0-9a-f-]+\?created=1$/);
   const menuUrl = page.url().replace(/\?created=1$/, "");
 
-  const englishMenu = page.locator('form[lang="en"]').first();
+  const englishMenu = page.locator('form[data-content-locale="en"]').first();
   await englishMenu.getByLabel("Customer-facing name").fill("All day");
   await englishMenu.getByLabel("Description").fill("Available throughout the day.");
   await englishMenu.getByRole("button", { name: "Save EN" }).click();
@@ -801,7 +885,7 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   expect(publicRestaurantHtml).toContain("Coffee");
   expect(publicRestaurantHtml).toContain("House espresso");
 
-  const englishItem = page.locator('form[lang="en"]').first();
+  const englishItem = page.locator('form[data-content-locale="en"]').first();
   await englishItem.getByLabel("Customer-facing name").fill("House espresso");
   await englishItem.getByLabel("Description").fill("A balanced double espresso.");
   await englishItem.getByRole("button", { name: "Save EN" }).click();

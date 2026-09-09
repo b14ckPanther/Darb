@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../lib/i18n-server";
 import { DomainIcon } from "@darb/icons";
 
 import { PageHeader } from "../../../../_components/page-header";
@@ -15,6 +16,7 @@ interface DomainsPageProps {
 }
 
 export default async function DomainsPage({ params }: DomainsPageProps) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
   const supabase = await createServerComponentSupabaseClient();
@@ -25,19 +27,21 @@ export default async function DomainsPage({ params }: DomainsPageProps) {
     <>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(context.business.slug), label: "Overview" },
-          { label: "Domains" },
+          { href: businessPath(context.business.slug), label: t("Overview") },
+          { label: t("Domains") },
         ]}
-        eyebrow="Ownership and routing"
-        title="Domains"
-        summary="Verify ownership, choose an implemented public capability, and connect the hostname through a separately attested deployment lifecycle."
+        eyebrow={t("Ownership and routing")}
+        title={t("Domains")}
+        summary={t(
+          "Verify ownership, choose an implemented public capability, and connect the hostname through a separately attested deployment lifecycle.",
+        )}
       />
 
       {!editable ? (
-        <PermissionNotice title="Domain settings are read-only.">
+        <PermissionNotice title={t("Domain settings are read-only.")}>
           {context.business.status !== "active"
-            ? "Domains cannot be changed while this business is suspended or archived."
-            : "The domains.manage permission is required to manage domain claims."}
+            ? t("Domains cannot be changed while this business is suspended or archived.")
+            : t("The domains.manage permission is required to manage domain claims.")}
         </PermissionNotice>
       ) : (
         <AddDomainForm businessId={context.business.id} businessSlug={context.business.slug} />
@@ -49,16 +53,20 @@ export default async function DomainsPage({ params }: DomainsPageProps) {
             <DomainIcon size={22} />
           </span>
           <div>
-            <h2>No custom domains</h2>
-            <p>This business has not claimed a hostname. Its Darb workspace remains fully valid.</p>
+            <h2>{t("No custom domains")}</h2>
+            <p>
+              {t(
+                "This business has not claimed a hostname. Its Darb workspace remains fully valid.",
+              )}
+            </p>
           </div>
         </section>
       ) : (
         <section className="domain-list-section" aria-labelledby="domain-list-heading">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Tenant hostnames</p>
-              <h2 id="domain-list-heading">Domain claims and routing</h2>
+              <p className="eyebrow">{t("Tenant hostnames")}</p>
+              <h2 id="domain-list-heading">{t("Domain claims and routing")}</h2>
             </div>
             <span className="count-badge" aria-label={`${domains.length} domains`}>
               {domains.length}

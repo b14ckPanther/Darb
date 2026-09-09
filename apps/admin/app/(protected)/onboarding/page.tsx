@@ -3,14 +3,14 @@ import { redirect } from "next/navigation";
 import { ShieldIcon } from "@darb/icons";
 
 import { DarbAdminBrand } from "../../_components/brand";
+import { AdminLanguageSwitcher } from "../../_components/language-switcher";
 import { getAdminAccessSnapshot } from "../../../lib/auth";
-import { adminAuthCopy } from "../../../lib/copy";
+import { getAdminI18n } from "../../../lib/i18n-server";
 import { getOnboardingDestination } from "../../../lib/navigation";
 import { OnboardingForm } from "./onboarding-form";
 
-const copy = adminAuthCopy.en.onboarding;
-
 export default async function OnboardingPage() {
+  const { t } = await getAdminI18n();
   const snapshot = await getAdminAccessSnapshot();
   const destination = getOnboardingDestination({
     accessibleBusinessCount: snapshot.businesses.length,
@@ -25,24 +25,32 @@ export default async function OnboardingPage() {
     <main id="main-content" className="onboarding-layout">
       <header className="onboarding-header">
         <DarbAdminBrand />
-        <p className="secure-context">
-          <ShieldIcon size={18} />
-          Signed in securely
-        </p>
+        <div className="onboarding-header__actions">
+          <AdminLanguageSwitcher />
+          <p className="secure-context">
+            <ShieldIcon size={18} />
+            {t("Signed in securely")}
+          </p>
+        </div>
       </header>
 
       <section className="onboarding-card" aria-labelledby="onboarding-heading">
         <div className="onboarding-card__intro">
-          <p className="eyebrow">{copy.eyebrow}</p>
-          <h1 id="onboarding-heading">{copy.heading}</h1>
-          <p className="auth-intro">{copy.intro}</p>
+          <p className="eyebrow">{t("First workspace")}</p>
+          <h1 id="onboarding-heading">{t("Create your business")}</h1>
+          <p className="auth-intro">
+            {t(
+              "Start with the identity Darb will use across every future product. You can add locations and modules later.",
+            )}
+          </p>
         </div>
         <OnboardingForm />
       </section>
 
       <p className="onboarding-note">
-        Currency starts as ILS and the timezone as Asia/Jerusalem. No product modules are enabled
-        during this step.
+        {t(
+          "Currency starts as ILS and the timezone as Asia/Jerusalem. No product modules are enabled during this step.",
+        )}
       </p>
     </main>
   );

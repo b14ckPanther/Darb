@@ -1,3 +1,5 @@
+"use client";
+
 import { AlertCircleIcon, CheckmarkCircleIcon, InformationCircleIcon } from "@darb/icons";
 
 import {
@@ -5,6 +7,7 @@ import {
   type AdminSemanticStatus,
   type AdminStatusTone,
 } from "../../lib/status";
+import { useAdminI18n } from "../../lib/i18n-client";
 
 interface StatusBadgeProps {
   className?: string;
@@ -20,6 +23,7 @@ const toneIcons: Record<AdminStatusTone, typeof CheckmarkCircleIcon> = {
 };
 
 export function StatusBadge({ className, label, status }: StatusBadgeProps) {
+  const { t } = useAdminI18n();
   const semantic = getAdminStatusSemantic(status);
   const Icon = toneIcons[semantic.tone];
 
@@ -29,7 +33,7 @@ export function StatusBadge({ className, label, status }: StatusBadgeProps) {
       data-status={status}
     >
       <Icon size={14} />
-      {label ?? semantic.label}
+      {t(label ?? semantic.label)}
     </span>
   );
 }

@@ -24,6 +24,7 @@ import {
 import { DarbMark } from "@darb/ui";
 
 import { signOutAction } from "../actions/auth";
+import { useAdminI18n } from "../../lib/i18n-client";
 import type { AccessibleBusiness, CurrentUser } from "../../lib/auth";
 import {
   isAdminNavigationItemActive,
@@ -34,6 +35,7 @@ import { DarbAdminBrand, DarbPublicSiteLink } from "./brand";
 import { BusinessLifecycleNotice } from "./business-lifecycle-notice";
 import { BusinessSwitcher } from "./business-switcher";
 import { StatusBadge } from "./status-badge";
+import { AdminLanguageSwitcher } from "./language-switcher";
 
 interface AdminShellProps {
   businesses: AccessibleBusiness[];
@@ -65,6 +67,7 @@ export function AdminShell({
   navigation,
   user,
 }: AdminShellProps) {
+  const { t } = useAdminI18n();
   const pathname = usePathname();
   const [navigationOpen, setNavigationOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
@@ -124,7 +127,7 @@ export function AdminShell({
       <button
         type="button"
         className={`admin-shell-backdrop${navigationOpen ? " is-visible" : ""}`}
-        aria-label="Close navigation"
+        aria-label={t("Close navigation")}
         tabIndex={navigationOpen ? 0 : -1}
         onClick={() => setNavigationOpen(false)}
       />
@@ -132,7 +135,7 @@ export function AdminShell({
       <aside
         ref={sidebarRef}
         className={`admin-sidebar${navigationOpen ? " is-open" : ""}`}
-        aria-label="Business workspace navigation"
+        aria-label={t("Business workspace navigation")}
         aria-modal={navigationOpen || undefined}
         role={navigationOpen ? "dialog" : undefined}
       >
@@ -142,7 +145,7 @@ export function AdminShell({
             ref={closeButtonRef}
             type="button"
             className="icon-button admin-sidebar__close"
-            aria-label="Close navigation"
+            aria-label={t("Close navigation")}
             onClick={() => setNavigationOpen(false)}
           >
             <CancelIcon size={20} />
@@ -155,10 +158,10 @@ export function AdminShell({
           onNavigate={() => setNavigationOpen(false)}
         />
 
-        <nav className="admin-navigation" aria-label="Business administration">
+        <nav className="admin-navigation" aria-label={t("Business administration")}>
           {navigation.map((group) => (
             <section className="admin-navigation__group" key={group.key}>
-              <h2 className="admin-navigation__label">{group.label}</h2>
+              <h2 className="admin-navigation__label">{t(group.label)}</h2>
               <ul>
                 {group.items.map((item) => {
                   const Icon = navigationIcons[item.icon];
@@ -172,7 +175,7 @@ export function AdminShell({
                         onClick={() => setNavigationOpen(false)}
                       >
                         <Icon size={19} />
-                        <span>{item.label}</span>
+                        <span>{t(item.label)}</span>
                       </Link>
                     </li>
                   );
@@ -183,7 +186,8 @@ export function AdminShell({
         </nav>
 
         <div className="admin-sidebar__footer">
-          <DarbPublicSiteLink className="public-site-link" label="Darb public website" />
+          <AdminLanguageSwitcher />
+          <DarbPublicSiteLink className="public-site-link" label={t("Darb public website")} />
           {isPlatformAdmin ? (
             <Link
               className="platform-entry-link"
@@ -191,23 +195,23 @@ export function AdminShell({
               onClick={() => setNavigationOpen(false)}
             >
               <AuditIcon size={18} />
-              Platform Admin
+              {t("Platform Admin")}
             </Link>
           ) : null}
           <Link className="all-businesses-link" href="/" onClick={() => setNavigationOpen(false)}>
             <BuildingIcon size={18} />
-            All businesses
+            {t("All businesses")}
           </Link>
           <div className="account-summary">
             <span className="account-summary__avatar" aria-hidden="true">
               {(user.email?.[0] ?? "D").toUpperCase()}
             </span>
             <span className="account-summary__identity">
-              <small>Signed in</small>
-              <bdi>{user.email ?? "Darb account"}</bdi>
+              <small>{t("Signed in")}</small>
+              <bdi>{user.email ?? t("Darb account")}</bdi>
             </span>
             <form action={signOutAction}>
-              <button type="submit" className="icon-button" aria-label="Sign out">
+              <button type="submit" className="icon-button" aria-label={t("Sign out")}>
                 <LogoutIcon size={19} />
               </button>
             </form>
@@ -221,7 +225,7 @@ export function AdminShell({
             ref={openButtonRef}
             type="button"
             className="icon-button"
-            aria-label="Open navigation"
+            aria-label={t("Open navigation")}
             aria-expanded={navigationOpen}
             onClick={openNavigation}
           >
@@ -230,7 +234,7 @@ export function AdminShell({
           <div className="admin-mobile-context">
             <DarbMark size={24} aria-hidden="true" />
             <div>
-              <small>Current business</small>
+              <small>{t("Current business")}</small>
               <strong lang={currentBusiness.default_locale} dir="auto">
                 {currentBusiness.display_name}
               </strong>
@@ -243,10 +247,12 @@ export function AdminShell({
             <div className="platform-access-notice" role="status">
               <AuditIcon size={18} />
               <p>
-                <strong>Platform access</strong> You are operating this tenant as yourself through
-                explicit Darb super-admin authority.
+                <strong>{t("Platform access")}</strong>{" "}
+                {t(
+                  "You are operating this tenant as yourself through explicit Darb super-admin authority.",
+                )}
               </p>
-              <Link href="/platform">Return to Platform Admin</Link>
+              <Link href="/platform">{t("Return to Platform Admin")}</Link>
             </div>
           ) : null}
           <BusinessLifecycleNotice status={currentBusiness.status} />

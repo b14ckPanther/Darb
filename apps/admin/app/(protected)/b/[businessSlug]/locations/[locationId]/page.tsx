@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../../lib/i18n-server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -23,6 +24,7 @@ export default async function LocationDetailPage({
   params,
   searchParams,
 }: LocationDetailPageProps) {
+  const { t } = await getAdminI18n();
   const { businessSlug, locationId } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
   const supabase = await createServerComponentSupabaseClient();
@@ -42,31 +44,33 @@ export default async function LocationDetailPage({
     <>
       <Link className="back-link" href={businessSectionPath(context.business.slug, "locations")}>
         <ArrowRightIcon size={17} />
-        Back to locations
+        {t("Back to locations")}
       </Link>
       <PageHeader
-        eyebrow="Location record"
+        eyebrow={t("Location record")}
         title={location.display_name}
-        summary="Core location details remain isolated to the permissions assigned to your account."
+        summary={t(
+          "Core location details remain isolated to the permissions assigned to your account.",
+        )}
         actions={<StatusBadge status={location.status} />}
       />
 
       {query.created === "1" ? (
         <p className="form-success" role="status">
-          Location created successfully.
+          {t("Location created successfully.")}
         </p>
       ) : null}
       {query.archived === "1" ? (
         <p className="form-success" role="status">
-          Location archived and retained as read-only.
+          {t("Location archived and retained as read-only.")}
         </p>
       ) : null}
 
       {!editable ? (
         <PermissionNotice>
           {location.status === "archived"
-            ? "Archived locations are retained for historical integrity and cannot be edited."
-            : "A matching locations.manage permission is required to edit this location."}
+            ? t("Archived locations are retained for historical integrity and cannot be edited.")
+            : t("A matching locations.manage permission is required to edit this location.")}
         </PermissionNotice>
       ) : null}
 

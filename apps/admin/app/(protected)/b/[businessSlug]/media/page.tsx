@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../lib/i18n-server";
 import { ImageUploadIcon } from "@darb/icons";
 
 import { PageHeader } from "../../../../_components/page-header";
@@ -17,6 +18,7 @@ interface MediaPageProps {
 }
 
 export default async function MediaPage({ params }: MediaPageProps) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
   const supabase = await createServerComponentSupabaseClient();
@@ -28,19 +30,21 @@ export default async function MediaPage({ params }: MediaPageProps) {
     <>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(context.business.slug), label: "Overview" },
-          { label: "Media" },
+          { href: businessPath(context.business.slug), label: t("Overview") },
+          { label: t("Media") },
         ]}
-        eyebrow="Shared assets"
-        title="Media"
-        summary="Upload reusable images and videos once, then let future Darb experiences reference their stable asset IDs."
+        eyebrow={t("Shared assets")}
+        title={t("Media")}
+        summary={t(
+          "Upload reusable images and videos once, then let future Darb experiences reference their stable asset IDs.",
+        )}
       />
 
       {!editable ? (
-        <PermissionNotice title="Media is read-only.">
+        <PermissionNotice title={t("Media is read-only.")}>
           {context.business.status !== "active"
-            ? "Media cannot be changed while this business is suspended or archived."
-            : "The media.manage permission is required to upload, describe, or archive assets."}
+            ? t("Media cannot be changed while this business is suspended or archived.")
+            : t("The media.manage permission is required to upload, describe, or archive assets.")}
         </PermissionNotice>
       ) : (
         <MediaUploadForm businessId={context.business.id} businessSlug={context.business.slug} />
@@ -52,18 +56,23 @@ export default async function MediaPage({ params }: MediaPageProps) {
             <ImageUploadIcon size={22} />
           </span>
           <div>
-            <h2>No media yet</h2>
-            <p>Upload the first image or video when this business has a real shared asset.</p>
+            <h2>{t("No media yet")}</h2>
+            <p>
+              {t("Upload the first image or video when this business has a real shared asset.")}
+            </p>
           </div>
         </section>
       ) : (
         <section className="media-library" aria-labelledby="media-library-heading">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Asset library</p>
-              <h2 id="media-library-heading">Stored media</h2>
+              <p className="eyebrow">{t("Asset library")}</p>
+              <h2 id="media-library-heading">{t("Stored media")}</h2>
             </div>
-            <span className="count-badge" aria-label={`${assets.length} assets`}>
+            <span
+              className="count-badge"
+              aria-label={t("{count} assets", { count: assets.length })}
+            >
               {assets.length}
             </span>
           </div>

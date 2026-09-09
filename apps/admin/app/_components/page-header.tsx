@@ -1,7 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { ArrowRightIcon } from "@darb/icons";
+import { useAdminI18n } from "../../lib/i18n-client";
 
 export interface PageHeaderCrumb {
   href?: string;
@@ -25,31 +28,32 @@ export function PageHeader({
   summary,
   title,
 }: PageHeaderProps) {
+  const { t } = useAdminI18n();
   return (
     <header className="page-header">
       <div className="page-header__copy">
         {breadcrumbs && breadcrumbs.length > 0 ? (
-          <nav className="page-breadcrumbs" aria-label="Breadcrumb">
+          <nav className="page-breadcrumbs" aria-label={t("Breadcrumb")}>
             <ol>
               {breadcrumbs.map((crumb, index) => (
                 <li key={`${crumb.label}-${index}`}>
                   {index > 0 ? <ArrowRightIcon size={14} /> : null}
                   {crumb.href ? (
-                    <Link href={crumb.href}>{crumb.label}</Link>
+                    <Link href={crumb.href}>{t(crumb.label)}</Link>
                   ) : (
-                    <span>{crumb.label}</span>
+                    <span>{t(crumb.label)}</span>
                   )}
                 </li>
               ))}
             </ol>
           </nav>
         ) : null}
-        <p className="eyebrow">{eyebrow}</p>
+        <p className="eyebrow">{t(eyebrow)}</p>
         <div className="page-header__title-row">
-          <h1>{title}</h1>
+          <h1>{t(title)}</h1>
           {status}
         </div>
-        <p className="page-header__summary">{summary}</p>
+        <p className="page-header__summary">{t(summary)}</p>
       </div>
       {actions ? <div className="page-header__actions">{actions}</div> : null}
     </header>

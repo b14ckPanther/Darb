@@ -1,10 +1,14 @@
+"use client";
+
 import Link from "next/link";
 
 import { ArrowRightIcon, BuildingIcon } from "@darb/icons";
 
 import { AdminState } from "./admin-state";
+import { useAdminI18n } from "../../lib/i18n-client";
 
 export function WorkspaceNotFound() {
+  const { t } = useAdminI18n();
   return (
     <main id="main-content" className="route-state-page">
       <AdminState
@@ -14,7 +18,7 @@ export function WorkspaceNotFound() {
         icon={<BuildingIcon size={24} />}
         action={
           <Link className="text-link" href="/">
-            Choose an accessible business
+            {t("Choose an accessible business")}
             <ArrowRightIcon size={17} />
           </Link>
         }

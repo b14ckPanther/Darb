@@ -12,10 +12,12 @@ import {
 import { PageHeader } from "../../_components/page-header";
 import { PlatformMetric, PlatformSectionHeading } from "../../_components/platform-summary";
 import { loadPlatformOverview } from "../../../lib/platform";
+import { getAdminI18n } from "../../../lib/i18n-server";
 import { platformPaths } from "../../../lib/platform-model";
 
 export default async function PlatformOverviewPage() {
-  const overview = await loadPlatformOverview();
+  const [overview, { locale, t }] = await Promise.all([loadPlatformOverview(), getAdminI18n()]);
+  const number = new Intl.NumberFormat(locale);
 
   return (
     <>
@@ -36,19 +38,27 @@ export default async function PlatformOverviewPage() {
             icon={<BuildingIcon size={21} />}
             label="Businesses"
             value={overview.businesses.total}
-            detail={`${overview.businesses.active} active · ${overview.businesses.suspended} suspended · ${overview.businesses.archived} archived`}
+            detail={t("{active} active · {suspended} suspended · {archived} archived", {
+              active: number.format(overview.businesses.active),
+              suspended: number.format(overview.businesses.suspended),
+              archived: number.format(overview.businesses.archived),
+            })}
           />
           <PlatformMetric
             icon={<UsersIcon size={21} />}
             label="Auth users"
             value={overview.users}
-            detail={`${overview.memberships} total business memberships`}
+            detail={t("{count} total business memberships", {
+              count: number.format(overview.memberships),
+            })}
           />
           <PlatformMetric
             icon={<ModulesIcon size={21} />}
             label="Restaurant effective"
             value={overview.restaurantEnabledBusinesses}
-            detail={`${overview.availableModules} platform modules currently available`}
+            detail={t("{count} platform modules currently available", {
+              count: number.format(overview.availableModules),
+            })}
           />
           <PlatformMetric
             icon={<DomainIcon size={21} />}
@@ -111,8 +121,8 @@ export default async function PlatformOverviewPage() {
             <Link href={area.href} key={area.href}>
               <span>{area.icon}</span>
               <div>
-                <strong>{area.title}</strong>
-                <p>{area.detail}</p>
+                <strong>{t(area.title)}</strong>
+                <p>{t(area.detail)}</p>
               </div>
             </Link>
           ))}

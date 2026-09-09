@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
@@ -15,6 +17,7 @@ interface MediaUploadFormProps {
 }
 
 export function MediaUploadForm({ businessId, businessSlug }: MediaUploadFormProps) {
+  const { t } = useAdminI18n();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [pending, setPending] = useState(false);
@@ -118,14 +121,14 @@ export function MediaUploadForm({ businessId, businessSlug }: MediaUploadFormPro
           <ImageUploadIcon size={24} />
         </span>
         <div>
-          <h2 id="media-upload-heading">Add a shared asset</h2>
-          <p>Images up to 10 MB · MP4 or WebM video up to 100 MB</p>
+          <h2 id="media-upload-heading">{t("Add a shared asset")}</h2>
+          <p>{t("Images up to 10 MB · MP4 or WebM video up to 100 MB")}</p>
         </div>
       </div>
 
       <form ref={formRef} className="media-upload-form" onSubmit={handleSubmit}>
         <div className="field-group">
-          <label htmlFor="media-file">Image or video</label>
+          <label htmlFor="media-file">{t("Image or video")}</label>
           <input
             id="media-file"
             className="file-input"
@@ -135,17 +138,19 @@ export function MediaUploadForm({ businessId, businessSlug }: MediaUploadFormPro
             required
             disabled={pending}
           />
-          <p className="field-hint">The file goes directly to Supabase Storage under tenant RLS.</p>
+          <p className="field-hint">
+            {t("The file goes directly to Supabase Storage under tenant RLS.")}
+          </p>
         </div>
         <div className="field-group">
-          <label htmlFor="media-alt-text">Alternative text</label>
+          <label htmlFor="media-alt-text">{t("Alternative text")}</label>
           <textarea
             id="media-alt-text"
             name="altText"
             maxLength={500}
             rows={2}
             disabled={pending}
-            placeholder="Describe the meaningful visual content"
+            placeholder={t("Describe the meaningful visual content")}
           />
         </div>
         <button
@@ -153,18 +158,18 @@ export function MediaUploadForm({ businessId, businessSlug }: MediaUploadFormPro
           className="primary-button media-upload-form__submit"
           disabled={pending}
         >
-          {pending ? "Uploading securely…" : "Upload media"}
+          {pending ? t("Uploading securely…") : t("Upload media")}
         </button>
       </form>
 
       {error ? (
         <p className="form-alert" role="alert">
-          {error}
+          {t(error)}
         </p>
       ) : null}
       {message ? (
         <p className="success-alert" role="status">
-          {message}
+          {t(message)}
         </p>
       ) : null}
     </section>

@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../../lib/i18n-server";
 import Link from "next/link";
 
 import { ArrowRightIcon, PlusIcon, RestaurantIcon } from "@darb/icons";
@@ -20,6 +21,7 @@ export default async function RestaurantMenusPage({
 }: {
   params: Promise<{ businessSlug: string }>;
 }) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireRestaurantAdminContext(businessSlug);
   const { business } = context.businessContext;
@@ -33,26 +35,29 @@ export default async function RestaurantMenusPage({
     <div className={styles.page}>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(business.slug), label: "Overview" },
-          { href: base, label: "Restaurant" },
-          { label: "Menus" },
+          { href: businessPath(business.slug), label: t("Overview") },
+          { href: base, label: t("Restaurant") },
+          { label: t("Menus") },
         ]}
-        eyebrow="Menu architecture"
-        title="Menus & items"
-        summary="Build multiple menus with ordered categories, localized customer content, and operational item state."
+        eyebrow={t("Menu architecture")}
+        title={t("Menus & items")}
+        summary={t(
+          "Build multiple menus with ordered categories, localized customer content, and operational item state.",
+        )}
       />
 
       {!editable ? (
-        <PermissionNotice title="Menu content is read-only.">
-          The restaurant.manage permission and an active Restaurant capability are required to make
-          changes.
+        <PermissionNotice title={t("Menu content is read-only.")}>
+          {t(
+            "The restaurant.manage permission and an active Restaurant capability are required to make changes.",
+          )}
         </PermissionNotice>
       ) : null}
 
       {editable ? (
         <details className={`${styles.panel} ${styles.details}`}>
           <summary>
-            <PlusIcon size={16} /> Create a menu
+            <PlusIcon size={16} /> {t("Create a menu")}
           </summary>
           <MenuForm businessId={business.id} businessSlug={business.slug} editable={editable} />
         </details>
@@ -61,20 +66,23 @@ export default async function RestaurantMenusPage({
       {snapshot.menus.length === 0 ? (
         <section className={styles.empty}>
           <RestaurantIcon size={28} />
-          <h2>No menus yet</h2>
+          <h2>{t("No menus yet")}</h2>
           <p>
-            Create the first real menu when this business has content to manage. Enabling the module
-            never invents menu data.
+            {t(
+              "Create the first real menu when this business has content to manage. Enabling the module never invents menu data.",
+            )}
           </p>
         </section>
       ) : (
         <section className={styles.panel} aria-labelledby="restaurant-menu-list-heading">
           <div className={styles.panelHeader}>
             <div>
-              <h2 id="restaurant-menu-list-heading">Menu library</h2>
+              <h2 id="restaurant-menu-list-heading">{t("Menu library")}</h2>
               <p>
-                {snapshot.menus.length} {snapshot.menus.length === 1 ? "menu" : "menus"} ·{" "}
-                {locales.length} enabled {locales.length === 1 ? "language" : "languages"}
+                {t("Menus: {menus} · Enabled languages: {languages}", {
+                  menus: snapshot.menus.length,
+                  languages: locales.length,
+                })}
               </p>
             </div>
           </div>
@@ -98,19 +106,23 @@ export default async function RestaurantMenusPage({
                     <span>
                       <strong dir="auto">{customerName ?? menu.internal_name}</strong>
                       <small>
-                        Internal: {menu.internal_name} · {categoryCount} categories · {itemCount}{" "}
-                        items
+                        {t("Internal: {name} · Categories: {categories} · Items: {items}", {
+                          name: menu.internal_name,
+                          categories: categoryCount,
+                          items: itemCount,
+                        })}
                       </small>
                     </span>
                     <StatusBadge status={menu.lifecycle_status} />
                     <StatusBadge
                       status={menu.publication_status === "published" ? "enabled" : "pending"}
-                      label={menu.publication_status === "published" ? "Published" : "Draft"}
+                      label={menu.publication_status === "published" ? t("Published") : t("Draft")}
                     />
                   </div>
                   <div className={styles.actions}>
                     <Link className={styles.entityLink} href={`${base}/menus/${menu.id}`}>
-                      Open menu <ArrowRightIcon size={15} />
+                      {t("Open menu")}
+                      <ArrowRightIcon size={15} />
                     </Link>
                   </div>
                 </li>

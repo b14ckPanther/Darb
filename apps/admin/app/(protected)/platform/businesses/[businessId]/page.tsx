@@ -14,6 +14,7 @@ import { PageHeader } from "../../../../_components/page-header";
 import { PlatformSectionHeading } from "../../../../_components/platform-summary";
 import { StatusBadge } from "../../../../_components/status-badge";
 import { getPlatformBusinessDetail } from "../../../../../lib/platform";
+import { getAdminI18n } from "../../../../../lib/i18n-server";
 import { getPlatformBusinessTransitions, platformPaths } from "../../../../../lib/platform-model";
 import { businessPath } from "../../../../../lib/navigation";
 import { PlatformBusinessStatusControl } from "./platform-business-status-control";
@@ -27,7 +28,10 @@ export default async function PlatformBusinessDetailPage({
 }) {
   const { businessId } = await params;
   const query = await searchParams;
-  const detail = await getPlatformBusinessDetail(businessId);
+  const [detail, { locale, t }] = await Promise.all([
+    getPlatformBusinessDetail(businessId),
+    getAdminI18n(),
+  ]);
   if (!detail) notFound();
   const business = detail.business;
   const restaurant = detail.restaurant;
@@ -50,53 +54,53 @@ export default async function PlatformBusinessDetailPage({
               className="secondary-button"
               href={`${platformPaths.audit}?business=${business.id}`}
             >
-              View audit history
+              {t("View audit history")}
             </Link>
             <Link className="primary-link" href={businessPath(business.slug)}>
-              Open business workspace
+              {t("Open business workspace")}
             </Link>
           </>
         }
       />
       {lifecycleMessage ? (
         <p className="success-alert" role="status">
-          {lifecycleMessage}
+          {t(lifecycleMessage)}
         </p>
       ) : null}
 
-      <section className="platform-detail-grid" aria-label="Business identity and footprint">
+      <section className="platform-detail-grid" aria-label={t("Business identity and footprint")}>
         <article className="platform-detail-card platform-detail-card--identity">
           <span>
             <BuildingIcon size={21} />
           </span>
           <div>
-            <p className="eyebrow">Canonical identity</p>
+            <p className="eyebrow">{t("Canonical identity")}</p>
             <dl className="platform-key-values">
               <div>
-                <dt>Business ID</dt>
+                <dt>{t("Business ID")}</dt>
                 <dd>
                   <bdi>{business.id}</bdi>
                 </dd>
               </div>
               <div>
-                <dt>Slug</dt>
+                <dt>{t("Slug")}</dt>
                 <dd dir="ltr">{business.slug}</dd>
               </div>
               <div>
-                <dt>Default locale</dt>
+                <dt>{t("Default locale")}</dt>
                 <dd>{business.defaultLocale.toUpperCase()}</dd>
               </div>
               <div>
-                <dt>Currency</dt>
+                <dt>{t("Currency")}</dt>
                 <dd>{business.currencyCode}</dd>
               </div>
               <div>
-                <dt>Timezone</dt>
+                <dt>{t("Timezone")}</dt>
                 <dd>{business.timezone}</dd>
               </div>
               <div>
-                <dt>Created</dt>
-                <dd>{formatDate(business.createdAt)}</dd>
+                <dt>{t("Created")}</dt>
+                <dd>{formatDate(business.createdAt, locale)}</dd>
               </div>
             </dl>
           </div>
@@ -106,22 +110,22 @@ export default async function PlatformBusinessDetailPage({
             <UsersIcon size={21} />
           </span>
           <div>
-            <p className="eyebrow">Tenant footprint</p>
+            <p className="eyebrow">{t("Tenant footprint")}</p>
             <dl className="platform-key-values">
               <div>
-                <dt>Memberships</dt>
+                <dt>{t("Memberships")}</dt>
                 <dd>{detail.membershipCount}</dd>
               </div>
               <div>
-                <dt>Active memberships</dt>
+                <dt>{t("Active memberships")}</dt>
                 <dd>{detail.activeMembershipCount}</dd>
               </div>
               <div>
-                <dt>Locations</dt>
+                <dt>{t("Locations")}</dt>
                 <dd>{detail.locations.length}</dd>
               </div>
               <div>
-                <dt>Enabled locales</dt>
+                <dt>{t("Enabled locales")}</dt>
                 <dd>
                   {detail.locales
                     .filter((locale) => locale.isEnabled)
@@ -152,21 +156,21 @@ export default async function PlatformBusinessDetailPage({
                   <strong>{module.displayName}</strong>
                   <p>
                     {appearance
-                      ? `${appearance.templateDisplayName} selected`
-                      : "Platform default or no current composition"}
+                      ? t("{template} selected", { template: appearance.templateDisplayName })
+                      : t("Platform default or no current composition")}
                   </p>
                 </div>
                 <StatusBadge
                   status={
                     module.isEffective ? "enabled" : module.isAvailable ? "disabled" : "unavailable"
                   }
-                  label={
+                  label={t(
                     module.isEffective
                       ? "Effective"
                       : module.isAvailable
                         ? "Disabled"
-                        : "Unavailable"
-                  }
+                        : "Unavailable",
+                  )}
                 />
               </article>
             );
@@ -186,27 +190,27 @@ export default async function PlatformBusinessDetailPage({
           </span>
           <dl className="platform-key-values platform-key-values--columns">
             <div>
-              <dt>Module</dt>
-              <dd>{restaurant.moduleEnabled ? "Enabled" : "Disabled"}</dd>
+              <dt>{t("Module")}</dt>
+              <dd>{t(restaurant.moduleEnabled ? "Enabled" : "Disabled")}</dd>
             </div>
             <div>
-              <dt>Configuration</dt>
-              <dd>{restaurant.configured ? "Configured" : "Not configured"}</dd>
+              <dt>{t("Configuration")}</dt>
+              <dd>{t(restaurant.configured ? "Configured" : "Not configured")}</dd>
             </div>
             <div>
-              <dt>Public intent</dt>
-              <dd>{restaurant.publiclyActive ? "Active" : "Inactive"}</dd>
+              <dt>{t("Public intent")}</dt>
+              <dd>{t(restaurant.publiclyActive ? "Active" : "Inactive")}</dd>
             </div>
             <div>
-              <dt>Menus</dt>
+              <dt>{t("Menus")}</dt>
               <dd>{restaurant.menuCount}</dd>
             </div>
             <div>
-              <dt>Published menus</dt>
+              <dt>{t("Published menus")}</dt>
               <dd>{restaurant.publishedMenuCount}</dd>
             </div>
             <div>
-              <dt>Items</dt>
+              <dt>{t("Items")}</dt>
               <dd>{restaurant.itemCount}</dd>
             </div>
           </dl>
@@ -222,7 +226,7 @@ export default async function PlatformBusinessDetailPage({
         {detail.domains.length === 0 ? (
           <div className="platform-quiet-state">
             <DomainIcon size={21} />
-            <p>No custom domains are registered for this tenant.</p>
+            <p>{t("No custom domains are registered for this tenant.")}</p>
           </div>
         ) : (
           <div className="platform-registry-list">
@@ -233,7 +237,7 @@ export default async function PlatformBusinessDetailPage({
                 </span>
                 <div>
                   <strong dir="ltr">{domain.hostname}</strong>
-                  <p>{domain.targetModuleKey ?? "No public target"}</p>
+                  <p>{domain.targetModuleKey ?? t("No public target")}</p>
                 </div>
                 <div className="platform-status-stack">
                   <StatusBadge status={domain.ownershipStatus} />
@@ -254,7 +258,7 @@ export default async function PlatformBusinessDetailPage({
         {detail.locations.length === 0 ? (
           <div className="platform-quiet-state">
             <BuildingIcon size={21} />
-            <p>No locations have been created.</p>
+            <p>{t("No locations have been created.")}</p>
           </div>
         ) : (
           <div className="platform-registry-list">
@@ -287,10 +291,11 @@ export default async function PlatformBusinessDetailPage({
             <TemplatesIcon size={21} />
           </span>
           <div>
-            <h2 id="lifecycle-heading">Platform lifecycle controls</h2>
+            <h2 id="lifecycle-heading">{t("Platform lifecycle controls")}</h2>
             <p>
-              These actions change tenant operability, preserve data, retain the real actor, and
-              write an atomic audit event.
+              {t(
+                "These actions change tenant operability, preserve data, retain the real actor, and write an atomic audit event.",
+              )}
             </p>
           </div>
         </div>
@@ -317,6 +322,6 @@ function getLifecycleMessage(value: string | string[] | undefined): string | nul
   return null;
 }
 
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en-IL", { dateStyle: "medium" }).format(new Date(value));
+function formatDate(value: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(value));
 }

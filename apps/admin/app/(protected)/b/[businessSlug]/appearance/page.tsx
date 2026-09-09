@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../lib/i18n-server";
 import Link from "next/link";
 
 import { AppearanceIcon, InformationCircleIcon } from "@darb/icons";
@@ -23,6 +24,7 @@ interface AppearancePageProps {
 }
 
 export default async function AppearancePage({ params }: AppearancePageProps) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
   const supabase = await createServerComponentSupabaseClient();
@@ -37,19 +39,21 @@ export default async function AppearancePage({ params }: AppearancePageProps) {
     <div className={styles.page}>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(context.business.slug), label: "Overview" },
-          { label: "Appearance" },
+          { href: businessPath(context.business.slug), label: t("Overview") },
+          { label: t("Appearance") },
         ]}
-        eyebrow="Customer experience foundation"
-        title="Appearance"
-        summary="Choose a composition, tune controlled visual tokens, and assign approved brand media for enabled customer experiences."
+        eyebrow={t("Customer experience foundation")}
+        title={t("Appearance")}
+        summary={t(
+          "Choose a composition, tune controlled visual tokens, and assign approved brand media for enabled customer experiences.",
+        )}
       />
 
       {!editable && appearances.length > 0 ? (
-        <PermissionNotice title="Appearance is read-only.">
+        <PermissionNotice title={t("Appearance is read-only.")}>
           {context.business.status !== "active"
-            ? "Appearance cannot change while this business is suspended or archived."
-            : "The appearance.manage permission is required to save template or theme changes."}
+            ? t("Appearance cannot change while this business is suspended or archived.")
+            : t("The appearance.manage permission is required to save template or theme changes.")}
         </PermissionNotice>
       ) : null}
 
@@ -58,17 +62,20 @@ export default async function AppearancePage({ params }: AppearancePageProps) {
           <span className={styles.emptyIcon}>
             <AppearanceIcon size={28} />
           </span>
-          <p className="eyebrow">No rendering context yet</p>
-          <h2 id="appearance-empty-heading">Enable a capability with an appearance foundation</h2>
+          <p className="eyebrow">{t("No rendering context yet")}</p>
+          <h2 id="appearance-empty-heading">
+            {t("Enable a capability with an appearance foundation")}
+          </h2>
           <p>
-            A business can remain valid with zero modules. Appearance becomes configurable only when
-            an enabled capability has platform templates registered for it.
+            {t(
+              "A business can remain valid with zero modules. Appearance becomes configurable only when an enabled capability has platform templates registered for it.",
+            )}
           </p>
           <Link
             className="primary-button"
             href={businessSectionPath(context.business.slug, "modules")}
           >
-            Review modules
+            {t("Review modules")}
           </Link>
         </section>
       ) : (
@@ -76,10 +83,13 @@ export default async function AppearancePage({ params }: AppearancePageProps) {
           <section className={styles.boundaryNote} aria-labelledby="appearance-boundary-heading">
             <InformationCircleIcon size={20} />
             <div>
-              <h2 id="appearance-boundary-heading">Composition and tokens—not arbitrary CSS</h2>
+              <h2 id="appearance-boundary-heading">
+                {t("Composition and tokens—not arbitrary CSS")}
+              </h2>
               <p>
-                Templates control structure. Theme tokens control color, typography, shape, density,
-                depth, motion, and limited layout choices through a validated contract.
+                {t(
+                  "Templates control structure. Theme tokens control color, typography, shape, density, depth, motion, and limited layout choices through a validated contract.",
+                )}
               </p>
             </div>
           </section>

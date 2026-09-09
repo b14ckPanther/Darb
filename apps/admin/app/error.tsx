@@ -6,8 +6,10 @@ import { reportOperationalError } from "@darb/config/observability";
 import { ResetIcon } from "@darb/icons";
 
 import { AdminState } from "./_components/admin-state";
+import { useAdminI18n } from "../lib/i18n-client";
 
 export default function AdminError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useAdminI18n();
   useEffect(() => {
     reportOperationalError({ application: "admin", event: "admin.render_failed" });
   }, [error]);
@@ -23,7 +25,7 @@ export default function AdminError({ error, reset }: { error: Error; reset: () =
         action={
           <button type="button" className="primary-button primary-button--fit" onClick={reset}>
             <ResetIcon size={18} />
-            Try again
+            {t("Try again")}
           </button>
         }
       />

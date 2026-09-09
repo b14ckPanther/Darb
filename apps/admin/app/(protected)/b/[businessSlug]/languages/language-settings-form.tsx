@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import { useActionState, useState } from "react";
 
 import { CheckmarkCircleIcon } from "@darb/icons";
@@ -32,6 +34,7 @@ export function LanguageSettingsForm({
   editable,
   initialState,
 }: LanguageSettingsFormProps) {
+  const { t } = useAdminI18n();
   const action = updateBusinessLanguagesAction.bind(null, businessId, businessSlug);
   const [state, formAction, pending] = useActionState(action, initialFormState);
   const [defaultLocale, setDefaultLocale] = useState(initialState.defaultLocale);
@@ -54,7 +57,7 @@ export function LanguageSettingsForm({
   return (
     <form action={formAction} className="language-settings-form">
       <fieldset disabled={!editable || pending}>
-        <legend className="visually-hidden">Supported business languages</legend>
+        <legend className="visually-hidden">{t("Supported business languages")}</legend>
         <div className="language-grid">
           {languageOptions.map((language) => {
             const enabled = enabledLocales.includes(language.code);
@@ -73,7 +76,8 @@ export function LanguageSettingsForm({
                   <code>{language.code}</code>
                 </div>
                 <p>
-                  {language.englishName} · {direction.toUpperCase()}
+                  {t(language.englishName)} ·{" "}
+                  {t(direction === "rtl" ? "Right to left" : "Left to right")}
                 </p>
                 <label className="language-toggle">
                   <input
@@ -84,7 +88,7 @@ export function LanguageSettingsForm({
                     onChange={(event) => setEnabled(language.code, event.currentTarget.checked)}
                     disabled={isDefault || !editable || pending}
                   />
-                  <span>{enabled ? "Enabled" : "Disabled"}</span>
+                  <span>{enabled ? t("Enabled") : t("Disabled")}</span>
                 </label>
                 {isDefault ? (
                   <input type="hidden" name="enabledLocales" value={language.code} />
@@ -97,7 +101,7 @@ export function LanguageSettingsForm({
                     checked={isDefault}
                     onChange={() => setDefault(language.code)}
                   />
-                  <span>{isDefault ? "Default language" : "Make default"}</span>
+                  <span>{isDefault ? t("Default language") : t("Make default")}</span>
                   {isDefault ? <CheckmarkCircleIcon size={17} /> : null}
                 </label>
               </article>
@@ -108,12 +112,12 @@ export function LanguageSettingsForm({
 
       {state?.fieldErrors?.enabledLocales ? (
         <p className="form-alert" role="alert">
-          {state.fieldErrors.enabledLocales}
+          {t(state.fieldErrors.enabledLocales)}
         </p>
       ) : null}
       {state?.message ? (
         <p className={state.status === "success" ? "success-alert" : "form-alert"} role="status">
-          {state.message}
+          {t(state.message)}
         </p>
       ) : null}
 
@@ -123,7 +127,7 @@ export function LanguageSettingsForm({
           className="primary-button language-settings-form__submit"
           disabled={pending}
         >
-          {pending ? "Saving languages…" : "Save language settings"}
+          {pending ? t("Saving languages…") : t("Save language settings")}
         </button>
       ) : null}
     </form>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import { useCallback, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
@@ -82,6 +84,7 @@ const previewCopy = {
 } as const;
 
 export function AppearanceEditor({ appearance, business, editable }: AppearanceEditorProps) {
+  const { t } = useAdminI18n();
   const router = useRouter();
   const [selectedTemplateKey, setSelectedTemplateKey] = useState(appearance.template.key);
   const [overrides, setOverrides] = useState<ThemeOverrides>(appearance.overrides);
@@ -213,13 +216,17 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
     <section className={styles.editor} aria-labelledby={`appearance-${appearance.moduleKey}`}>
       <header className={styles.editorHeader}>
         <div>
-          <p className="eyebrow">{appearance.moduleDisplayName} capability</p>
+          <p className="eyebrow">
+            {appearance.moduleDisplayName} {t("capability")}
+          </p>
           <h2 id={`appearance-${appearance.moduleKey}`}>
-            {appearance.moduleDisplayName} rendering foundation
+            {appearance.moduleDisplayName} {t("rendering foundation")}
           </h2>
           <p>
             {appearance.moduleKey === "restaurant"
-              ? "This composition is used by the published Restaurant experience when its public gates are active."
+              ? t(
+                  "This composition is used by the published Restaurant experience when its public gates are active.",
+                )
               : `Template and theme state are stored now; the customer-facing ${appearance.moduleDisplayName.toLowerCase()} engine remains intentionally unbuilt.`}
           </p>
         </div>
@@ -230,8 +237,10 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
 
       {appearance.fallbackReason ? (
         <p className={styles.fallbackNotice} role="status">
-          <AlertCircleIcon size={18} /> The stored template is unavailable. Previewing the safe
-          platform default without deleting the retained selection.
+          <AlertCircleIcon size={18} />{" "}
+          {t(
+            "The stored template is unavailable. Previewing the safe platform default without deleting the retained selection.",
+          )}
         </p>
       ) : null}
 
@@ -242,7 +251,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               <AppearanceIcon size={20} />
               <div>
                 <span>01</span>
-                <h3 id="template-section-heading">Composition</h3>
+                <h3 id="template-section-heading">{t("Composition")}</h3>
               </div>
             </div>
             <div className={styles.templateGrid}>
@@ -267,9 +276,9 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
                   <span className={styles.templateStatus}>
                     {candidate.isAvailable
                       ? candidate.isDefault
-                        ? "Platform default"
-                        : "Available"
-                      : "Unavailable"}
+                        ? t("Platform default")
+                        : t("Available")
+                      : t("Unavailable")}
                   </span>
                 </label>
               ))}
@@ -282,7 +291,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
                 <AppearanceIcon size={20} />
                 <div>
                   <span>02</span>
-                  <h3 id="color-section-heading">Semantic color</h3>
+                  <h3 id="color-section-heading">{t("Semantic color")}</h3>
                 </div>
               </div>
               {editable ? (
@@ -292,7 +301,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
                   disabled={!overrides.colors}
                   onClick={() => resetSections(["colors"])}
                 >
-                  <ResetIcon size={15} /> Reset colors
+                  <ResetIcon size={15} /> {t("Reset colors")}
                 </button>
               ) : null}
             </div>
@@ -312,15 +321,15 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
             </div>
             {contrastIssues.length > 0 ? (
               <div className={styles.contrastPanel}>
-                <h4>Contrast review</h4>
+                <h4>{t("Contrast review")}</h4>
                 <ul>
                   {contrastIssues.map((issue) => (
                     <li
                       className={issue.level === "error" ? styles.contrastError : ""}
                       key={`${issue.foreground}-${issue.background}`}
                     >
-                      <span>{issue.level === "error" ? "Resolve" : "Review"}</span>
-                      {colorLabels[issue.foreground]} on{" "}
+                      <span>{issue.level === "error" ? t("Resolve") : t("Review")}</span>
+                      {colorLabels[issue.foreground]} {t("on")}{" "}
                       {colorLabels[issue.background].toLowerCase()}: {issue.actualRatio.toFixed(2)}
                       :1
                     </li>
@@ -329,7 +338,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               </div>
             ) : (
               <p className={styles.contrastPass}>
-                <CheckmarkCircleIcon size={17} /> Critical color pairs meet AA contrast.
+                <CheckmarkCircleIcon size={17} /> {t("Critical color pairs meet AA contrast.")}
               </p>
             )}
           </section>
@@ -340,7 +349,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
                 <TypographyIcon size={20} />
                 <div>
                   <span>03</span>
-                  <h3 id="type-section-heading">Type and rhythm</h3>
+                  <h3 id="type-section-heading">{t("Type and rhythm")}</h3>
                 </div>
               </div>
               {editable ? (
@@ -352,14 +361,14 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
                     resetSections(["typography", "shape", "density", "shadow", "motion", "layout"])
                   }
                 >
-                  <ResetIcon size={15} /> Reset section
+                  <ResetIcon size={15} /> {t("Reset section")}
                 </button>
               ) : null}
             </div>
             <div className={styles.selectGrid}>
               <SelectControl
                 id={`${appearance.moduleKey}-heading-weight`}
-                label="Heading weight"
+                label={t("Heading weight")}
                 value={String(resolvedTheme.typography.headingWeight)}
                 disabled={!editable}
                 overridden={overrides.typography?.headingWeight !== undefined}
@@ -369,7 +378,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               />
               <SelectControl
                 id={`${appearance.moduleKey}-body-weight`}
-                label="Body weight"
+                label={t("Body weight")}
                 value={String(resolvedTheme.typography.bodyWeight)}
                 disabled={!editable}
                 overridden={overrides.typography?.bodyWeight !== undefined}
@@ -379,7 +388,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               />
               <SelectControl
                 id={`${appearance.moduleKey}-type-scale`}
-                label="Type scale"
+                label={t("Type scale")}
                 value={resolvedTheme.typography.scale}
                 disabled={!editable}
                 overridden={overrides.typography?.scale !== undefined}
@@ -389,7 +398,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               />
               <SelectControl
                 id={`${appearance.moduleKey}-line-height`}
-                label="Line height"
+                label={t("Line height")}
                 value={resolvedTheme.typography.lineHeight}
                 disabled={!editable}
                 overridden={overrides.typography?.lineHeight !== undefined}
@@ -399,7 +408,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               />
               <SelectControl
                 id={`${appearance.moduleKey}-corners`}
-                label="Corners"
+                label={t("Corners")}
                 value={resolvedTheme.shape.radius}
                 disabled={!editable}
                 overridden={overrides.shape?.radius !== undefined}
@@ -409,7 +418,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               />
               <SelectControl
                 id={`${appearance.moduleKey}-density`}
-                label="Density"
+                label={t("Density")}
                 value={resolvedTheme.density}
                 disabled={!editable}
                 overridden={overrides.density !== undefined}
@@ -419,7 +428,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               />
               <SelectControl
                 id={`${appearance.moduleKey}-depth`}
-                label="Depth"
+                label={t("Depth")}
                 value={resolvedTheme.shadow}
                 disabled={!editable}
                 overridden={overrides.shadow !== undefined}
@@ -429,7 +438,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               />
               <SelectControl
                 id={`${appearance.moduleKey}-motion`}
-                label="Motion"
+                label={t("Motion")}
                 value={resolvedTheme.motion}
                 disabled={!editable}
                 overridden={overrides.motion !== undefined}
@@ -439,7 +448,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               />
               <SelectControl
                 id={`${appearance.moduleKey}-content-width`}
-                label="Content width"
+                label={t("Content width")}
                 value={resolvedTheme.layout.contentWidth}
                 disabled={!editable}
                 overridden={overrides.layout?.contentWidth !== undefined}
@@ -449,7 +458,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
               />
               <SelectControl
                 id={`${appearance.moduleKey}-hero-treatment`}
-                label="Hero treatment"
+                label={t("Hero treatment")}
                 value={resolvedTheme.layout.heroTreatment}
                 disabled={!editable}
                 overridden={overrides.layout?.heroTreatment !== undefined}
@@ -471,7 +480,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
                   type="submit"
                   disabled={savePending || blockingContrast}
                 >
-                  {savePending ? "Saving appearance…" : "Save appearance"}
+                  {savePending ? t("Saving appearance…") : t("Save appearance")}
                 </button>
               </form>
               {!confirmReset ? (
@@ -480,27 +489,27 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
                   type="button"
                   onClick={() => setConfirmReset(true)}
                 >
-                  <ResetIcon size={18} /> Reset theme
+                  <ResetIcon size={18} /> {t("Reset theme")}
                 </button>
               ) : (
                 <div
                   className={styles.resetConfirmation}
                   role="group"
-                  aria-label="Reset theme overrides"
+                  aria-label={t("Reset theme overrides")}
                 >
-                  <p>Reset every override to this template’s defaults?</p>
+                  <p>{t("Reset every override to this template’s defaults?")}</p>
                   <button
                     className="secondary-button"
                     type="button"
                     onClick={() => setConfirmReset(false)}
                     disabled={resetPending}
                   >
-                    Keep changes
+                    {t("Keep changes")}
                   </button>
                   <form onSubmit={submitReset}>
                     <input type="hidden" name="moduleKey" value={appearance.moduleKey} />
                     <button className="danger-button" type="submit" disabled={resetPending}>
-                      {resetPending ? "Resetting…" : "Confirm reset"}
+                      {resetPending ? t("Resetting…") : t("Confirm reset")}
                     </button>
                   </form>
                 </div>
@@ -511,21 +520,21 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
           ) : null}
         </div>
 
-        <aside className={styles.previewColumn} aria-label="Live appearance preview">
+        <aside className={styles.previewColumn} aria-label={t("Live appearance preview")}>
           <div className={styles.previewToolbar}>
             <span>
-              <PreviewIcon size={18} /> Live preview
+              <PreviewIcon size={18} /> {t("Live preview")}
             </span>
             <label>
-              <span className="sr-only">Preview language</span>
+              <span className="sr-only">{t("Preview language")}</span>
               <select
-                aria-label="Preview language"
+                aria-label={t("Preview language")}
                 value={previewLocale}
                 onChange={(event) => setPreviewLocale(event.target.value as DarbThemeLocale)}
               >
                 <option value="ar">العربية</option>
                 <option value="he">עברית</option>
-                <option value="en">English</option>
+                <option value="en">{t("English")}</option>
               </select>
             </label>
           </div>
@@ -567,8 +576,9 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
             </div>
           </div>
           <p className={styles.previewBoundary}>
-            Rendered from the same resolved token contract future customer-facing surfaces will
-            consume.
+            {t(
+              "Rendered from the same resolved token contract future customer-facing surfaces will consume.",
+            )}
           </p>
         </aside>
       </div>
@@ -650,6 +660,7 @@ function ColorControl({
   overridden: boolean;
   value: string;
 }) {
+  const { t } = useAdminI18n();
   const [draft, setDraft] = useState(value);
   const valid = /^#[0-9A-Fa-f]{6}$/.test(draft);
   const inputId = `appearance-color-${id}`;
@@ -699,7 +710,7 @@ function ColorControl({
       </span>
       {!valid ? (
         <small id={`${inputId}-error`} role="status">
-          Use #RRGGBB.
+          {t("Use #RRGGBB.")}
         </small>
       ) : null}
     </div>
@@ -707,13 +718,14 @@ function ColorControl({
 }
 
 function ActionFeedback({ state }: { state: typeof initialFormState }) {
+  const { t } = useAdminI18n();
   if (!state.message) return null;
   return (
     <p
       className={state.status === "success" ? styles.success : styles.error}
       role={state.status === "success" ? "status" : "alert"}
     >
-      {state.message}
+      {t(state.message)}
     </p>
   );
 }

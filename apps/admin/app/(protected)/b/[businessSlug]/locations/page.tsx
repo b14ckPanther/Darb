@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../lib/i18n-server";
 import Link from "next/link";
 
 import { ArrowRightIcon, LocationIcon, PlusIcon } from "@darb/icons";
@@ -18,6 +19,7 @@ interface LocationsPageProps {
 }
 
 export default async function LocationsPage({ params }: LocationsPageProps) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
   const canAccessLocations = canShowLocations(context.access, context.locations.length);
@@ -27,15 +29,15 @@ export default async function LocationsPage({ params }: LocationsPageProps) {
       <>
         <PageHeader
           breadcrumbs={[
-            { href: businessPath(context.business.slug), label: "Overview" },
-            { label: "Locations" },
+            { href: businessPath(context.business.slug), label: t("Overview") },
+            { label: t("Locations") },
           ]}
-          eyebrow="Business locations"
-          title="Locations"
-          summary="Locations are visible only when your permission scope includes them."
+          eyebrow={t("Business locations")}
+          title={t("Locations")}
+          summary={t("Locations are visible only when your permission scope includes them.")}
         />
-        <PermissionNotice title="No location access is assigned.">
-          Ask a business administrator for locations.read or locations.manage access.
+        <PermissionNotice title={t("No location access is assigned.")}>
+          {t("Ask a business administrator for locations.read or locations.manage access.")}
         </PermissionNotice>
       </>
     );
@@ -45,12 +47,14 @@ export default async function LocationsPage({ params }: LocationsPageProps) {
     <>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(context.business.slug), label: "Overview" },
-          { label: "Locations" },
+          { href: businessPath(context.business.slug), label: t("Overview") },
+          { label: t("Locations") },
         ]}
-        eyebrow="Business locations"
-        title="Locations"
-        summary="Manage reusable location identity and lifecycle without engine-specific fields."
+        eyebrow={t("Business locations")}
+        title={t("Locations")}
+        summary={t(
+          "Manage reusable location identity and lifecycle without engine-specific fields.",
+        )}
         actions={
           canCreateLocation(context.access) ? (
             <Link
@@ -58,7 +62,7 @@ export default async function LocationsPage({ params }: LocationsPageProps) {
               href={`${businessSectionPath(context.business.slug, "locations")}/new`}
             >
               <PlusIcon size={18} />
-              New location
+              {t("New location")}
             </Link>
           ) : null
         }
@@ -69,11 +73,11 @@ export default async function LocationsPage({ params }: LocationsPageProps) {
           <span>
             <LocationIcon size={24} />
           </span>
-          <h2>No locations yet</h2>
-          <p>Create the first reusable location for this business.</p>
+          <h2>{t("No locations yet")}</h2>
+          <p>{t("Create the first reusable location for this business.")}</p>
         </section>
       ) : (
-        <ul className="location-list" aria-label="Accessible locations">
+        <ul className="location-list" aria-label={t("Accessible locations")}>
           {context.locations.map((location) => (
             <li key={location.id}>
               <Link href={businessLocationPath(context.business.slug, location.id)}>
@@ -85,7 +89,7 @@ export default async function LocationsPage({ params }: LocationsPageProps) {
                   <small dir="auto">
                     {[location.address_line, location.locality, location.country_code]
                       .filter(Boolean)
-                      .join(" · ") || "No address details yet"}
+                      .join(" · ") || t("No address details yet")}
                   </small>
                 </span>
                 <StatusBadge status={location.status} />

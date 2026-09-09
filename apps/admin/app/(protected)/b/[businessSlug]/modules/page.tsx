@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../lib/i18n-server";
 import { InformationCircleIcon } from "@darb/icons";
 
 import { PageHeader } from "../../../../_components/page-header";
@@ -12,6 +13,7 @@ interface ModulesPageProps {
 }
 
 export default async function ModulesPage({ params }: ModulesPageProps) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
   const editable = canManageModules(context.access, context.business.status);
@@ -20,19 +22,21 @@ export default async function ModulesPage({ params }: ModulesPageProps) {
     <>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(context.business.slug), label: "Overview" },
-          { label: "Modules" },
+          { href: businessPath(context.business.slug), label: t("Overview") },
+          { label: t("Modules") },
         ]}
-        eyebrow="Business capabilities"
-        title="Modules"
-        summary="Control the administrative capability state for this business. Enablement does not grant user permission or imply that an engine is available yet."
+        eyebrow={t("Business capabilities")}
+        title={t("Modules")}
+        summary={t(
+          "Control the administrative capability state for this business. Enablement does not grant user permission or imply that an engine is available yet.",
+        )}
       />
 
       {!editable ? (
-        <PermissionNotice title="Module state is read-only.">
+        <PermissionNotice title={t("Module state is read-only.")}>
           {context.business.status !== "active"
-            ? "Capabilities cannot be changed while this business is suspended or archived."
-            : "The modules.manage permission is required to enable or disable capabilities."}
+            ? t("Capabilities cannot be changed while this business is suspended or archived.")
+            : t("The modules.manage permission is required to enable or disable capabilities.")}
         </PermissionNotice>
       ) : null}
 
@@ -41,21 +45,22 @@ export default async function ModulesPage({ params }: ModulesPageProps) {
           <InformationCircleIcon size={20} />
         </span>
         <div>
-          <h2 id="module-registry-note-heading">Capability state, not a product launch</h2>
+          <h2 id="module-registry-note-heading">{t("Capability state, not a product launch")}</h2>
           <p>
-            These records prepare Darb for future engines. They do not create engine data, routes,
-            billing, or customer-facing features.
+            {t(
+              "These records prepare Darb for future engines. They do not create engine data, routes, billing, or customer-facing features.",
+            )}
           </p>
         </div>
       </section>
 
       {context.modules.length === 0 ? (
         <section className="empty-state">
-          <h2>No capabilities are registered</h2>
-          <p>The platform registry is currently empty.</p>
+          <h2>{t("No capabilities are registered")}</h2>
+          <p>{t("The platform registry is currently empty.")}</p>
         </section>
       ) : (
-        <ul className="module-grid" aria-label="Available business capabilities">
+        <ul className="module-grid" aria-label={t("Available business capabilities")}>
           {context.modules.map((module) => (
             <li key={module.key}>
               <ModuleCard

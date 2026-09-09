@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminI18n } from "../../../../../lib/i18n-client";
+
 import { useActionState, useState } from "react";
 
 import { ArchiveIcon } from "@darb/icons";
@@ -19,6 +21,7 @@ export function ArchiveLocationControl({
   businessSlug,
   locationId,
 }: ArchiveLocationControlProps) {
+  const { t } = useAdminI18n();
   const [confirming, setConfirming] = useState(false);
   const action = archiveLocationAction.bind(null, businessId, businessSlug, locationId);
   const [state, formAction, pending] = useActionState(action, initialFormState);
@@ -26,16 +29,17 @@ export function ArchiveLocationControl({
   return (
     <section className="archive-panel" aria-labelledby="archive-location-heading">
       <div>
-        <p className="eyebrow">Lifecycle action</p>
-        <h2 id="archive-location-heading">Archive this location</h2>
+        <p className="eyebrow">{t("Lifecycle action")}</p>
+        <h2 id="archive-location-heading">{t("Archive this location")}</h2>
         <p>
-          Archiving retires the location and keeps its history. It cannot be edited or restored in
-          this phase.
+          {t(
+            "Archiving retires the location and keeps its history. It cannot be edited or restored in this phase.",
+          )}
         </p>
       </div>
       {state.message ? (
         <p className="form-alert" role="alert">
-          {state.message}
+          {t(state.message)}
         </p>
       ) : null}
       <button
@@ -44,14 +48,16 @@ export function ArchiveLocationControl({
         onClick={() => setConfirming(true)}
       >
         <ArchiveIcon size={18} />
-        Archive location
+        {t("Archive location")}
       </button>
       <ConfirmationDialog
         open={confirming}
         pending={pending}
         onClose={() => setConfirming(false)}
-        title="Archive this location?"
-        description="The location will become historical and read-only. Darb will retain its identity and audit history, and restoration is not available in this phase."
+        title={t("Archive this location?")}
+        description={t(
+          "The location will become historical and read-only. Darb will retain its identity and audit history, and restoration is not available in this phase.",
+        )}
       >
         <button
           type="button"
@@ -59,11 +65,11 @@ export function ArchiveLocationControl({
           onClick={() => setConfirming(false)}
           disabled={pending}
         >
-          Keep location
+          {t("Keep location")}
         </button>
         <form action={formAction}>
           <button type="submit" className="danger-button" disabled={pending}>
-            {pending ? "Archiving…" : "Confirm archive"}
+            {pending ? t("Archiving…") : t("Confirm archive")}
           </button>
         </form>
       </ConfirmationDialog>

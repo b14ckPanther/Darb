@@ -11,6 +11,7 @@ import {
   type PlatformMutationState,
 } from "../../../../actions/platform";
 import type { PlatformBusinessTransition } from "../../../../../lib/platform-model";
+import { useAdminI18n } from "../../../../../lib/i18n-client";
 
 const initialPlatformMutationState = {
   message: "",
@@ -28,6 +29,7 @@ export function PlatformBusinessStatusControl({
   businessName,
   transition,
 }: PlatformBusinessStatusControlProps) {
+  const { t } = useAdminI18n();
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(
     setPlatformBusinessStatusAction,
@@ -49,19 +51,19 @@ export function PlatformBusinessStatusControl({
         onClick={() => setOpen(true)}
       >
         <Icon size={18} />
-        {transition.label}
+        {t(transition.label)}
       </button>
       {state.message ? (
         <p className={state.status === "error" ? "inline-error" : "inline-success"} role="status">
-          {state.message}
+          {t(state.message)}
         </p>
       ) : null}
       <ConfirmationDialog
         open={open}
         onClose={() => setOpen(false)}
         pending={pending}
-        title={transition.label}
-        description={`${transition.description} This action applies to ${businessName} and will be recorded in platform audit history.`}
+        title={t(transition.label)}
+        description={`${t(transition.description)} ${t("This action applies to {businessName} and will be recorded in platform audit history.", { businessName })}`}
       >
         <button
           type="button"
@@ -69,12 +71,12 @@ export function PlatformBusinessStatusControl({
           disabled={pending}
           onClick={() => setOpen(false)}
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <form action={action}>
           <input type="hidden" name="businessId" value={businessId} />
           <input type="hidden" name="status" value={transition.status} />
-          <PlatformSubmitButton label={transition.label} tone={transition.tone} />
+          <PlatformSubmitButton label={t(transition.label)} tone={transition.tone} />
         </form>
       </ConfirmationDialog>
     </div>
@@ -88,6 +90,7 @@ function PlatformSubmitButton({
   label: string;
   tone: PlatformBusinessTransition["tone"];
 }) {
+  const { t } = useAdminI18n();
   const { pending } = useFormStatus();
   return (
     <button
@@ -95,7 +98,7 @@ function PlatformSubmitButton({
       className={tone === "danger" ? "danger-button" : "primary-button primary-button--fit"}
       disabled={pending}
     >
-      {pending ? "Applying…" : label}
+      {pending ? t("Applying…") : label}
     </button>
   );
 }

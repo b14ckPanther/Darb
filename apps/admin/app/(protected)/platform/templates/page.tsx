@@ -3,9 +3,10 @@ import { TemplatesIcon } from "@darb/icons";
 import { PageHeader } from "../../../_components/page-header";
 import { StatusBadge } from "../../../_components/status-badge";
 import { listPlatformTemplates } from "../../../../lib/platform";
+import { getAdminI18n } from "../../../../lib/i18n-server";
 
 export default async function PlatformTemplatesPage() {
-  const templates = await listPlatformTemplates();
+  const [templates, { t }] = await Promise.all([listPlatformTemplates(), getAdminI18n()]);
   const groups = templates.reduce<Map<string, typeof templates>>((result, template) => {
     const current = result.get(template.moduleKey) ?? [];
     current.push(template);
@@ -23,10 +24,11 @@ export default async function PlatformTemplatesPage() {
       <div className="platform-boundary-note">
         <TemplatesIcon size={20} />
         <div>
-          <strong>Registry inspection only</strong>
+          <strong>{t("Registry inspection only")}</strong>
           <p>
-            Template authoring, arbitrary code, marketplaces, and availability mutations are outside
-            this phase.
+            {t(
+              "Template authoring, arbitrary code, marketplaces, and availability mutations are outside this phase.",
+            )}
           </p>
         </div>
       </div>
@@ -38,7 +40,7 @@ export default async function PlatformTemplatesPage() {
         >
           <header className="platform-section-heading">
             <h2 id={`templates-${moduleKey}`}>{moduleKey}</h2>
-            <p>{moduleTemplates.length} registered compositions</p>
+            <p>{t("{count} registered compositions", { count: moduleTemplates.length })}</p>
           </header>
           <div className="platform-registry-grid">
             {moduleTemplates.map((template) => (
@@ -48,7 +50,9 @@ export default async function PlatformTemplatesPage() {
                     <TemplatesIcon size={20} />
                   </span>
                   <div className="platform-status-stack">
-                    {template.isDefault ? <StatusBadge status="enabled" label="Default" /> : null}
+                    {template.isDefault ? (
+                      <StatusBadge status="enabled" label={t("Default")} />
+                    ) : null}
                     <StatusBadge status={template.isAvailable ? "available" : "unavailable"} />
                   </div>
                 </div>
@@ -59,19 +63,19 @@ export default async function PlatformTemplatesPage() {
                 <p>{template.description}</p>
                 <dl className="platform-key-values">
                   <div>
-                    <dt>Selected businesses</dt>
+                    <dt>{t("Selected businesses")}</dt>
                     <dd>{template.selectedBusinessCount}</dd>
                   </div>
                   <div>
-                    <dt>Template version</dt>
+                    <dt>{t("Template version")}</dt>
                     <dd>{template.templateVersion}</dd>
                   </div>
                   <div>
-                    <dt>Theme schema</dt>
+                    <dt>{t("Theme schema")}</dt>
                     <dd>{template.themeSchemaVersion}</dd>
                   </div>
                   <div>
-                    <dt>Registry order</dt>
+                    <dt>{t("Registry order")}</dt>
                     <dd>{template.sortOrder}</dd>
                   </div>
                 </dl>

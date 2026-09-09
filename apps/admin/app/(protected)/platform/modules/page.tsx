@@ -3,10 +3,11 @@ import { ModulesIcon } from "@darb/icons";
 import { PageHeader } from "../../../_components/page-header";
 import { StatusBadge } from "../../../_components/status-badge";
 import { listPlatformModules } from "../../../../lib/platform";
+import { getAdminI18n } from "../../../../lib/i18n-server";
 import { getPlatformModuleImplementation } from "../../../../lib/platform-model";
 
 export default async function PlatformModulesPage() {
-  const modules = await listPlatformModules();
+  const [modules, { t }] = await Promise.all([listPlatformModules(), getAdminI18n()]);
 
   return (
     <>
@@ -18,10 +19,11 @@ export default async function PlatformModulesPage() {
       <div className="platform-boundary-note">
         <ModulesIcon size={20} />
         <div>
-          <strong>Read-only registry control</strong>
+          <strong>{t("Read-only registry control")}</strong>
           <p>
-            Availability changes are deferred until their cross-tenant consequences and recovery
-            workflow receive a dedicated operational design.
+            {t(
+              "Availability changes are deferred until their cross-tenant consequences and recovery workflow receive a dedicated operational design.",
+            )}
           </p>
         </div>
       </div>
@@ -41,19 +43,19 @@ export default async function PlatformModulesPage() {
             <p>{module.description}</p>
             <dl className="platform-key-values">
               <div>
-                <dt>Implementation</dt>
-                <dd>{getPlatformModuleImplementation(module.key)}</dd>
+                <dt>{t("Implementation")}</dt>
+                <dd>{t(getPlatformModuleImplementation(module.key))}</dd>
               </div>
               <div>
-                <dt>Stored enabled</dt>
+                <dt>{t("Stored enabled")}</dt>
                 <dd>{module.enabledBusinessCount}</dd>
               </div>
               <div>
-                <dt>Effective businesses</dt>
+                <dt>{t("Effective businesses")}</dt>
                 <dd>{module.effectiveBusinessCount}</dd>
               </div>
               <div>
-                <dt>Registry order</dt>
+                <dt>{t("Registry order")}</dt>
                 <dd>{module.sortOrder}</dd>
               </div>
             </dl>

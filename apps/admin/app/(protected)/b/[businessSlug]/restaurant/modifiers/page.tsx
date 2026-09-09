@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../../lib/i18n-server";
 import { PlusIcon, SettingsIcon, TranslationIcon } from "@darb/icons";
 
 import { PageHeader } from "../../../../../_components/page-header";
@@ -30,6 +31,7 @@ export default async function RestaurantModifiersPage({
 }: {
   params: Promise<{ businessSlug: string }>;
 }) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireRestaurantAdminContext(businessSlug);
   const { business } = context.businessContext;
@@ -43,25 +45,27 @@ export default async function RestaurantModifiersPage({
     <div className={styles.page}>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(business.slug), label: "Overview" },
-          { href: base, label: "Restaurant" },
-          { label: "Modifier library" },
+          { href: businessPath(business.slug), label: t("Overview") },
+          { href: base, label: t("Restaurant") },
+          { label: t("Modifier library") },
         ]}
-        eyebrow="Reusable customization"
-        title="Modifier library"
-        summary="Create reusable option groups once, then assign item-specific minimum and maximum selection rules."
+        eyebrow={t("Reusable customization")}
+        title={t("Modifier library")}
+        summary={t(
+          "Create reusable option groups once, then assign item-specific minimum and maximum selection rules.",
+        )}
       />
 
       {!editable ? (
-        <PermissionNotice title="Modifier content is read-only.">
-          Restaurant management access and an active capability are required to make changes.
+        <PermissionNotice title={t("Modifier content is read-only.")}>
+          {t("Restaurant management access and an active capability are required to make changes.")}
         </PermissionNotice>
       ) : null}
 
       {editable ? (
         <details className={`${styles.panel} ${styles.details}`}>
           <summary>
-            <PlusIcon size={15} /> Create modifier group
+            <PlusIcon size={15} /> {t("Create modifier group")}
           </summary>
           <ModifierGroupForm businessId={business.id} businessSlug={business.slug} editable />
         </details>
@@ -70,19 +74,22 @@ export default async function RestaurantModifiersPage({
       {snapshot.groups.length === 0 ? (
         <section className={styles.empty}>
           <SettingsIcon size={26} />
-          <h2>No modifier groups yet</h2>
+          <h2>{t("No modifier groups yet")}</h2>
           <p>
-            Add a group only when real menu items need reusable choices such as size, milk, or
-            extras.
+            {t(
+              "Add a group only when real menu items need reusable choices such as size, milk, or extras.",
+            )}
           </p>
         </section>
       ) : (
         <section className={styles.panel} aria-labelledby="modifier-library-heading">
           <div className={styles.panelHeader}>
             <div>
-              <h2 id="modifier-library-heading">Reusable groups</h2>
+              <h2 id="modifier-library-heading">{t("Reusable groups")}</h2>
               <p>
-                Group visibility and option availability stay distinct from item assignment rules.
+                {t(
+                  "Group visibility and option availability stay distinct from item assignment rules.",
+                )}
               </p>
             </div>
             <span className="count-badge">{snapshot.groups.length}</span>
@@ -110,18 +117,18 @@ export default async function RestaurantModifiersPage({
                         )?.name ?? group.internal_name}
                       </strong>
                       <small>
-                        {modifiers.length} {modifiers.length === 1 ? "option" : "options"} ·{" "}
-                        {group.is_visible ? "Visible" : "Hidden"}
+                        {t("Options: {count}", { count: modifiers.length })} ·{" "}
+                        {group.is_visible ? t("Visible") : t("Hidden")}
                       </small>
                     </span>
                     <StatusBadge status={group.lifecycle_status} />
                     <StatusBadge
                       status={group.is_visible ? "enabled" : "disabled"}
-                      label={group.is_visible ? "Visible" : "Hidden"}
+                      label={group.is_visible ? t("Visible") : t("Hidden")}
                     />
                   </div>
                   <details className={styles.details}>
-                    <summary>Edit group, translations, and options</summary>
+                    <summary>{t("Edit group, translations, and options")}</summary>
                     <ModifierGroupForm
                       businessId={business.id}
                       businessSlug={business.slug}
@@ -131,8 +138,8 @@ export default async function RestaurantModifiersPage({
                     <hr className={styles.divider} />
                     <div className={styles.panelHeader}>
                       <div>
-                        <h3>Customer-facing languages</h3>
-                        <p>Names and descriptions follow the enabled business languages.</p>
+                        <h3>{t("Customer-facing languages")}</h3>
+                        <p>{t("Names and descriptions follow the enabled business languages.")}</p>
                       </div>
                       <TranslationIcon size={18} />
                     </div>
@@ -150,14 +157,18 @@ export default async function RestaurantModifiersPage({
                     <hr className={styles.divider} />
                     <div className={styles.panelHeader}>
                       <div>
-                        <h3>Options</h3>
-                        <p>Price values are non-negative add-ons in {business.currency_code}.</p>
+                        <h3>{t("Options")}</h3>
+                        <p>
+                          {t("Price values are non-negative add-ons in {currency}.", {
+                            currency: business.currency_code,
+                          })}
+                        </p>
                       </div>
                     </div>
                     {groupEditable ? (
                       <details className={styles.details}>
                         <summary>
-                          <PlusIcon size={15} /> Add option
+                          <PlusIcon size={15} /> {t("Add option")}
                         </summary>
                         <ModifierForm
                           businessId={business.id}
@@ -190,18 +201,18 @@ export default async function RestaurantModifiersPage({
                                   +{business.currency_code}{" "}
                                   {(modifier.price_delta_minor / 100).toFixed(2)} ·{" "}
                                   {modifier.availability_status === "available"
-                                    ? "Available"
-                                    : "Sold out"}
+                                    ? t("Available")
+                                    : t("Sold out")}
                                 </small>
                               </span>
                               <StatusBadge status={modifier.lifecycle_status} />
                               <StatusBadge
                                 status={modifier.is_visible ? "enabled" : "disabled"}
-                                label={modifier.is_visible ? "Visible" : "Hidden"}
+                                label={modifier.is_visible ? t("Visible") : t("Hidden")}
                               />
                             </div>
                             <details className={styles.details}>
-                              <summary>Edit option</summary>
+                              <summary>{t("Edit option")}</summary>
                               <ModifierForm
                                 businessId={business.id}
                                 businessSlug={business.slug}
@@ -230,7 +241,9 @@ export default async function RestaurantModifiersPage({
                                       group.id,
                                       modifier.id,
                                     )}
-                                    description="Archive this modifier option and retain its localized history?"
+                                    description={t(
+                                      "Archive this modifier option and retain its localized history?",
+                                    )}
                                     fields={{
                                       availabilityStatus: modifier.availability_status,
                                       displayOrder: modifier.display_order,
@@ -239,8 +252,8 @@ export default async function RestaurantModifiersPage({
                                       lifecycleStatus: "archived",
                                       priceDelta: (modifier.price_delta_minor / 100).toFixed(2),
                                     }}
-                                    label="Archive option"
-                                    title="Archive this option?"
+                                    label={t("Archive option")}
+                                    title={t("Archive this option?")}
                                   />
                                 </div>
                               ) : null}
@@ -258,14 +271,16 @@ export default async function RestaurantModifiersPage({
                             business.slug,
                             group.id,
                           )}
-                          description="Archive this reusable group and retain its options, translations, and item assignment history?"
+                          description={t(
+                            "Archive this reusable group and retain its options, translations, and item assignment history?",
+                          )}
                           fields={{
                             internalName: group.internal_name,
                             isVisible: group.is_visible,
                             lifecycleStatus: "archived",
                           }}
-                          label="Archive group"
-                          title="Archive this modifier group?"
+                          label={t("Archive group")}
+                          title={t("Archive this modifier group?")}
                         />
                       </div>
                     ) : null}

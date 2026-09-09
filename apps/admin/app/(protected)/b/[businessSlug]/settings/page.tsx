@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../lib/i18n-server";
 import { PageHeader } from "../../../../_components/page-header";
 import { PermissionNotice } from "../../../../_components/permission-notice";
 import { requireBusinessAdminContext } from "../../../../../lib/admin-context";
@@ -10,6 +11,7 @@ interface BusinessSettingsPageProps {
 }
 
 export default async function BusinessSettingsPage({ params }: BusinessSettingsPageProps) {
+  const { t } = await getAdminI18n();
   const { businessSlug } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
   const editable = context.access.canManageBusiness && context.business.status !== "suspended";
@@ -18,18 +20,18 @@ export default async function BusinessSettingsPage({ params }: BusinessSettingsP
     <>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(context.business.slug), label: "Overview" },
-          { label: "Business settings" },
+          { href: businessPath(context.business.slug), label: t("Overview") },
+          { label: t("Business settings") },
         ]}
-        eyebrow="Core settings"
-        title="Business settings"
-        summary="Manage the canonical identity and regional defaults shared by this business."
+        eyebrow={t("Core settings")}
+        title={t("Business settings")}
+        summary={t("Manage the canonical identity and regional defaults shared by this business.")}
       />
       {!editable ? (
         <PermissionNotice>
           {context.business.status === "suspended"
-            ? "Suspended businesses cannot be changed through tenant administration."
-            : "The business.manage permission is required to edit these settings."}
+            ? t("Suspended businesses cannot be changed through tenant administration.")
+            : t("The business.manage permission is required to edit these settings.")}
         </PermissionNotice>
       ) : null}
       <BusinessSettingsForm

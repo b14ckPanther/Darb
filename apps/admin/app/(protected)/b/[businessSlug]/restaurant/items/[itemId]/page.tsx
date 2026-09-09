@@ -1,3 +1,4 @@
+import { getAdminI18n } from "../../../../../../../lib/i18n-server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -40,6 +41,7 @@ export default async function RestaurantItemEditorPage({
   params: Promise<{ businessSlug: string; itemId: string }>;
   searchParams: Promise<{ created?: string }>;
 }) {
+  const { t } = await getAdminI18n();
   const { businessSlug, itemId } = await params;
   const context = await requireRestaurantAdminContext(businessSlug);
   const { business, locations } = context.businessContext;
@@ -69,44 +71,51 @@ export default async function RestaurantItemEditorPage({
     <div className={styles.page}>
       <PageHeader
         breadcrumbs={[
-          { href: businessPath(business.slug), label: "Overview" },
-          { href: base, label: "Restaurant" },
-          { href: `${base}/menus`, label: "Menus" },
-          { href: `${base}/menus/${snapshot.item.menu_id}`, label: "Current menu" },
+          { href: businessPath(business.slug), label: t("Overview") },
+          { href: base, label: t("Restaurant") },
+          { href: `${base}/menus`, label: t("Menus") },
+          { href: `${base}/menus/${snapshot.item.menu_id}`, label: t("Current menu") },
           { label: snapshot.item.internal_name },
         ]}
-        eyebrow="Menu item"
+        eyebrow={t("Menu item")}
         title={snapshot.item.internal_name}
-        summary="Manage customer content, price, operational state, variants, modifiers, and location availability."
+        summary={t(
+          "Manage customer content, price, operational state, variants, modifiers, and location availability.",
+        )}
         status={
           <StatusBadge
             status={snapshot.item.availability_status === "available" ? "available" : "inactive"}
-            label={snapshot.item.availability_status === "available" ? "Available" : "Sold out"}
+            label={
+              snapshot.item.availability_status === "available" ? t("Available") : t("Sold out")
+            }
           />
         }
       />
 
       {created ? (
         <p className={styles.feedback} role="status">
-          Item created with its default-language customer name. Add other translations and optional
-          configuration next.
+          {t(
+            "Item created with its default-language customer name. Add other translations and optional configuration next.",
+          )}
         </p>
       ) : null}
       {!editable ? (
-        <PermissionNotice title="This item is read-only.">
+        <PermissionNotice title={t("This item is read-only.")}>
           {snapshot.item.lifecycle_status === "archived"
-            ? "Archived item history cannot be changed."
-            : "Restaurant management access and an active capability are required."}
+            ? t("Archived item history cannot be changed.")
+            : t("Restaurant management access and an active capability are required.")}
         </PermissionNotice>
       ) : null}
 
       <section className={styles.panel} aria-labelledby="item-core-heading">
         <div className={styles.panelHeader}>
           <div>
-            <h2 id="item-core-heading">Item details</h2>
+            <h2 id="item-core-heading">{t("Item details")}</h2>
             <p>
-              Currently in {currentCategory?.internal_name ?? "its assigned category"}. Base price
-              uses {business.currency_code}.
+              {t("Currently in {category}. Base price uses {currency}.", {
+                category: currentCategory?.internal_name ?? t("its assigned category"),
+                currency: business.currency_code,
+              })}
             </p>
           </div>
           <StatusBadge status={snapshot.item.lifecycle_status} />
@@ -129,7 +138,9 @@ export default async function RestaurantItemEditorPage({
                 business.slug,
                 snapshot.item.id,
               )}
-              description="Archive this item while retaining translations, variants, modifier assignments, and location history?"
+              description={t(
+                "Archive this item while retaining translations, variants, modifier assignments, and location history?",
+              )}
               fields={{
                 availabilityStatus: snapshot.item.availability_status,
                 categoryId: snapshot.item.category_id,
@@ -141,8 +152,8 @@ export default async function RestaurantItemEditorPage({
                 menuId: snapshot.item.menu_id,
                 price: (snapshot.item.base_price_minor / 100).toFixed(2),
               }}
-              label="Archive item"
-              title="Archive this item?"
+              label={t("Archive item")}
+              title={t("Archive this item?")}
             />
           </div>
         ) : null}
@@ -151,8 +162,10 @@ export default async function RestaurantItemEditorPage({
       <section className={styles.panel} aria-labelledby="item-translations-heading">
         <div className={styles.panelHeader}>
           <div>
-            <h2 id="item-translations-heading">Customer-facing content</h2>
-            <p>Names and descriptions follow each language’s native direction and Darb font.</p>
+            <h2 id="item-translations-heading">{t("Customer-facing content")}</h2>
+            <p>
+              {t("Names and descriptions follow each language’s native direction and Darb font.")}
+            </p>
           </div>
           <TranslationIcon size={20} />
         </div>
@@ -172,15 +185,17 @@ export default async function RestaurantItemEditorPage({
       <section className={styles.panel} aria-labelledby="item-variants-heading">
         <div className={styles.panelHeader}>
           <div>
-            <h2 id="item-variants-heading">Variants</h2>
-            <p>Each variant has an absolute price—not an ambiguous delta from the base item.</p>
+            <h2 id="item-variants-heading">{t("Variants")}</h2>
+            <p>
+              {t("Each variant has an absolute price—not an ambiguous delta from the base item.")}
+            </p>
           </div>
           <span className="count-badge">{snapshot.variants.length}</span>
         </div>
         {editable ? (
           <details className={styles.details}>
             <summary>
-              <PlusIcon size={15} /> Add variant
+              <PlusIcon size={15} /> {t("Add variant")}
             </summary>
             <VariantForm
               businessId={business.id}
@@ -206,17 +221,17 @@ export default async function RestaurantItemEditorPage({
                     </strong>
                     <small>
                       {business.currency_code} {(variant.price_minor / 100).toFixed(2)} ·{" "}
-                      {variant.availability_status === "available" ? "Available" : "Sold out"}
+                      {variant.availability_status === "available" ? t("Available") : t("Sold out")}
                     </small>
                   </span>
                   <StatusBadge status={variant.lifecycle_status} />
                   <StatusBadge
                     status={variant.is_visible ? "enabled" : "disabled"}
-                    label={variant.is_visible ? "Visible" : "Hidden"}
+                    label={variant.is_visible ? t("Visible") : t("Hidden")}
                   />
                 </div>
                 <details className={styles.details}>
-                  <summary>Edit variant</summary>
+                  <summary>{t("Edit variant")}</summary>
                   <VariantForm
                     businessId={business.id}
                     businessSlug={business.slug}
@@ -246,7 +261,7 @@ export default async function RestaurantItemEditorPage({
                           snapshot.item.id,
                           variant.id,
                         )}
-                        description="Archive this variant and retain its localized history?"
+                        description={t("Archive this variant and retain its localized history?")}
                         fields={{
                           availabilityStatus: variant.availability_status,
                           displayOrder: variant.display_order,
@@ -255,8 +270,8 @@ export default async function RestaurantItemEditorPage({
                           lifecycleStatus: "archived",
                           price: (variant.price_minor / 100).toFixed(2),
                         }}
-                        label="Archive variant"
-                        title="Archive this variant?"
+                        label={t("Archive variant")}
+                        title={t("Archive this variant?")}
                       />
                     </div>
                   ) : null}
@@ -270,13 +285,16 @@ export default async function RestaurantItemEditorPage({
       <section className={styles.panel} aria-labelledby="item-modifiers-heading">
         <div className={styles.panelHeader}>
           <div>
-            <h2 id="item-modifiers-heading">Modifier groups</h2>
+            <h2 id="item-modifiers-heading">{t("Modifier groups")}</h2>
             <p>
-              Selection limits belong to this item assignment; reusable options stay in the library.
+              {t(
+                "Selection limits belong to this item assignment; reusable options stay in the library.",
+              )}
             </p>
           </div>
           <Link className={styles.entityLink} href={`${base}/modifiers`}>
-            Open library <ArrowRightIcon size={15} />
+            {t("Open library")}
+            <ArrowRightIcon size={15} />
           </Link>
         </div>
         {editable && unassignedModifierGroups.length > 0 ? (
@@ -289,7 +307,7 @@ export default async function RestaurantItemEditorPage({
           />
         ) : snapshot.modifierGroups.length === 0 ? (
           <p className={styles.hint}>
-            Create a modifier group in the library before assigning one.
+            {t("Create a modifier group in the library before assigning one.")}
           </p>
         ) : null}
         <ul className={styles.entityList}>
@@ -313,8 +331,8 @@ export default async function RestaurantItemEditorPage({
                   itemId={snapshot.item.id}
                 />
                 <p className={styles.hint}>
-                  {semantics.required ? "Required" : "Optional"} ·{" "}
-                  {semantics.allowsMultiple ? "Multiple selections" : "Single selection"}
+                  {semantics.required ? t("Required") : t("Optional")} ·{" "}
+                  {semantics.allowsMultiple ? t("Multiple selections") : t("Single selection")}
                 </p>
               </li>
             );
@@ -325,13 +343,13 @@ export default async function RestaurantItemEditorPage({
       <section className={styles.panel} aria-labelledby="item-locations-heading">
         <div className={styles.panelHeader}>
           <div>
-            <h2 id="item-locations-heading">Location availability</h2>
-            <p>An absent override inherits the item’s base operational state.</p>
+            <h2 id="item-locations-heading">{t("Location availability")}</h2>
+            <p>{t("An absent override inherits the item’s base operational state.")}</p>
           </div>
           <LocationIcon size={20} />
         </div>
         {snapshot.locations.length === 0 ? (
-          <p className={styles.hint}>No accessible active locations are available.</p>
+          <p className={styles.hint}>{t("No accessible active locations are available.")}</p>
         ) : (
           <ul className={styles.locationList}>
             {snapshot.locations.map((location) => (

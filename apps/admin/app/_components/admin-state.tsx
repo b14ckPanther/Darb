@@ -1,7 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
 
 import { AlertCircleIcon, InformationCircleIcon } from "@darb/icons";
 import { DarbMark } from "@darb/ui";
+import { useAdminI18n } from "../../lib/i18n-client";
 
 interface AdminStateProps {
   action?: ReactNode;
@@ -24,6 +27,7 @@ export function AdminState({
   title,
   tone = "neutral",
 }: AdminStateProps) {
+  const { t } = useAdminI18n();
   const Heading = headingLevel === 2 ? "h2" : "h1";
 
   return (
@@ -33,9 +37,9 @@ export function AdminState({
         {icon ??
           (tone === "error" ? <AlertCircleIcon size={24} /> : <InformationCircleIcon size={24} />)}
       </span>
-      {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
-      <Heading>{title}</Heading>
-      <p>{description}</p>
+      {eyebrow ? <p className="eyebrow">{t(eyebrow)}</p> : null}
+      <Heading>{t(title)}</Heading>
+      <p>{t(description)}</p>
       {action ? <div className="admin-state__action">{action}</div> : null}
     </section>
   );

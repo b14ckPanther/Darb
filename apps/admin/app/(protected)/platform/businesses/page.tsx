@@ -7,6 +7,7 @@ import { PageHeader } from "../../../_components/page-header";
 import { PlatformPagination } from "../../../_components/platform-pagination";
 import { StatusBadge } from "../../../_components/status-badge";
 import { listPlatformBusinesses, listPlatformModules } from "../../../../lib/platform";
+import { getAdminI18n } from "../../../../lib/i18n-server";
 import {
   parsePositivePage,
   platformBusinessPath,
@@ -27,7 +28,7 @@ export default async function PlatformBusinessesPage({
   const locale = readParam(params.locale, 8);
   const domainStatus = readParam(params.domain, 30);
   const page = parsePositivePage(params.page);
-  const [businesses, modules] = await Promise.all([
+  const [businesses, modules, { locale: interfaceLocale, t }] = await Promise.all([
     listPlatformBusinesses({
       page,
       ...(query ? { query } : {}),
@@ -37,6 +38,7 @@ export default async function PlatformBusinessesPage({
       ...(domainStatus ? { domainStatus } : {}),
     }),
     listPlatformModules(),
+    getAdminI18n(),
   ]);
 
   const queryState = { q: query, status, module: moduleKey, locale, domain: domainStatus };
@@ -48,24 +50,29 @@ export default async function PlatformBusinessesPage({
         title="Businesses"
         summary="Search the tenant estate, inspect real configuration, and enter an explicitly marked business workspace."
       />
-      <form className="platform-filter-bar" method="get" aria-label="Filter businesses">
+      <form className="platform-filter-bar" method="get" aria-label={t("Filter businesses")}>
         <label className="platform-filter-search">
-          <span>Business name or slug</span>
-          <input name="q" defaultValue={query} placeholder="Search businesses" maxLength={120} />
+          <span>{t("Business name or slug")}</span>
+          <input
+            name="q"
+            defaultValue={query}
+            placeholder={t("Search businesses")}
+            maxLength={120}
+          />
         </label>
         <label>
-          <span>Lifecycle</span>
+          <span>{t("Lifecycle")}</span>
           <select name="status" defaultValue={status}>
-            <option value="">All states</option>
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
-            <option value="archived">Archived</option>
+            <option value="">{t("All states")}</option>
+            <option value="active">{t("Active")}</option>
+            <option value="suspended">{t("Suspended")}</option>
+            <option value="archived">{t("Archived")}</option>
           </select>
         </label>
         <label>
-          <span>Module</span>
+          <span>{t("Module")}</span>
           <select name="module" defaultValue={moduleKey}>
-            <option value="">Any module</option>
+            <option value="">{t("Any module")}</option>
             {modules.map((module) => (
               <option key={module.key} value={module.key}>
                 {module.displayName}
@@ -74,38 +81,40 @@ export default async function PlatformBusinessesPage({
           </select>
         </label>
         <label>
-          <span>Locale</span>
+          <span>{t("Locale")}</span>
           <select name="locale" defaultValue={locale}>
-            <option value="">Any locale</option>
-            <option value="ar">Arabic</option>
-            <option value="he">Hebrew</option>
-            <option value="en">English</option>
+            <option value="">{t("Any locale")}</option>
+            <option value="ar">{t("Arabic")}</option>
+            <option value="he">{t("Hebrew")}</option>
+            <option value="en">{t("English")}</option>
           </select>
         </label>
         <label>
-          <span>Domain</span>
+          <span>{t("Domain")}</span>
           <select name="domain" defaultValue={domainStatus}>
-            <option value="">Any domain state</option>
-            <option value="none">No domain</option>
-            <option value="pending">Pending ownership</option>
-            <option value="verified">Verified ownership</option>
-            <option value="live">Live routing</option>
-            <option value="failed">Ownership failed</option>
+            <option value="">{t("Any domain state")}</option>
+            <option value="none">{t("No domain")}</option>
+            <option value="pending">{t("Pending ownership")}</option>
+            <option value="verified">{t("Verified ownership")}</option>
+            <option value="live">{t("Live routing")}</option>
+            <option value="failed">{t("Ownership failed")}</option>
           </select>
         </label>
         <div className="platform-filter-actions">
           <button className="primary-button primary-button--fit" type="submit">
-            Apply filters
+            {t("Apply filters")}
           </button>
           <Link className="secondary-button" href={platformPaths.businesses}>
-            Clear
+            {t("Clear")}
           </Link>
         </div>
       </form>
 
       <div className="platform-results-heading">
         <p>
-          <strong>{businesses.total.toLocaleString("en-IL")}</strong> businesses match this view.
+          {t("{count} businesses match this view.", {
+            count: businesses.total.toLocaleString(interfaceLocale),
+          })}
         </p>
       </div>
 
@@ -118,52 +127,56 @@ export default async function PlatformBusinessesPage({
           description="Adjust the search or lifecycle filters. No tenant state has been changed."
           action={
             <Link className="secondary-button" href={platformPaths.businesses}>
-              Clear filters
+              {t("Clear filters")}
             </Link>
           }
         />
       ) : (
         <div className="platform-table-shell">
           <table className="platform-table">
-            <caption className="visually-hidden">Darb businesses</caption>
+            <caption className="visually-hidden">{t("Darb businesses")}</caption>
             <thead>
               <tr>
-                <th scope="col">Business</th>
-                <th scope="col">Lifecycle</th>
-                <th scope="col">Footprint</th>
-                <th scope="col">Capabilities</th>
+                <th scope="col">{t("Business")}</th>
+                <th scope="col">{t("Lifecycle")}</th>
+                <th scope="col">{t("Footprint")}</th>
+                <th scope="col">{t("Capabilities")}</th>
                 <th scope="col">
-                  <span className="visually-hidden">Open</span>
+                  <span className="visually-hidden">{t("Open")}</span>
                 </th>
               </tr>
             </thead>
             <tbody>
               {businesses.items.map((business) => (
                 <tr key={business.id}>
-                  <td data-label="Business">
+                  <td data-label={t("Business")}>
                     <strong dir="auto">{business.displayName}</strong>
                     <small dir="ltr">{business.slug}</small>
                   </td>
-                  <td data-label="Lifecycle">
+                  <td data-label={t("Lifecycle")}>
                     <StatusBadge status={business.status} />
                   </td>
-                  <td data-label="Footprint">
-                    <span>{business.locationCount} locations</span>
+                  <td data-label={t("Footprint")}>
+                    <span>{t("{count} locations", { count: business.locationCount })}</span>
                     <small>
-                      {business.membershipCount} memberships · {business.domainCount} domains
+                      {t("{memberships} memberships · {domains} domains", {
+                        memberships: business.membershipCount,
+                        domains: business.domainCount,
+                      })}
                     </small>
                   </td>
-                  <td data-label="Capabilities">
+                  <td data-label={t("Capabilities")}>
                     <span>
                       {business.enabledModules.length > 0
                         ? business.enabledModules.join(", ")
-                        : "None enabled"}
+                        : t("None enabled")}
                     </span>
                     <small>{business.enabledLocales.join(" · ").toUpperCase()}</small>
                   </td>
                   <td className="platform-table__action">
                     <Link className="text-link" href={platformBusinessPath(business.id)}>
-                      Inspect<span className="visually-hidden"> {business.displayName}</span>
+                      {t("Inspect")}
+                      <span className="visually-hidden"> {business.displayName}</span>
                     </Link>
                   </td>
                 </tr>

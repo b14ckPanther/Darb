@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 
 import { AlertCircleIcon, CancelIcon } from "@darb/icons";
+import { useAdminI18n } from "../../lib/i18n-client";
 
 interface ConfirmationDialogProps {
   children: ReactNode;
@@ -21,6 +22,7 @@ export function ConfirmationDialog({
   pending = false,
   title,
 }: ConfirmationDialogProps) {
+  const { t } = useAdminI18n();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -73,15 +75,15 @@ export function ConfirmationDialog({
         <button
           type="button"
           className="confirmation-dialog__close"
-          aria-label="Close confirmation"
+          aria-label={t("Close confirmation")}
           disabled={pending}
           onClick={onClose}
         >
           <CancelIcon size={20} />
         </button>
       </div>
-      <h2 id={titleId}>{title}</h2>
-      <p id={descriptionId}>{description}</p>
+      <h2 id={titleId}>{t(title)}</h2>
+      <p id={descriptionId}>{t(description)}</p>
       <div className="confirmation-dialog__actions">{children}</div>
     </dialog>
   );

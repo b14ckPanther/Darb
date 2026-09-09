@@ -6,6 +6,7 @@ import { AdminState } from "../../../_components/admin-state";
 import { PageHeader } from "../../../_components/page-header";
 import { PlatformPagination } from "../../../_components/platform-pagination";
 import { listPlatformAuditEvents } from "../../../../lib/platform";
+import { getAdminI18n } from "../../../../lib/i18n-server";
 import { parsePositivePage, platformPaths } from "../../../../lib/platform-model";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -19,15 +20,18 @@ export default async function PlatformAuditPage({ searchParams }: { searchParams
   const fromInput = readDate(params.from);
   const toInput = readDate(params.to);
   const page = parsePositivePage(params.page);
-  const events = await listPlatformAuditEvents({
-    page,
-    ...(businessId ? { businessId } : {}),
-    ...(actorQuery ? { actorQuery } : {}),
-    ...(actionQuery ? { actionQuery } : {}),
-    ...(resourceCategory ? { resourceCategory } : {}),
-    ...(fromInput ? { from: `${fromInput}T00:00:00.000Z` } : {}),
-    ...(toInput ? { to: `${toInput}T23:59:59.999Z` } : {}),
-  });
+  const [events, { locale, t }] = await Promise.all([
+    listPlatformAuditEvents({
+      page,
+      ...(businessId ? { businessId } : {}),
+      ...(actorQuery ? { actorQuery } : {}),
+      ...(actionQuery ? { actionQuery } : {}),
+      ...(resourceCategory ? { resourceCategory } : {}),
+      ...(fromInput ? { from: `${fromInput}T00:00:00.000Z` } : {}),
+      ...(toInput ? { to: `${toInput}T23:59:59.999Z` } : {}),
+    }),
+    getAdminI18n(),
+  ]);
 
   return (
     <>
@@ -39,54 +43,56 @@ export default async function PlatformAuditPage({ searchParams }: { searchParams
       <form
         className="platform-filter-bar platform-filter-bar--audit"
         method="get"
-        aria-label="Filter audit history"
+        aria-label={t("Filter audit history")}
       >
         <label>
-          <span>Business ID</span>
-          <input name="business" defaultValue={businessId} placeholder="Exact UUID" />
+          <span>{t("Business ID")}</span>
+          <input name="business" defaultValue={businessId} placeholder={t("Exact UUID")} />
         </label>
         <label>
-          <span>Actor email or ID</span>
-          <input name="actor" defaultValue={actorQuery} placeholder="Actor" maxLength={160} />
+          <span>{t("Actor email or ID")}</span>
+          <input name="actor" defaultValue={actorQuery} placeholder={t("Actor")} maxLength={160} />
         </label>
         <label>
-          <span>Action</span>
+          <span>{t("Action")}</span>
           <input
             name="action"
             defaultValue={actionQuery}
-            placeholder="e.g. platform.business"
+            placeholder={t("e.g. platform.business")}
             maxLength={120}
           />
         </label>
         <label>
-          <span>Resource category</span>
+          <span>{t("Resource category")}</span>
           <input
             name="resource"
             defaultValue={resourceCategory}
-            placeholder="e.g. core or restaurant"
+            placeholder={t("e.g. core or restaurant")}
             maxLength={80}
           />
         </label>
         <label>
-          <span>From</span>
+          <span>{t("From")}</span>
           <input name="from" type="date" defaultValue={fromInput} />
         </label>
         <label>
-          <span>To</span>
+          <span>{t("To")}</span>
           <input name="to" type="date" defaultValue={toInput} />
         </label>
         <div className="platform-filter-actions">
           <button className="primary-button primary-button--fit" type="submit">
-            Apply filters
+            {t("Apply filters")}
           </button>
           <Link className="secondary-button" href={platformPaths.audit}>
-            Clear
+            {t("Clear")}
           </Link>
         </div>
       </form>
       <div className="platform-results-heading">
         <p>
-          <strong>{events.total.toLocaleString("en-IL")}</strong> audit events match this view.
+          {t("{count} audit events match this view.", {
+            count: events.total.toLocaleString(locale),
+          })}
         </p>
       </div>
       {events.items.length === 0 ? (
@@ -108,22 +114,25 @@ export default async function PlatformAuditPage({ searchParams }: { searchParams
                   <strong>
                     <bdi>{event.actionKey}</bdi>
                   </strong>
-                  <time dateTime={event.occurredAt}>{formatDateTime(event.occurredAt)}</time>
+                  <time dateTime={event.occurredAt}>
+                    {formatDateTime(event.occurredAt, locale)}
+                  </time>
                 </div>
                 <p>
-                  Actor: <bdi>{event.actorEmail ?? event.actorUserId ?? event.actorKind}</bdi>
+                  {t("Actor")}:{" "}
+                  <bdi>{event.actorEmail ?? event.actorUserId ?? event.actorKind}</bdi>
                   {event.businessName ? (
                     <>
                       {" "}
-                      · Business: <bdi>{event.businessName}</bdi>
+                      · {t("Business")}: <bdi>{event.businessName}</bdi>
                     </>
                   ) : (
-                    " · Platform scope"
+                    t(" · Platform scope")
                   )}
                 </p>
                 {event.entityType ? (
                   <small>
-                    Resource: <bdi>{event.entityType}</bdi>
+                    {t("Resource")}: <bdi>{event.entityType}</bdi>
                     {event.entityId ? (
                       <>
                         {" "}
@@ -172,8 +181,8 @@ function readDate(value: string | string[] | undefined): string | undefined {
   return candidate && /^\d{4}-\d{2}-\d{2}$/.test(candidate) ? candidate : undefined;
 }
 
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat("en-IL", {
+function formatDateTime(value: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Asia/Jerusalem",

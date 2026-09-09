@@ -136,6 +136,77 @@ button {
   gap: 1.25rem;
 }
 
+.auth-story__actions,
+.onboarding-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-language-switcher {
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
+  color: inherit;
+}
+
+.admin-language-switcher label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.admin-language-switcher select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding-inline: 0.8rem 2rem;
+  color: inherit;
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+  background: transparent;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-language-switcher select:focus-visible {
+  outline: 3px solid rgba(212, 166, 77, 0.3);
+  outline-offset: 2px;
+}
+
+.admin-language-switcher select:disabled {
+  cursor: progress;
+  opacity: 0.72;
+}
+
+.admin-sidebar__footer .admin-language-switcher {
+  color: rgba(247, 242, 232, 0.76);
+}
+
+.auth-story__actions .admin-language-switcher {
+  width: 9.5rem;
+  color: rgba(255, 253, 246, 0.82);
+}
+
+.auth-story__actions .admin-language-switcher label,
+.onboarding-header__actions .admin-language-switcher label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.onboarding-header__actions .admin-language-switcher {
+  width: 9.5rem;
+  color: var(--forest);
+}
+
 .auth-public-link,
 .chooser-public-link,
 .public-site-link {
