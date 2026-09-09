@@ -212,12 +212,19 @@ Internal names, original filenames, actors, audit data, and administration times
 the contract. Raw Restaurant and media-assignment tables remain protected by their existing RLS and
 grants.
 
-The `restaurant-signature` platform template is the current default Restaurant composition. The
-server validates its theme document, applies closed tenant overrides through `@darb/theme`, and
-emits controlled CSS variables with Cairo, Heebo, or Ubuntu according to locale. The renderer is
-Server Component-first; one small client controller owns native item-dialog opening, Escape,
-backdrop close, and focus restoration. A full menu arrives as one set-based projection, so the UI
-does not issue per-category/item queries.
+The platform registry provides three production Restaurant compositions over that same publication
+graph: `restaurant-signature` (the balanced default), `restaurant-editorial` (photography and
+typography-led), and `restaurant-counter` (compact, energetic, and quick-scanning). Template
+selection changes composition only; fetching, localization, pricing, item-detail behavior, SEO,
+domain resolution, and security do not fork per template. Unknown runtime keys fail safely to
+Signature.
+
+The server validates the selected template theme, applies closed tenant overrides through
+`@darb/theme`, and emits controlled CSS variables with Cairo, Heebo, or Ubuntu according to locale.
+The renderer is Server Component-first; small client controllers own only native item-dialog and
+hero-video interaction, including Escape, backdrop close, focus restoration, and reduced-motion
+behavior. A full menu arrives as one set-based projection, so the UI does not issue
+per-category/item queries.
 
 Darb-owned public controls and system states use the three-language Restaurant catalogue, including
 the engine landing, loading, error, not-found, locale and location controls, sold-out and
@@ -245,6 +252,15 @@ provider adapter. The current adapter is deliberately no-op, sends no network re
 no analytics. Event payloads contain only public context plus fixed booleans or entity UUIDs—not
 names, descriptions, URLs, queries, identity, or credentials. See
 [`PRODUCTION.md`](./PRODUCTION.md).
+
+### Adding a Restaurant template
+
+A future first-party template adds a deterministic platform registry row by forward migration,
+extends the closed server-side template-key resolver, and contributes one composition component to
+the static renderer selection. It must consume `LocalizedRestaurantPublication`, reuse shared
+customer behavior, ship all Darb-owned copy in Arabic/Hebrew/English, and pass the same publication,
+domain, SEO, accessibility, reduced-motion, and responsive test matrix. Templates cannot introduce
+a second query path, tenant-authored code, arbitrary CSS persistence, or runtime plugin loading.
 
 ## Application boundary and deferred work
 

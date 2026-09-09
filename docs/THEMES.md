@@ -42,10 +42,14 @@ The foundation registry contains two deliberately generic `pages` compositionsâ€
 and `foundation-editorial`â€”only to prove the architecture and preview pipeline. They do not create a
 pages engine, routes, public renderer, content model, or business content.
 
-The registry also contains `restaurant-signature`, the platform-owned default composition for the
-public Restaurant renderer. It is configuration, not tenant content. `apps/rest` resolves the
-available selected/default Restaurant template and applies its validated defaults plus closed
-tenant overrides on the server; invalid runtime payloads fall back to the renderer emergency theme.
+The Restaurant registry contains `restaurant-signature`, `restaurant-editorial`, and
+`restaurant-counter`. Signature remains the single platform default; Editorial provides an
+immersive, magazine-like composition, while Counter provides a denser quick-scanning composition.
+They are platform configuration, not tenant content. `apps/rest` resolves the available
+selected/default key on the server and composes the same curated publication graph through a static
+typed renderer registry. Templates may own structure and visual rhythm, but must not fork tenant
+resolution, pricing, localization, SEO, or authorization. Invalid runtime payloads fall back to the
+renderer emergency theme and unknown template keys fall safely to Signature.
 
 ## Token contract
 
@@ -86,7 +90,8 @@ never the privileged client.
 
 `/b/[businessSlug]/appearance` is readable for an authorized business member and becomes editable
 only with `appearance.manage`. It lists only rendering contexts backed by effectively enabled
-modules and registered templates. Accessible hex/swatch controls validate canonical colors;
+modules and registered templates. Accessible visual composition cards communicate the structural
+difference between available templates before selection. Hex/swatch controls validate canonical colors;
 individual values, control groups, or all overrides can return to template defaults. The live
 Arabic/Hebrew/English preview resolves the same template default + tenant override pipeline future
 server-rendered customer experiences will consume.
@@ -101,8 +106,8 @@ enablement, and engine-specific permission. Appearance is presentation state, no
 
 ## Deferred
 
-- customer-facing renderers beyond Restaurant, advanced cache invalidation, and SEO hardening;
+- customer-facing renderers beyond Restaurant and advanced cache invalidation;
 - page-builder schema or UI and engine-specific content/configuration;
 - template inheritance, tenant-authored templates, uploads, marketplace, or dependency graphs;
 - themes connected to plans, billing, entitlements, or subscriptions;
-- platform template-registry UI, advanced version migration tooling, and preview image assets.
+- platform template authoring, advanced version migration tooling, and uploaded preview assets.
