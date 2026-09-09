@@ -1,28 +1,26 @@
 import Image from "next/image";
-import Link from "next/link";
 
-import { darbApplications } from "@darb/config/platform";
-import {
-  ArrowRightIcon,
-  CancelIcon,
-  LanguagesSettingsIcon,
-  LocationIcon,
-  RestaurantIcon,
-} from "@darb/icons";
+import { CancelIcon, LocationIcon, RestaurantIcon } from "@darb/icons";
 import {
   formatRestaurantMoney,
   type LocalizedRestaurantItem,
   type LocalizedRestaurantPublication,
-  type PublicRestaurantImage,
 } from "@darb/restaurant";
 import { getTextDirection } from "@darb/i18n";
 
 import { getRestaurantCopy } from "../lib/copy";
 import { getPublicSupabaseConfig } from "../lib/config";
 import { buildRestaurantImageUrl, buildRestaurantMediaUrl } from "../lib/media";
-import { restaurantPath, type RestaurantRouteContext } from "../lib/routes";
-import { ItemDialogController } from "./item-dialog-controller";
+import { findFirstRestaurantImage, formatRestaurantLocation } from "../lib/presentation";
+import type { RestaurantRouteContext } from "../lib/routes";
 import { HeroVideo } from "./hero-video";
+import {
+  TemplateBrand,
+  TemplateCategoryRail,
+  TemplateController,
+  TemplateFooter,
+  TemplateTools,
+} from "./template-chrome";
 
 interface SignatureTemplateProps {
   publication: LocalizedRestaurantPublication;
@@ -32,130 +30,16 @@ interface SignatureTemplateProps {
 export function SignatureTemplate({ publication, route }: SignatureTemplateProps) {
   const copy = getRestaurantCopy(publication.locale);
   const assignedHero = publication.branding.hero;
-  const fallbackHeroImage = assignedHero ? null : findFirstImage(publication);
+  const fallbackHeroImage = assignedHero ? null : findFirstRestaurantImage(publication);
   const hasHeroMedia = Boolean(assignedHero || fallbackHeroImage);
   const imageBaseUrl = getPublicSupabaseConfig().url;
-  const currentLocationId = publication.selectedLocation?.id ?? null;
-  const categoryCount = publication.menus.reduce(
-    (count, menu) => count + menu.categories.length,
-    0,
-  );
 
   return (
-    <>
-      <ItemDialogController
-        context={{
-          businessSlug: publication.business.slug,
-          locale: publication.locale,
-          routeKind: route.kind,
-        }}
-        hasLocation={currentLocationId !== null}
-      />
+    <div className="restaurant-template template--signature" data-restaurant-template="signature">
+      <TemplateController publication={publication} route={route} />
       <header className="site-header">
-        <Link
-          href={restaurantPath(
-            publication.business.slug,
-            publication.locale,
-            publication.business.defaultLocale,
-            currentLocationId,
-            route,
-          )}
-          className="brand-mark"
-        >
-          {publication.branding.logo ? (
-            <span className="brand-logo" data-branding-role="logo">
-              <Image
-                src={buildRestaurantMediaUrl(imageBaseUrl, publication.branding.logo)}
-                alt=""
-                width={publication.branding.logo.width ?? 96}
-                height={publication.branding.logo.height ?? 96}
-                priority
-              />
-            </span>
-          ) : (
-            <span className="brand-symbol" aria-hidden="true">
-              <RestaurantIcon size={20} />
-            </span>
-          )}
-          <span lang={publication.business.defaultLocale} dir="auto">
-            {publication.business.displayName}
-          </span>
-        </Link>
-        <div className="header-tools">
-          {publication.locations.length > 0 ? (
-            <details className="locale-menu location-menu">
-              <summary>
-                <LocationIcon size={18} />
-                <span dir="auto">
-                  {publication.selectedLocation?.displayName ?? copy.allLocations}
-                </span>
-              </summary>
-              <div className="popover-list">
-                <Link
-                  aria-current={currentLocationId === null ? "page" : undefined}
-                  data-analytics-event="location-changed"
-                  data-analytics-has-location="false"
-                  href={restaurantPath(
-                    publication.business.slug,
-                    publication.locale,
-                    publication.business.defaultLocale,
-                    null,
-                    route,
-                  )}
-                >
-                  {copy.allLocations}
-                </Link>
-                {publication.locations.map((location) => (
-                  <Link
-                    key={location.id}
-                    aria-current={location.id === currentLocationId ? "page" : undefined}
-                    data-analytics-event="location-changed"
-                    data-analytics-has-location="true"
-                    href={restaurantPath(
-                      publication.business.slug,
-                      publication.locale,
-                      publication.business.defaultLocale,
-                      location.id,
-                      route,
-                    )}
-                  >
-                    <span dir="auto">{location.displayName}</span>
-                    {location.locality ? <small dir="auto">{location.locality}</small> : null}
-                  </Link>
-                ))}
-              </div>
-            </details>
-          ) : null}
-          {publication.locales.length > 1 ? (
-            <details className="locale-menu">
-              <summary aria-label={copy.language}>
-                <LanguagesSettingsIcon size={18} />
-                <span>{publication.locale.toUpperCase()}</span>
-              </summary>
-              <div className="popover-list popover-list--compact">
-                {publication.locales.map((locale) => (
-                  <Link
-                    key={locale}
-                    lang={locale}
-                    dir={getTextDirection(locale)}
-                    aria-current={locale === publication.locale ? "page" : undefined}
-                    data-analytics-event="locale-changed"
-                    data-analytics-locale={locale}
-                    href={restaurantPath(
-                      publication.business.slug,
-                      locale,
-                      publication.business.defaultLocale,
-                      currentLocationId,
-                      route,
-                    )}
-                  >
-                    {{ ar: "العربية", en: "English", he: "עברית" }[locale]}
-                  </Link>
-                ))}
-              </div>
-            </details>
-          ) : null}
-        </div>
+        <TemplateBrand publication={publication} route={route} />
+        <TemplateTools publication={publication} route={route} />
       </header>
 
       <main id="menu-content">
@@ -171,7 +55,7 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
             {publication.selectedLocation ? (
               <p className="hero-location">
                 <LocationIcon size={19} />
-                <span dir="auto">{formatLocation(publication.selectedLocation)}</span>
+                <span dir="auto">{formatRestaurantLocation(publication.selectedLocation)}</span>
               </p>
             ) : null}
           </div>
@@ -190,6 +74,7 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
                   alt={assignedHero.altText ?? ""}
                   fill
                   fetchPriority="high"
+                  loading="eager"
                   sizes="(max-width: 767px) 100vw, 54vw"
                 />
               )}
@@ -201,6 +86,7 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
                 alt={fallbackHeroImage.altText ?? ""}
                 fill
                 fetchPriority="high"
+                loading="eager"
                 sizes="(max-width: 767px) 100vw, 54vw"
               />
             </div>
@@ -212,26 +98,7 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
           )}
         </section>
 
-        {categoryCount > 0 ? (
-          <nav className="category-rail" aria-label={copy.categories}>
-            <div className="category-rail__inner">
-              {publication.menus.flatMap((menu) =>
-                menu.categories.map((category) => (
-                  <a
-                    key={category.id}
-                    href={`#category-${category.id}`}
-                    data-analytics-event="category-selected"
-                    data-analytics-category-id={category.id}
-                  >
-                    <span lang={category.locale} dir={getTextDirection(category.locale)}>
-                      {category.name}
-                    </span>
-                  </a>
-                )),
-              )}
-            </div>
-          </nav>
-        ) : null}
+        <TemplateCategoryRail publication={publication} />
 
         <div className="menu-content">
           {publication.menus.length === 0 ? (
@@ -291,31 +158,19 @@ export function SignatureTemplate({ publication, route }: SignatureTemplateProps
         </div>
       </main>
 
-      <footer className="site-footer">
-        <span lang={publication.business.defaultLocale} dir="auto">
-          {publication.business.displayName}
-        </span>
-        <a
-          href={`https://${darbApplications.main.productionHost}`}
-          lang="en"
-          data-analytics-event="outbound-darb"
-        >
-          {copy.poweredBy}
-          <ArrowRightIcon size={16} />
-        </a>
-      </footer>
-    </>
+      <TemplateFooter publication={publication} />
+    </div>
   );
 }
 
-interface ItemCardProps {
+export interface ItemCardProps {
   currencyCode: string;
   imageBaseUrl: string;
   item: LocalizedRestaurantItem;
   locale: LocalizedRestaurantPublication["locale"];
 }
 
-function ItemCard({ currencyCode, imageBaseUrl, item, locale }: ItemCardProps) {
+export function ItemCard({ currencyCode, imageBaseUrl, item, locale }: ItemCardProps) {
   const copy = getRestaurantCopy(locale);
   const dialogId = `item-${item.id}`;
 
@@ -474,21 +329,4 @@ function ItemDialog({
       </div>
     </dialog>
   );
-}
-
-function findFirstImage(publication: LocalizedRestaurantPublication): PublicRestaurantImage | null {
-  for (const menu of publication.menus) {
-    for (const category of menu.categories) {
-      if (category.image) return category.image;
-      const itemImage = category.items.find((item) => item.image)?.image;
-      if (itemImage) return itemImage;
-    }
-  }
-  return null;
-}
-
-function formatLocation(location: LocalizedRestaurantPublication["locations"][number]): string {
-  return [location.displayName, location.addressLine, location.locality]
-    .filter(Boolean)
-    .join(" · ");
 }

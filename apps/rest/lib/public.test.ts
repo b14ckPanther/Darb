@@ -19,6 +19,7 @@ import {
   serializeJsonLd,
 } from "./seo";
 import { resolveRestaurantTheme } from "./theme";
+import { resolveRestaurantTemplateKey } from "./templates";
 
 const publication: PublicRestaurantPublication = {
   appearance: {
@@ -76,6 +77,12 @@ const publication: PublicRestaurantPublication = {
 };
 
 describe("public Restaurant app helpers", () => {
+  it("resolves every supported composition and fails safely to Signature", () => {
+    expect(resolveRestaurantTemplateKey("restaurant-signature")).toBe("restaurant-signature");
+    expect(resolveRestaurantTemplateKey("restaurant-editorial")).toBe("restaurant-editorial");
+    expect(resolveRestaurantTemplateKey("restaurant-counter")).toBe("restaurant-counter");
+    expect(resolveRestaurantTemplateKey("tenant-authored-template")).toBe("restaurant-signature");
+  });
   it("builds canonical locale and location paths", () => {
     expect(restaurantPath("public-fixture", "ar", "ar")).toBe("/public-fixture");
     expect(restaurantPath("public-fixture", "en", "ar", "location id")).toBe(
