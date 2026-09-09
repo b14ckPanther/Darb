@@ -455,6 +455,21 @@
   border-color: #1d513f;
   box-shadow: inset 0 0 0 1px #1d513f;
 }
+.templateSelectionMark {
+  align-items: center;
+  background: #1d513f;
+  border: 2px solid #f2f7f4;
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  height: 1.75rem;
+  inset-block-start: 0.4rem;
+  inset-inline-end: 0.4rem;
+  justify-content: center;
+  position: absolute;
+  width: 1.75rem;
+  z-index: 1;
+}
 .unavailableTemplate {
   cursor: not-allowed;
   opacity: 0.55;
@@ -487,6 +502,49 @@
   border-radius: 999px;
   height: 0.3rem;
   width: 55%;
+}
+.templateSwatchSignature {
+  grid-template-columns: 0.9fr 1.1fr;
+}
+.templateSwatchSignature i:first-child {
+  border-radius: calc(var(--darb-theme-radius) * 0.2);
+}
+.templateSwatchEditorial {
+  align-items: end;
+  background: var(--darb-theme-primary);
+  grid-template-columns: 1fr;
+  padding: 0.8rem;
+}
+.templateSwatchEditorial i:first-child {
+  background: var(--darb-theme-on-primary);
+  grid-row: auto;
+  height: 0.35rem;
+  opacity: 0.32;
+  width: 38%;
+}
+.templateSwatchEditorial i:nth-child(2) {
+  background: var(--darb-theme-on-primary);
+  height: 1.35rem;
+  width: 82%;
+}
+.templateSwatchEditorial i:nth-child(3) {
+  background: var(--darb-theme-accent);
+  height: 0.18rem;
+  width: 100%;
+}
+.templateSwatchCounter {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: 1fr 0.55fr;
+}
+.templateSwatchCounter i:first-child {
+  background: var(--darb-theme-primary);
+  grid-column: span 2;
+  grid-row: auto;
+}
+.templateSwatchCounter i:nth-child(2),
+.templateSwatchCounter i:nth-child(3) {
+  background: var(--darb-theme-surface);
+  border: 1px solid var(--darb-theme-border);
 }
 .templateCopy {
   display: grid;
@@ -887,6 +945,33 @@
   gap: 0.6rem;
   grid-template-columns: auto 1fr 4rem;
   min-height: auto;
+}
+.previewCounter {
+  padding: 0.65rem;
+}
+.previewCounter .previewNav {
+  border: 0;
+}
+.previewCounter .previewHero {
+  overflow: hidden;
+  border-radius: calc(var(--darb-theme-radius) * 0.75);
+  color: var(--darb-theme-on-primary);
+  background: var(--darb-theme-primary);
+}
+.previewCounter .previewHero h3,
+.previewCounter .previewHero > div > span {
+  color: var(--darb-theme-on-primary);
+}
+.previewCounter .previewCards {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 0.75rem 0 0;
+}
+.previewCounter .previewCards div {
+  min-height: 5.5rem;
+  box-shadow: 0 0.35rem 1rem color-mix(in srgb, var(--darb-theme-primary) 9%, transparent);
+}
+.previewCounter .previewCards div:last-child {
+  grid-column: span 2;
 }
 .previewBoundary {
   color: #66746d;

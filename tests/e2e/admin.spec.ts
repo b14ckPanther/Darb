@@ -613,6 +613,69 @@ test("selects, customizes, previews, isolates, and resets an appearance foundati
   await expect(page.locator('a[href*="/pages"]')).toHaveCount(0);
 });
 
+test("visually selects and persists each governed Restaurant template", async ({ page }) => {
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/appearance`);
+
+  const restaurantAppearance = page.getByRole("region", {
+    name: "Restaurant rendering foundation",
+  });
+  await expect(restaurantAppearance.getByRole("radio", { name: /Signature/ })).toBeVisible();
+  await expect(restaurantAppearance.getByRole("radio", { name: /Editorial/ })).toBeVisible();
+  await expect(restaurantAppearance.getByRole("radio", { name: /Counter/ })).toBeVisible();
+  await expect(
+    restaurantAppearance.locator('[data-template-swatch="restaurant-signature"]'),
+  ).toBeVisible();
+  await expect(
+    restaurantAppearance.locator('[data-template-swatch="restaurant-editorial"]'),
+  ).toBeVisible();
+  await expect(
+    restaurantAppearance.locator('[data-template-swatch="restaurant-counter"]'),
+  ).toBeVisible();
+
+  if (process.env.DARB_VISUAL_QA_OUTPUT) {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    for (const template of [
+      { key: "restaurant-signature", name: /Signature/ },
+      { key: "restaurant-editorial", name: /Editorial/ },
+      { key: "restaurant-counter", name: /Counter/ },
+    ]) {
+      await restaurantAppearance.getByRole("radio", { name: template.name }).check();
+      await expect(
+        restaurantAppearance.locator(`[data-template-preview="${template.key}"]`),
+      ).toBeVisible();
+      await page.screenshot({
+        fullPage: true,
+        path: `${process.env.DARB_VISUAL_QA_OUTPUT}/admin-${template.key}-1440x900.png`,
+      });
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({
+      fullPage: true,
+      path: `${process.env.DARB_VISUAL_QA_OUTPUT}/admin-restaurant-counter-390x844.png`,
+    });
+  }
+
+  await restaurantAppearance.getByRole("radio", { name: /Counter/ }).check();
+  await expect(
+    restaurantAppearance.locator('[data-template-preview="restaurant-counter"]'),
+  ).toBeVisible();
+  await restaurantAppearance.getByRole("button", { name: "Save appearance" }).click();
+  await expect(
+    restaurantAppearance.getByText("Appearance saved and ready for future rendering."),
+  ).toBeVisible();
+  await page.reload();
+  await expect(restaurantAppearance.getByRole("radio", { name: /Counter/ })).toBeChecked();
+
+  await restaurantAppearance.getByRole("radio", { name: /Signature/ }).check();
+  await restaurantAppearance.getByRole("button", { name: "Save appearance" }).click();
+  await expect(
+    restaurantAppearance.getByText("Appearance saved and ready for future rendering."),
+  ).toBeVisible();
+  await page.reload();
+  await expect(restaurantAppearance.getByRole("radio", { name: /Signature/ })).toBeChecked();
+});
+
 test("uploads, describes, and archives shared media without deleting Storage", async ({ page }) => {
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}/media`);
@@ -1123,7 +1186,7 @@ test("enforces read-only business access and exact location scope in the UI", as
 
   await page.getByRole("link", { exact: true, name: "Appearance" }).click();
   await expect(page.getByText("Appearance is read-only.")).toBeVisible();
-  await expect(page.getByRole("radio", { name: /Editorial/ })).toBeDisabled();
+  await expect(page.getByRole("radio", { name: /^Editorial A photography-led/ })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Save appearance" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Reset theme" })).toHaveCount(0);
   await expect(page.getByRole("region", { name: "Brand media" })).toBeVisible();

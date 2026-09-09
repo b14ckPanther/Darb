@@ -1,6 +1,23 @@
 import type { AdminTranslations } from "./i18n";
 
 export const detailMessages = {
+  Signature: { ar: "سيغنتشر", he: "Signature" },
+  Editorial: { ar: "إديتوريال", he: "Editorial" },
+  Counter: { ar: "كاونتر", he: "Counter" },
+  "An editorial, image-led composition for customer-facing Restaurant menus.": {
+    ar: "تكوين غني بالصور وبإيقاع تحريري رايق لقائمة المطعم.",
+    he: "קומפוזיציה עריכתית ועשירה בתמונות לתפריטי המסעדה.",
+  },
+  "A photography-led menu composition with generous type, asymmetry, and a refined magazine rhythm.":
+    {
+      ar: "قالب بيعطي الصورة والخط مساحة كبيرة، بتكوين غير متماثل وإيقاع مجلة أنيق.",
+      he: "תפריט שמובל בידי צילום, עם טיפוגרפיה נדיבה, אסימטריה וקצב מגזיני מעודן.",
+    },
+  "A compact, energetic menu composition built for quick scanning, busy counters, and mobile-first discovery.":
+    {
+      ar: "قالب سريع وحيوي، معمول للتصفّح السريع والكاونترات المشغولة وتجربة موبايل ممتازة.",
+      he: "תפריט קומפקטי ואנרגטי לסריקה מהירה, דלפקים עמוסים וחוויית מובייל תחילה.",
+    },
   "A factual view of the platform foundations configured for this business—without invented engine activity or performance data.":
     {
       ar: "نظرة واقعية على أساسات المنصة المجهّزة لهالشغل، بدون نشاط أو أرقام مش موجودة.",

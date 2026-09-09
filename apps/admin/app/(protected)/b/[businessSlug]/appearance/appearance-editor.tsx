@@ -114,6 +114,7 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
   const previewStyle = themeToCssVariables(resolvedTheme, previewLocale) as CSSProperties;
   const copy = previewCopy[previewLocale];
   const direction = previewLocale === "en" ? "ltr" : "rtl";
+  const previewCompositionClass = getPreviewCompositionClass(template.key);
 
   const submitSave = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -268,10 +269,15 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
                     disabled={!editable || !candidate.isAvailable}
                     onChange={() => setSelectedTemplateKey(candidate.key)}
                   />
+                  {candidate.key === selectedTemplateKey ? (
+                    <span className={styles.templateSelectionMark} aria-hidden="true">
+                      <CheckmarkCircleIcon size={17} />
+                    </span>
+                  ) : null}
                   <TemplateSwatch template={candidate} />
                   <span className={styles.templateCopy}>
-                    <strong>{candidate.displayName}</strong>
-                    <small>{candidate.description}</small>
+                    <strong>{t(candidate.displayName)}</strong>
+                    <small>{t(candidate.description)}</small>
                   </span>
                   <span className={styles.templateStatus}>
                     {candidate.isAvailable
@@ -539,7 +545,8 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
             </label>
           </div>
           <div
-            className={`${styles.preview} ${template.key === "foundation-editorial" ? styles.previewEditorial : styles.previewCanvas}`}
+            className={`${styles.preview} ${previewCompositionClass}`}
+            data-template-preview={template.key}
             dir={direction}
             lang={previewLocale}
             style={previewStyle}
@@ -589,13 +596,33 @@ export function AppearanceEditor({ appearance, business, editable }: AppearanceE
 function TemplateSwatch({ template }: { template: ResolvedBusinessAppearance["template"] }) {
   const style = themeToCssVariables(template.defaultTheme, "en") as CSSProperties;
   return (
-    <span className={styles.templateSwatch} style={style} aria-hidden="true">
+    <span
+      className={`${styles.templateSwatch} ${getTemplateSwatchClass(template.key)}`}
+      data-template-swatch={template.key}
+      style={style}
+      aria-hidden="true"
+    >
       <i />
       <i />
       <i />
       <b />
     </span>
   );
+}
+
+function getPreviewCompositionClass(templateKey: string): string {
+  if (templateKey === "foundation-editorial" || templateKey === "restaurant-editorial") {
+    return styles.previewEditorial ?? "";
+  }
+  if (templateKey === "restaurant-counter") return styles.previewCounter ?? "";
+  return styles.previewCanvas ?? "";
+}
+
+function getTemplateSwatchClass(templateKey: string): string {
+  if (templateKey === "restaurant-editorial") return styles.templateSwatchEditorial ?? "";
+  if (templateKey === "restaurant-counter") return styles.templateSwatchCounter ?? "";
+  if (templateKey === "restaurant-signature") return styles.templateSwatchSignature ?? "";
+  return "";
 }
 
 function SelectControl({
