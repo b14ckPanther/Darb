@@ -18,6 +18,7 @@ const menuId = randomUUID();
 const draftMenuId = randomUUID();
 const categoryId = randomUUID();
 const hiddenCategoryId = randomUUID();
+const extraCategoryIds = Array.from({ length: 5 }, () => randomUUID());
 const itemId = randomUUID();
 const soldOutItemId = randomUUID();
 const hiddenItemId = randomUUID();
@@ -25,7 +26,7 @@ const variantId = randomUUID();
 const modifierGroupId = randomUUID();
 const modifierId = randomUUID();
 const mediaPath = `${businessId}/${mediaId}/public-menu.png`;
-const publicBusinessName = `مطبخ درب ${runId}`;
+const publicBusinessName = "مطبخ درب للمأكولات الموسمية";
 const customHost = `${slug}.localhost`;
 const alternateHost = `alternate-${runId}.localhost`;
 const provisioningHost = `provisioning-${runId}.localhost`;
@@ -46,7 +47,7 @@ test.beforeAll(async () => {
   );
 
   const image = Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+    "iVBORw0KGgoAAAANSUhEUgAAAPAAAACgCAIAAAC9uXYyAAADMklEQVR42u3dMW7TYBiAYQdVjOxMdOIA7EhIrD1Kj8DIETgAh+AAnTr2DGVi5wRsLKhRkPw7v18/79oq8W89/WI7Tnp6f/dxkSq9sgsEtAS0BLQEtICWgJaAloCWgBbQEtAS0BLQEtACWgJaAloCWgJaQEtAS0BLQEv/dGMX5Hu4f3fhb3769nPviz355qQjC+75BprjlGygOU7JBhrlFGugUU6xBhrlFGugUU6x9sYKxanNA5rm1EY65KAkdfhhQtOc2mygsUhtPNBApJYANAqphQANQWo5QNOcWhTQNKeWBjTNqQUCrcWHZGU8T7pMoGlOLda9HEfR/ObDlzM//f30dUnc7OFrDMqdR/zSb26J24Q2nlemfJWZPW5Im9DHncqXPM7uprWTwtR4XkvzuAcc/epkQhvMqVFtQhfG8zjN455i0JAG2mye7omAPu543hjZuk83YkgDbTan5jTQNKdMA+3OjdQOAdp4Tg1poGlOmQba8UZqtwBtPKeGNNBafARLJuKkmwS0TGg5I5x15wAtE1qOVmfdMKBlQktAS0BLQAtoqdHN99vX9oKu3loOTWg55JCA1jLxtydmNgxomdD6/55//LITNtg5QMuElqPVWTcJaJnQMhFnfcUA2nlharcAbUinrosDzXTqXR6gHXWkdgjQhnRnPAPNdEoz0Lt/kd2Y17pPN+IADGhzOjKbge6cCW1AbfWnGHR+7D/Jpub0iC8x2te/+zahU9fvVsc3SPO4y5cmtFFdGMx/Oz3ef4bgWt3evV3m+xrF0ZSHvrtkQh/lAsh53Dudxyb04Yb00d78d1Lo7o7UYoFmOrVMoLX4CJYM6UkXCDTTqaUBzXRqUUAznVoO0BCkFgI0CqklAA1EauOBxiK12W5O2gGOvdzvMcNfoAkNSmojgWY6tXkOORx+pP7SgMY69aIBNNap4x+gsU6dngLdOV8cJ3tHV8SBJjv1zg7Q/Wt8l/sO3EMCtGvYi49gSUBLQEtAC2gJaAloCWgJaAEtAS0BLQEtAS2gJaAloCWgJaAFtAS0BLQEtAS0gJaAloCWgJaAFtAS0BLQEtAS0AJaAloCWgJax+4P4SVQi2PxKG0AAAAASUVORK5CYII=",
     "base64",
   );
   const { error: uploadError } = await adminClient.storage
@@ -80,7 +81,7 @@ test.beforeAll(async () => {
       byte_size, width, height, alt_text, original_filename, status
     ) values (
       '${mediaId}', '${businessId}', 'tenant-media-images', '${mediaPath}', 'image',
-      'image/png', 68, 1, 1, 'طبق مميز من مطبخ درب', 'public-menu.png', 'active'
+      'image/png', 875, 240, 160, 'طبق مميز من مطبخ درب', 'public-menu.png', 'active'
     );
 
     insert into core.business_visual_settings (
@@ -138,6 +139,27 @@ test.beforeAll(async () => {
       ('${businessId}', '${categoryId}', 'he', 'מנות הבית', 'מנות נדיבות לחלוקה או לארוחה רגועה.'),
       ('${businessId}', '${categoryId}', 'en', 'From our kitchen', 'Generous plates for sharing or enjoying slowly.'),
       ('${businessId}', '${hiddenCategoryId}', 'en', 'Hidden category', 'Must never render');
+
+    insert into restaurant.categories (
+      id, business_id, menu_id, internal_name, image_media_asset_id, is_visible, lifecycle_status, display_order
+    ) values
+      ${extraCategoryIds
+        .map(
+          (id, index) =>
+            `('${id}', '${businessId}', '${menuId}', 'internal-extra-${index + 1}', null, true, 'active', ${(index + 3) * 10})`,
+        )
+        .join(",\n      ")};
+
+    insert into restaurant.category_translations (
+      business_id, category_id, locale_code, name, description
+    ) values
+      ${extraCategoryIds
+        .flatMap((id, index) => [
+          `('${businessId}', '${id}', 'ar', 'تصنيف موسمي طويل ${index + 1}', 'اختيارات موسمية بتتغير حسب المتوفر.')`,
+          `('${businessId}', '${id}', 'he', 'קטגוריה עונתית ארוכה ${index + 1}', 'אפשרויות עונתיות שמשתנות לפי הזמינות.')`,
+          `('${businessId}', '${id}', 'en', 'Long seasonal category ${index + 1}', 'Seasonal choices that change with availability.')`,
+        ])
+        .join(",\n      ")};
 
     insert into restaurant.items (
       id, business_id, menu_id, category_id, internal_name, base_price_minor,
@@ -256,19 +278,67 @@ test("renders the anonymous public projection with media and no admin metadata",
 test("restores deliberate public fallbacks when branding assignments are removed", async ({
   page,
 }) => {
-  const { error: removeError } = await adminClient
+  const { error: removeLogoError } = await adminClient
     .schema("core")
     .from("business_media_assignments")
     .delete()
     .eq("business_id", businessId)
-    .eq("module_key", "restaurant");
-  if (removeError) throw removeError;
+    .eq("module_key", "restaurant")
+    .eq("role_key", "logo");
+  if (removeLogoError) throw removeLogoError;
 
   await page.goto(`/${slug}/en`);
   await expect(page.locator('[data-branding-role="logo"]')).toHaveCount(0);
   await expect(page.locator(".brand-symbol")).toBeVisible();
+  await expect(page.locator('[data-branding-role="hero"] img')).toBeVisible();
+
+  const { error: restoreLogoError } = await adminClient
+    .schema("core")
+    .from("business_media_assignments")
+    .insert({
+      business_id: businessId,
+      media_asset_id: mediaId,
+      module_key: "restaurant",
+      role_key: "logo",
+    });
+  if (restoreLogoError) throw restoreLogoError;
+
+  const { error: removeHeroError } = await adminClient
+    .schema("core")
+    .from("business_media_assignments")
+    .delete()
+    .eq("business_id", businessId)
+    .eq("module_key", "restaurant")
+    .eq("role_key", "hero");
+  if (removeHeroError) throw removeHeroError;
+
+  await page.goto(`/${slug}/en`);
+  await expect(page.locator('[data-branding-role="logo"] img')).toBeVisible();
   await expect(page.locator('[data-branding-role="hero"]')).toHaveCount(0);
-  await expect(page.locator(".hero-image")).toBeVisible();
+  await expect(page.getByAltText("طبق مميز من مطبخ درب").first()).toBeVisible();
+
+  const { error: removeLogoAgainError } = await adminClient
+    .schema("core")
+    .from("business_media_assignments")
+    .delete()
+    .eq("business_id", businessId)
+    .eq("module_key", "restaurant")
+    .eq("role_key", "logo");
+  if (removeLogoAgainError) throw removeLogoAgainError;
+
+  for (const template of [
+    { dataValue: "signature", key: "restaurant-signature" },
+    { dataValue: "editorial", key: "restaurant-editorial" },
+    { dataValue: "counter", key: "restaurant-counter" },
+  ] as const) {
+    await setRestaurantTemplate(template.key);
+    await page.goto(`/${slug}/en`);
+    await expect(page.locator(`[data-restaurant-template="${template.dataValue}"]`)).toBeVisible();
+    await expect(page.locator('[data-branding-role="logo"]')).toHaveCount(0);
+    await expect(page.locator('[data-branding-role="hero"]')).toHaveCount(0);
+    await expect(page.locator(".brand-symbol")).toBeVisible();
+    await expect(page.getByAltText("طبق مميز من مطبخ درب").first()).toBeVisible();
+  }
 
   const { error: restoreError } = await adminClient
     .schema("core")
@@ -288,6 +358,7 @@ test("restores deliberate public fallbacks when branding assignments are removed
       },
     ]);
   if (restoreError) throw restoreError;
+  await setRestaurantTemplate("restaurant-signature");
 });
 
 test("switches between Arabic, Hebrew, and English with correct direction", async ({ page }) => {
@@ -568,6 +639,122 @@ test("passes exact custom-host responsive QA in RTL and LTR", async ({ page }) =
   expect(consoleIssues).toEqual([]);
 });
 
+test("renders every Restaurant template across the exact responsive QA matrix", async ({
+  page,
+}, testInfo) => {
+  const templates = [
+    { dataValue: "signature", key: "restaurant-signature" },
+    { dataValue: "editorial", key: "restaurant-editorial" },
+    { dataValue: "counter", key: "restaurant-counter" },
+  ] as const;
+  const viewports = [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+    { width: 1920, height: 1080 },
+  ] as const;
+  const consoleIssues: string[] = [];
+  page.on("console", (message) => {
+    if (["error", "warning"].includes(message.type())) consoleIssues.push(message.text());
+  });
+
+  try {
+    for (const template of templates) {
+      await setRestaurantTemplate(template.key);
+      for (const locale of ["ar", "en"] as const) {
+        for (const viewport of viewports) {
+          await page.setViewportSize(viewport);
+          const localePath = locale === "ar" ? "" : "en";
+          await page.goto(`http://${customHost}:3002/${localePath}`);
+          const templateRoot = page.locator(`[data-restaurant-template="${template.dataValue}"]`);
+          await expect(templateRoot).toBeVisible();
+          await expect(page.locator("html")).toHaveAttribute(
+            "dir",
+            locale === "ar" ? "rtl" : "ltr",
+          );
+          await expect(page.locator('[data-branding-role="logo"] img')).toBeVisible();
+          await expect(page.locator('[data-branding-role="hero"] img')).toBeVisible();
+          await expect(
+            page.getByRole("navigation", { name: /Categories|التصنيفات/ }),
+          ).toBeVisible();
+          await expect(page.getByText(locale === "ar" ? "حجم عائلي" : "Family size")).toBeHidden();
+          const dimensions = await page.evaluate(() => ({
+            clientWidth: document.documentElement.clientWidth,
+            scrollWidth: document.documentElement.scrollWidth,
+          }));
+          expect(dimensions.scrollWidth).toBe(dimensions.clientWidth);
+          await testInfo.attach(
+            `${template.dataValue}-${locale}-${viewport.width}x${viewport.height}`,
+            { body: await page.screenshot({ fullPage: true }), contentType: "image/png" },
+          );
+          if (process.env.DARB_VISUAL_QA_OUTPUT) {
+            await page.screenshot({
+              fullPage: true,
+              path: `${process.env.DARB_VISUAL_QA_OUTPUT}/${template.dataValue}-${locale}-${viewport.width}x${viewport.height}.png`,
+            });
+          }
+        }
+      }
+
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.goto(`http://${customHost}:3002/en`, { waitUntil: "networkidle" });
+      await page.evaluate(() => {
+        document.documentElement.style.fontSize = "200%";
+      });
+      const enlargedDimensions = await page.evaluate(() => ({
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+      }));
+      expect(enlargedDimensions.scrollWidth).toBe(enlargedDimensions.clientWidth);
+      const categoryLink = page
+        .getByRole("navigation", { name: "Categories" })
+        .getByRole("link")
+        .first();
+      await categoryLink.focus();
+      await expect(categoryLink).toBeFocused();
+      await categoryLink.press("Enter");
+      await expect(page).toHaveURL(/#category-/);
+      await page.evaluate(() => {
+        document.documentElement.style.removeProperty("font-size");
+      });
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.goto(`http://${customHost}:3002/he`);
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await expect(page.getByRole("heading", { name: "תפריט עונתי" })).toBeVisible();
+      const trigger = page.getByRole("button", { name: /פרטים: מנת הדרך/ });
+      await trigger.focus();
+      await trigger.press("Enter");
+      await expect(page.getByRole("dialog", { name: /מנת הדרך/ })).toBeVisible();
+      await expect(page.getByText("גודל משפחתי")).toBeVisible();
+      await expect(page.getByText("בחירת רוטב")).toBeVisible();
+      if (process.env.DARB_VISUAL_QA_OUTPUT) {
+        await page.screenshot({
+          path: `${process.env.DARB_VISUAL_QA_OUTPUT}/${template.dataValue}-he-dialog-768x1024.png`,
+        });
+      }
+      await page.keyboard.press("Escape");
+      await expect(trigger).toBeFocused();
+      await testInfo.attach(`${template.dataValue}-he-768x1024`, {
+        body: await page.screenshot({ fullPage: true }),
+        contentType: "image/png",
+      });
+      if (process.env.DARB_VISUAL_QA_OUTPUT) {
+        await page.screenshot({
+          fullPage: true,
+          path: `${process.env.DARB_VISUAL_QA_OUTPUT}/${template.dataValue}-he-768x1024.png`,
+        });
+      }
+    }
+  } finally {
+    await setRestaurantTemplate("restaurant-signature");
+  }
+
+  expect(consoleIssues).toEqual([]);
+});
+
 test("fails closed when the module is disabled after publication", async ({ page }) => {
   await setModuleEnabled(false);
   await page.goto(`/${slug}/en`);
@@ -585,6 +772,20 @@ async function setModuleEnabled(isEnabled: boolean): Promise<void> {
     .eq("business_id", businessId)
     .eq("module_key", "restaurant");
   if (error) throw error;
+}
+
+async function setRestaurantTemplate(templateKey: string): Promise<void> {
+  const supportedTemplateKeys = new Set([
+    "restaurant-signature",
+    "restaurant-editorial",
+    "restaurant-counter",
+  ]);
+  if (!supportedTemplateKeys.has(templateKey)) throw new Error("Unsupported test template.");
+  runFixtureSql(`
+    update core.business_visual_settings
+    set template_key = '${templateKey}'
+    where business_id = '${businessId}' and module_key = 'restaurant';
+  `);
 }
 
 function runFixtureSql(sql: string): void {
