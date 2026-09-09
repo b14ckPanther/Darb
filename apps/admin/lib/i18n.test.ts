@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createAdminTranslator, resolveAdminLocale } from "./i18n";
+import { createAdminTranslator, resolveAdminLocale, resolveAdminLocaleHandoff } from "./i18n";
 import { adminMessageKeys, getAdminMessages } from "./messages";
 
 describe("Admin localization", () => {
@@ -8,6 +8,14 @@ describe("Admin localization", () => {
     expect(resolveAdminLocale("ar", "he")).toBe("ar");
     expect(resolveAdminLocale(undefined, "he")).toBe("he");
     expect(resolveAdminLocale("unsupported", "unsupported")).toBe("en");
+  });
+
+  it("accepts a supported Main locale only on the Admin login GET boundary", () => {
+    expect(resolveAdminLocaleHandoff("/login", "GET", "ar")).toBe("ar");
+    expect(resolveAdminLocaleHandoff("/login", "GET", "he")).toBe("he");
+    expect(resolveAdminLocaleHandoff("/login", "POST", "ar")).toBeNull();
+    expect(resolveAdminLocaleHandoff("/platform", "GET", "ar")).toBeNull();
+    expect(resolveAdminLocaleHandoff("/login", "GET", "fr")).toBeNull();
   });
 
   it("translates and interpolates without changing unknown technical values", () => {

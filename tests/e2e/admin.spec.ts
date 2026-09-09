@@ -140,6 +140,23 @@ test("switches and persists the Admin interface language with correct direction"
     .toContain("Ubuntu");
 });
 
+test("applies a validated Main-site locale handoff to the login screen", async ({ page }) => {
+  await page.goto("/login?locale=ar");
+
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.getByRole("heading", { name: "أهلًا برجعتك" })).toBeVisible();
+
+  const language = page.getByLabel("لغة الواجهة");
+  const englishOption = language.locator('option[value="en"]');
+  const optionColors = await englishOption.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { backgroundColor: style.backgroundColor, color: style.color };
+  });
+  expect(optionColors.color).not.toBe(optionColors.backgroundColor);
+});
+
 test("keeps Admin private at both metadata and response-header boundaries", async ({ request }) => {
   const [login, robots, health] = await Promise.all([
     request.get("/login"),

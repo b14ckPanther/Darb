@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { isSupportedLocale } from "@darb/i18n";
 
 import { resolveCurrentUser } from "../../lib/auth";
-import { adminLocaleCookie } from "../../lib/i18n";
+import { adminLocaleCookie, getAdminLocaleCookieOptions } from "../../lib/i18n";
 import { createServerActionSupabaseClient } from "../../lib/supabase/server";
 
 export async function setAdminLocaleAction(requestedLocale: string): Promise<{ error?: string }> {
@@ -25,13 +25,7 @@ export async function setAdminLocaleAction(requestedLocale: string): Promise<{ e
         .single();
       if (error || !data) return { error: "We could not save your language. Please try again." };
     }
-    (await cookies()).set(adminLocaleCookie, requestedLocale, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-    });
+    (await cookies()).set(adminLocaleCookie, requestedLocale, getAdminLocaleCookieOptions());
   } catch {
     return { error: "We could not save your language. Please try again." };
   }

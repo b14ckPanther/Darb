@@ -64,6 +64,10 @@ for (const localeCase of localeCases) {
     );
     await expect(page.getByRole("heading", { level: 2 })).toHaveCount(6);
     await expect(page.getByText("Platform Admin", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: copy.nav.signIn }).first()).toHaveAttribute(
+      "href",
+      `https://admin.darb.co.il/login?locale=${localeCase.locale}`,
+    );
   });
 }
 

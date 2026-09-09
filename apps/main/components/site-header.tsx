@@ -3,16 +3,13 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { darbApplications } from "@darb/config/platform";
 import { ArrowRightIcon, CancelIcon, MenuIcon } from "@darb/icons";
 import type { SupportedLocale } from "@darb/i18n";
 
 import type { MainSiteCopy } from "../lib/copy";
-import { getPublicLocalePath } from "../lib/site";
+import { getAdminSignInUrl, getPublicLocalePath } from "../lib/site";
 import { BrandLockup } from "./brand-lockup";
 import { LocaleLinks } from "./locale-links";
-
-const adminUrl = `https://${darbApplications.admin.productionHost}`;
 
 export function SiteHeader({ copy, locale }: { copy: MainSiteCopy; locale: SupportedLocale }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -67,7 +64,7 @@ export function SiteHeader({ copy, locale }: { copy: MainSiteCopy; locale: Suppo
 
         <div className="public-header__desktop-actions">
           <LocaleLinks currentLocale={locale} label={copy.nav.language} />
-          <a className="header-admin-link" href={adminUrl}>
+          <a className="header-admin-link" href={getAdminSignInUrl(locale)}>
             {copy.nav.signIn}
             <ArrowRightIcon size={16} />
           </a>
@@ -116,7 +113,7 @@ export function SiteHeader({ copy, locale }: { copy: MainSiteCopy; locale: Suppo
           <div className="mobile-navigation__footer">
             <p>{copy.nav.language}</p>
             <LocaleLinks currentLocale={locale} label={copy.nav.language} />
-            <a className="button button--gold" href={adminUrl}>
+            <a className="button button--gold" href={getAdminSignInUrl(locale)}>
               {copy.nav.signIn}
               <ArrowRightIcon size={18} />
             </a>

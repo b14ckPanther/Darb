@@ -6,6 +6,7 @@ import { mainSiteCopy } from "./copy";
 import { serializeJsonLd } from "./seo";
 import {
   defaultPublicLocale,
+  getAdminSignInUrl,
   getPublicAlternates,
   getPublicLocaleDirection,
   getPublicLocalePath,
@@ -50,6 +51,12 @@ describe("public locale routing", () => {
       "en-IL": "https://darb.co.il/en",
       "x-default": "https://darb.co.il/",
     });
+  });
+
+  it("hands the selected Main locale to the Admin login boundary", () => {
+    expect(getAdminSignInUrl("ar")).toBe("https://admin.darb.co.il/login?locale=ar");
+    expect(getAdminSignInUrl("he")).toBe("https://admin.darb.co.il/login?locale=he");
+    expect(getAdminSignInUrl("en")).toBe("https://admin.darb.co.il/login?locale=en");
   });
 });
 

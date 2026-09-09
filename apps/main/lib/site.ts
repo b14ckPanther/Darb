@@ -33,6 +33,12 @@ export function getPublicLocaleUrl(locale: SupportedLocale): string {
   return `${mainOrigin}${getPublicLocalePath(locale)}`;
 }
 
+export function getAdminSignInUrl(locale: SupportedLocale): string {
+  const url = new URL("/login", `https://${darbApplications.admin.productionHost}`);
+  url.searchParams.set("locale", locale);
+  return url.toString();
+}
+
 export function getPublicAlternates(): Readonly<Record<string, string>> {
   return {
     ...Object.fromEntries(

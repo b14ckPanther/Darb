@@ -8,7 +8,7 @@ import { listAccessibleBusinesses } from "../../lib/auth";
 import { type FormState, parseLoginInput } from "../../lib/forms";
 import { adminPaths, getPostSignInDestination, sanitizeReturnPath } from "../../lib/navigation";
 import { createServerActionSupabaseClient } from "../../lib/supabase/server";
-import { adminLocaleCookie } from "../../lib/i18n";
+import { adminLocaleCookie, getAdminLocaleCookieOptions } from "../../lib/i18n";
 
 export async function signInAction(
   _previousState: FormState,
@@ -43,20 +43,25 @@ export async function signInAction(
   }
 
   const requestedPath = sanitizeReturnPath(readFormString(formData, "next"));
-  const { data: profile } = await supabase
-    .schema("core")
-    .from("profiles")
-    .select("preferred_locale")
-    .eq("id", authData.user.id)
-    .maybeSingle();
-  if (profile?.preferred_locale && isSupportedLocale(profile.preferred_locale)) {
-    (await cookies()).set(adminLocaleCookie, profile.preferred_locale, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-    });
+  const cookieStore = await cookies();
+  const handedOffLocale = cookieStore.get(adminLocaleCookie)?.value;
+
+  if (handedOffLocale && isSupportedLocale(handedOffLocale)) {
+    await supabase
+      .schema("core")
+      .from("profiles")
+      .update({ preferred_locale: handedOffLocale })
+      .eq("id", authData.user.id);
+  } else {
+    const { data: profile } = await supabase
+      .schema("core")
+      .from("profiles")
+      .select("preferred_locale")
+      .eq("id", authData.user.id)
+      .maybeSingle();
+    if (profile?.preferred_locale && isSupportedLocale(profile.preferred_locale)) {
+      cookieStore.set(adminLocaleCookie, profile.preferred_locale, getAdminLocaleCookieOptions());
+    }
   }
   redirect(getPostSignInDestination(accessibleBusinessCount, requestedPath));
 }

@@ -183,6 +183,11 @@ button {
   opacity: 0.72;
 }
 
+.admin-language-switcher select option {
+  color: var(--ink);
+  background: var(--panel);
+}
+
 .admin-sidebar__footer .admin-language-switcher {
   color: rgba(247, 242, 232, 0.76);
 }

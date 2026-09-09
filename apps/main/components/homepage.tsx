@@ -1,4 +1,3 @@
-import { darbApplications } from "@darb/config/platform";
 import {
   AppearanceIcon,
   ArrowRightIcon,
@@ -12,12 +11,11 @@ import {
 import type { SupportedLocale } from "@darb/i18n";
 
 import { mainSiteCopy } from "../lib/copy";
+import { getAdminSignInUrl } from "../lib/site";
 import { BrandLockup } from "./brand-lockup";
 import { HeroArt } from "./hero-art";
 import { LocaleLinks } from "./locale-links";
 import { SiteHeader } from "./site-header";
-
-const adminUrl = `https://${darbApplications.admin.productionHost}`;
 
 const foundationIcons = [
   BuildingIcon,
@@ -30,6 +28,7 @@ const foundationIcons = [
 
 export function Homepage({ locale }: { locale: SupportedLocale }) {
   const copy = mainSiteCopy[locale];
+  const adminSignInUrl = getAdminSignInUrl(locale);
 
   return (
     <div className="public-site">
@@ -51,7 +50,7 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
                 {copy.hero.primaryAction}
                 <ArrowRightIcon size={19} />
               </a>
-              <a className="button button--ghost" href={adminUrl}>
+              <a className="button button--ghost" href={adminSignInUrl}>
                 {copy.hero.secondaryAction}
               </a>
             </div>
@@ -194,7 +193,7 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
             <p className="eyebrow">{copy.finalCta.eyebrow}</p>
             <h2 id="final-cta-title">{copy.finalCta.title}</h2>
             <p>{copy.finalCta.description}</p>
-            <a className="button button--dark" href={adminUrl}>
+            <a className="button button--dark" href={adminSignInUrl}>
               {copy.finalCta.action}
               <ArrowRightIcon size={19} />
             </a>
@@ -206,7 +205,7 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
         <div className="section-shell public-footer__top">
           <BrandLockup />
           <p>{copy.footer.statement}</p>
-          <a href={adminUrl}>{copy.footer.admin}</a>
+          <a href={adminSignInUrl}>{copy.footer.admin}</a>
         </div>
         <div className="section-shell public-footer__bottom">
           <p>
