@@ -155,7 +155,7 @@ Preview and production secrets belong in deployment environment configuration, n
 
 - other engine application names and subdomains;
 - remote migration deployment and operational rollout;
-- registration, invitations, password recovery, MFA, and detailed session policy;
+- invitations, password recovery, MFA, and detailed session policy;
 - locale negotiation beyond the explicit Restaurant platform-slug route contract;
 - public engines beyond Restaurant, wildcard domains, and background provider reconciliation;
 - controlled physical media cleanup and image transformation;

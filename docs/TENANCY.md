@@ -89,8 +89,8 @@ self-escalation and scope escalation. Role templates and richer permission catal
 product work.
 
 The trusted first-business function assigns all twelve keys above at business scope. The bundle is
-fixed in database code and cannot be chosen by a browser. Future onboarding must not turn that
-bootstrap exception into a general membership or permission management path.
+fixed in database code and cannot be chosen by a browser. Onboarding does not turn that bootstrap
+exception into a general membership or permission-management path.
 
 ## First-business boundary
 
@@ -117,6 +117,14 @@ An exact retry returns the existing business. A different request is rejected wh
 an active membership. A suspended membership is not active access, so the user may establish a new
 first active business; this behavior is intentional and tested. General additional-business,
 membership, and invitation workflows remain separate future authorization designs.
+
+New first businesses retain `onboarding_completed_at = null` until their creator completes the
+essential setup. `core.complete_first_business_onboarding` accepts only that active creator with
+`business.manage`, locks the tenant row, validates the business-owned locale/module/location input,
+and performs the existing governed mutations in one transaction. A failed or repeated request
+cannot create a second tenant or leave partial setup. Existing businesses are marked complete by
+the introducing migration, so canonical membership—not account age or an inferred role—continues
+to determine ordinary tenant access.
 
 ## Platform administration
 

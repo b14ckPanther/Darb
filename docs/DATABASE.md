@@ -20,25 +20,25 @@ to the hosted project's exposed-schema allowlist before clients can address them
 
 ## Tables
 
-| Table                             | Responsibility                                                                     |
-| --------------------------------- | ---------------------------------------------------------------------------------- |
-| `core.profiles`                   | Minimal display identity and optional locale preference linked 1:1 to `auth.users` |
-| `core.businesses`                 | Canonical tenant identity, lifecycle, locale, ISO currency, and IANA timezone      |
-| `core.locations`                  | Reusable business locations with minimal postal fields and no engine-specific data |
-| `core.memberships`                | Unique user-to-business relationship with active or suspended lifecycle            |
-| `core.modules`                    | Platform-owned capability key, label, description, availability, and order         |
-| `core.permissions`                | Stable permission-key registry and allowed assignment scope                        |
-| `core.membership_permissions`     | Normalized business-wide or location-scoped permission assignments                 |
-| `core.business_modules`           | Data-driven module enablement per business, independent of billing                 |
-| `core.templates`                  | Platform-owned template compositions and validated default semantic themes         |
-| `core.business_visual_settings`   | Tenant template selection and partial theme overrides per module context           |
-| `core.media_assets`               | Shared business media metadata and immutable Storage object identity               |
-| `core.module_media_roles`         | Platform-owned module branding-role registry and allowed media kinds               |
-| `core.business_media_assignments` | Tenant branding-role assignment to a canonical shared media asset                  |
-| `core.business_domains`           | Retained ownership claims plus explicit engine-target routing lifecycle            |
-| `core.business_locales`           | Per-business enabled locale set; business default remains canonical                |
-| `core.audit_events`               | Append-oriented sensitive-operation event foundation                               |
-| `private.super_admins`            | Revocable platform-wide administrators, separate from tenant access                |
+| Table                             | Responsibility                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| `core.profiles`                   | Minimal display identity and optional locale preference linked 1:1 to `auth.users`    |
+| `core.businesses`                 | Canonical tenant identity, lifecycle, locale, regional defaults, and onboarding state |
+| `core.locations`                  | Reusable business locations with minimal postal fields and no engine-specific data    |
+| `core.memberships`                | Unique user-to-business relationship with active or suspended lifecycle               |
+| `core.modules`                    | Platform-owned capability key, label, description, availability, and order            |
+| `core.permissions`                | Stable permission-key registry and allowed assignment scope                           |
+| `core.membership_permissions`     | Normalized business-wide or location-scoped permission assignments                    |
+| `core.business_modules`           | Data-driven module enablement per business, independent of billing                    |
+| `core.templates`                  | Platform-owned template compositions and validated default semantic themes            |
+| `core.business_visual_settings`   | Tenant template selection and partial theme overrides per module context              |
+| `core.media_assets`               | Shared business media metadata and immutable Storage object identity                  |
+| `core.module_media_roles`         | Platform-owned module branding-role registry and allowed media kinds                  |
+| `core.business_media_assignments` | Tenant branding-role assignment to a canonical shared media asset                     |
+| `core.business_domains`           | Retained ownership claims plus explicit engine-target routing lifecycle               |
+| `core.business_locales`           | Per-business enabled locale set; business default remains canonical                   |
+| `core.audit_events`               | Append-oriented sensitive-operation event foundation                                  |
+| `private.super_admins`            | Revocable platform-wide administrators, separate from tenant access                   |
 
 Internal identifiers are UUIDs and slugs remain human-readable identifiers. All stored timestamps
 use `timestamptz`; business defaults are ILS and `Asia/Jerusalem`, while no naive local timestamp or
@@ -83,6 +83,14 @@ active membership, the exact foundation permission bundle, and one `business.cre
 It enables no business modules. An exact retry is idempotent; a different request is rejected while
 an active membership exists. The function has an empty `search_path`, fully qualified references,
 no dynamic SQL, and execution granted only to `authenticated`.
+
+Self-service onboarding adds `core.complete_first_business_onboarding(...)`. It is limited to an
+active business's original creator holding `business.manage`, row-locks that tenant, and atomically
+composes the existing locale, location, and module mutation boundaries before setting
+`onboarding_completed_at` and emitting `business.onboarding_completed`. Existing businesses are
+backfilled complete, retries return canonical completed state, and failures roll back every step.
+A private insert/slug-change trigger also rejects reserved Darb platform identities independently
+of application validation.
 
 Phase 4 adds one read helper and four narrow mutation boundaries:
 

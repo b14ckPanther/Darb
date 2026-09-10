@@ -19,6 +19,13 @@ list. Engine and unregistered paths fall back to the target business Overview un
 business's capability/access state can be resolved. Tenant identity is never sourced solely from
 local storage.
 
+Self-service registration lives at `/register`, with `/verify` and `/auth/confirm` handling the
+configured Supabase email-confirmation outcome. An authenticated user with no business creates the
+canonical identity at `/onboarding`; its incomplete first business resumes at
+`/b/[businessSlug]/setup`. That setup separates the personal Admin locale from business public
+locales, offers only currently available modules, creates a first location when selected (required
+for Restaurant), and hands the owner directly to the useful core or Restaurant workspace.
+
 ## Available sections
 
 - `/b/[businessSlug]` shows the real platform-state Overview and setup guidance;
@@ -32,6 +39,7 @@ local storage.
 - `/b/[businessSlug]/locations` lists only locations visible through RLS;
 - `/b/[businessSlug]/locations/new` creates a reusable core location;
 - `/b/[businessSlug]/locations/[locationId]` edits or archives one accessible location.
+- `/b/[businessSlug]/setup` resumes creator-only essential setup until its atomic completion;
 - `/b/[businessSlug]/restaurant` is the capability- and permission-gated Restaurant workspace;
 - `/b/[businessSlug]/restaurant/menus` manages menus, categories, localized content, and a
   responsive searchable/filterable item inventory;

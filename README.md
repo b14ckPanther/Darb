@@ -2,7 +2,8 @@
 
 Darb is the foundation of a multi-tenant, multi-product business platform for the Israeli market.
 The repository provides the engineering baseline, RLS-first core tenancy model, secure admin
-authentication/onboarding, a unified tenant-admin environment, the Restaurant domain/admin, a
+authentication plus self-service registration and resumable first-business onboarding, a unified
+tenant-admin environment, the Restaurant domain/admin, a
 curated multilingual public Restaurant menu experience, verified custom-domain routing, and
 production foundations for search, security headers, observability, accessibility, performance,
 and provider-neutral analytics. The root domain now serves Darb's cinematic, fully localized public
