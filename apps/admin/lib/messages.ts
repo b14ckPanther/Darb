@@ -40,6 +40,8 @@ const messages: AdminTranslations = {
     ar: "الدخول متاح بس للأشخاص المصرّح إلهم.",
     he: "הגישה מוגבלת לחברי צוות מורשים.",
   },
+  "New to Darb?": { ar: "جديد على درب؟", he: "חדשים ב-Darb?" },
+  "Create account": { ar: "اعمل حساب", he: "יצירת חשבון" },
   "The email or password is incorrect. Check your details and try again.": {
     ar: "البريد أو كلمة السر مش صح. راجع التفاصيل وجرّب كمان مرة.",
     he: "האימייל או הסיסמה שגויים. בדקו את הפרטים ונסו שוב.",
@@ -72,11 +74,21 @@ const messages: AdminTranslations = {
       ar: "ابدأ بهوية شغلك اللي رح تستخدمها درب بكل المنتجات. الفروع والإمكانيات بتضيفها بعدين.",
       he: "מתחילים בזהות שבה Darb תשתמש בכל המוצרים. אפשר להוסיף סניפים ומודולים בהמשך.",
     },
+  "Start with the identity Darb will use across every product. The next step tailors the essentials.":
+    {
+      ar: "ابدأ بهوية شغلك اللي رح تستخدمها درب بكل المنتجات. بالخطوة الجاي بنرتّب الأساسيات.",
+      he: "מתחילים בזהות שבה Darb תשתמש בכל המוצרים. בשלב הבא מתאימים את היסודות.",
+    },
   "Signed in securely": { ar: "دخول آمن", he: "מחובר באופן מאובטח" },
   "Currency starts as ILS and the timezone as Asia/Jerusalem. No product modules are enabled during this step.":
     {
       ar: "العملة بتبدأ ILS والمنطقة الزمنية Asia/Jerusalem. ما بنفعّل أي منتج بهالخطوة.",
       he: "המטבע מתחיל כ-ILS ואזור הזמן כ-Asia/Jerusalem. לא מופעלים מודולים בשלב הזה.",
+    },
+  "Currency starts as ILS and the timezone as Asia/Jerusalem. You will choose products and locations next.":
+    {
+      ar: "العملة بتبدأ ILS والمنطقة الزمنية Asia/Jerusalem. بالخطوة الجاي بتختار المنتجات والفروع.",
+      he: "המטבע מתחיל כ-ILS ואזור הזמן כ-Asia/Jerusalem. בשלב הבא בוחרים מוצרים וסניפים.",
     },
   "Authorized workspaces": { ar: "مساحات الشغل المسموحة", he: "סביבות עבודה מורשות" },
   "Choose your operating context.": { ar: "اختار وين بدك تشتغل.", he: "בחרו את סביבת העבודה." },

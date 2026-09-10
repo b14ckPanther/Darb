@@ -502,6 +502,16 @@ button {
   text-align: center;
 }
 
+.auth-footnote a {
+  color: var(--forest);
+  font-weight: 700;
+  text-underline-offset: 0.18em;
+}
+
+[dir="rtl"] .auth-form .primary-button > svg {
+  transform: scaleX(-1);
+}
+
 .onboarding-layout {
   min-height: 100vh;
   padding: clamp(1.25rem, 4vw, 3.5rem);
@@ -628,6 +638,199 @@ button {
   font-size: 0.78rem;
   line-height: 1.6;
   text-align: center;
+}
+
+.auth-card--registration {
+  max-width: 33rem;
+}
+
+.verification-card {
+  max-width: 42rem;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  text-align: center;
+}
+
+.verification-card__icon {
+  width: 3.75rem;
+  height: 3.75rem;
+  display: inline-grid;
+  place-items: center;
+  margin-inline: auto;
+  border-radius: 1.2rem;
+  color: var(--forest);
+  background: var(--gold-soft);
+}
+
+.verification-card .primary-button {
+  width: fit-content;
+  margin: 1rem auto 0;
+  text-decoration: none;
+}
+
+.setup-flow {
+  display: grid;
+  gap: 2rem;
+}
+
+.setup-flow__header {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.setup-flow__header h1 {
+  max-width: 14ch;
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 4.4rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+
+.setup-flow__header > p:not(.eyebrow) {
+  max-width: 43rem;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.setup-progress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1.1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-progress li {
+  min-height: 2.7rem;
+  display: flex;
+  align-items: center;
+  padding-inline: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.setup-progress .is-complete,
+.setup-progress [aria-current="step"] {
+  color: var(--forest);
+  border-color: rgba(18, 60, 46, 0.25);
+  background: var(--forest-soft);
+}
+
+.setup-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.setup-section {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 1.35rem;
+  background: rgba(255, 253, 248, 0.86);
+}
+
+.setup-section__icon {
+  width: 2.8rem;
+  height: 2.8rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.9rem;
+  color: var(--forest);
+  background: var(--gold-soft);
+}
+
+.setup-section h2 {
+  margin: 0;
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+
+.setup-section h2 + p {
+  margin: 0.45rem 0 1rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.setup-choice-grid,
+.setup-locale-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.setup-choice {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  cursor: pointer;
+  background: var(--panel);
+}
+
+.setup-choice.is-selected {
+  border-color: var(--forest);
+  box-shadow: inset 0 0 0 1px var(--forest);
+}
+
+.setup-choice input {
+  position: absolute;
+  inset: 0.7rem 0.7rem auto auto;
+}
+
+.setup-choice small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.setup-locale-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.setup-locale-grid label,
+.setup-location-toggle {
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: var(--panel);
+}
+
+.setup-location-toggle {
+  width: fit-content;
+  margin-block-end: 1rem;
+}
+
+.setup-form__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.setup-form__footer div {
+  min-width: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.setup-form__footer span {
+  color: var(--muted);
+  font-size: 0.8rem;
 }
 
 .admin-shell {
@@ -2975,6 +3178,25 @@ button {
 
   .locale-options {
     grid-template-columns: 1fr;
+  }
+
+  .setup-section {
+    grid-template-columns: 1fr;
+  }
+
+  .setup-choice-grid,
+  .setup-locale-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .setup-form__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .setup-form__footer button,
+  .verification-card .primary-button {
+    width: 100%;
   }
 
   .locale-option {

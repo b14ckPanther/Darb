@@ -25,6 +25,7 @@ export type AccessibleBusiness = Pick<
   | "default_locale"
   | "display_name"
   | "id"
+  | "onboarding_completed_at"
   | "slug"
   | "status"
   | "timezone"
@@ -77,7 +78,7 @@ export interface BusinessAdminContext extends AdminAccessSnapshot {
 }
 
 const accessibleBusinessColumns =
-  "id, slug, display_name, status, default_locale, currency_code, timezone, created_at, updated_at" as const;
+  "id, slug, display_name, status, default_locale, currency_code, timezone, onboarding_completed_at, created_at, updated_at" as const;
 const accessibleLocationColumns =
   "id, business_id, display_name, status, address_line, locality, postal_code, country_code, timezone, created_at, updated_at" as const;
 

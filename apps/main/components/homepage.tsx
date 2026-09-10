@@ -11,7 +11,7 @@ import {
 import type { SupportedLocale } from "@darb/i18n";
 
 import { mainSiteCopy } from "../lib/copy";
-import { getAdminSignInUrl } from "../lib/site";
+import { getAdminRegistrationUrl, getAdminSignInUrl } from "../lib/site";
 import { BrandLockup } from "./brand-lockup";
 import { HeroArt } from "./hero-art";
 import { LocaleLinks } from "./locale-links";
@@ -29,6 +29,7 @@ const foundationIcons = [
 export function Homepage({ locale }: { locale: SupportedLocale }) {
   const copy = mainSiteCopy[locale];
   const adminSignInUrl = getAdminSignInUrl(locale);
+  const adminRegistrationUrl = getAdminRegistrationUrl(locale);
 
   return (
     <div className="public-site">
@@ -46,7 +47,7 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
             </h1>
             <p className="hero__description">{copy.hero.description}</p>
             <div className="hero__actions">
-              <a className="button button--gold" href="#story">
+              <a className="button button--gold" href={adminRegistrationUrl}>
                 {copy.hero.primaryAction}
                 <ArrowRightIcon size={19} />
               </a>
@@ -193,7 +194,7 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
             <p className="eyebrow">{copy.finalCta.eyebrow}</p>
             <h2 id="final-cta-title">{copy.finalCta.title}</h2>
             <p>{copy.finalCta.description}</p>
-            <a className="button button--dark" href={adminSignInUrl}>
+            <a className="button button--dark" href={adminRegistrationUrl}>
               {copy.finalCta.action}
               <ArrowRightIcon size={19} />
             </a>

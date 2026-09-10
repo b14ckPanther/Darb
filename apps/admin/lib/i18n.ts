@@ -20,7 +20,7 @@ export function resolveAdminLocaleHandoff(
   method: string,
   requestedLocale?: string | null,
 ): SupportedLocale | null {
-  if (pathname !== "/login" || method !== "GET") return null;
+  if (!["/login", "/register"].includes(pathname) || method !== "GET") return null;
   return requestedLocale && isSupportedLocale(requestedLocale) ? requestedLocale : null;
 }
 

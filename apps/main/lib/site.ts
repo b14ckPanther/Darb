@@ -39,6 +39,12 @@ export function getAdminSignInUrl(locale: SupportedLocale): string {
   return url.toString();
 }
 
+export function getAdminRegistrationUrl(locale: SupportedLocale): string {
+  const url = new URL("/register", `https://${darbApplications.admin.productionHost}`);
+  url.searchParams.set("locale", locale);
+  return url.toString();
+}
+
 export function getPublicAlternates(): Readonly<Record<string, string>> {
   return {
     ...Object.fromEntries(

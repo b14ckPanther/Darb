@@ -948,4 +948,105 @@ export const detailMessages = {
     ar: "اسم الإدارة: {name} · التصنيفات: {categories} · الأصناف: {items}",
     he: "שם לניהול: {name} · קטגוריות: {categories} · פריטים: {items}",
   },
+  "Your business, on a clear path": { ar: "شغلك، بطريق واضح", he: "העסק שלכם, בדרך ברורה" },
+  "Start with the essentials. Build from there.": {
+    ar: "ابدأ بالأساس، وكبّر من هناك.",
+    he: "מתחילים מהבסיס. ממשיכים משם.",
+  },
+  "Create one secure account, then shape the Darb workspace around your business.": {
+    ar: "اعمل حساب آمن واحد، وبعدها رتّب مساحة درب على قياس شغلك.",
+    he: "יוצרים חשבון מאובטח אחד, ואז מתאימים את סביבת Darb לעסק.",
+  },
+  "Create your Darb account": { ar: "اعمل حسابك على درب", he: "יצירת חשבון Darb" },
+  "Let’s get your business moving": { ar: "يلا نجهّز شغلك", he: "בואו נניע את העסק" },
+  "Your first workspace takes only a few focused steps.": {
+    ar: "كم خطوة واضحة، ومساحة شغلك بتكون جاهزة.",
+    he: "כמה צעדים ממוקדים וסביבת העבודה הראשונה מוכנה.",
+  },
+  "Create password": { ar: "اعمل كلمة سر", he: "יצירת סיסמה" },
+  "Confirm password": { ar: "أكّد كلمة السر", he: "אימות סיסמה" },
+  "Use at least 8 characters.": {
+    ar: "استخدم 8 خانات على الأقل.",
+    he: "יש להשתמש ב-8 תווים לפחות.",
+  },
+  "Create account": { ar: "اعمل الحساب", he: "יצירת חשבון" },
+  "Creating account…": { ar: "جاري إنشاء الحساب…", he: "יוצרים חשבון…" },
+  "Already have an account?": { ar: "عندك حساب؟", he: "כבר יש לכם חשבון?" },
+  "Confirm your email": { ar: "أكّد بريدك", he: "אימות האימייל" },
+  "One quick check, then you’re in": { ar: "تأكيد صغير، وبتفوت", he: "אימות קצר ונכנסים" },
+  "Open the confirmation link we sent to your email. After confirmation, Darb will bring you back to create your first business.":
+    {
+      ar: "افتح رابط التأكيد اللي بعثناه لبريدك. بعد التأكيد، درب برجعك عشان تنشئ أول شغل إلك.",
+      he: "פתחו את קישור האימות ששלחנו. לאחר האימות Darb תחזיר אתכם ליצירת העסק הראשון.",
+    },
+  "Return to sign in": { ar: "ارجع للدخول", he: "חזרה להתחברות" },
+  "Workspace setup": { ar: "تجهيز مساحة الشغل", he: "הגדרת סביבת העבודה" },
+  "Shape your first Darb workspace": {
+    ar: "رتّب أول مساحة إلك على درب",
+    he: "עצבו את סביבת Darb הראשונה",
+  },
+  "Choose only what helps you start. Everything here can be managed later.": {
+    ar: "اختار بس اللي بساعدك تبدأ. كل إشي هون بتقدر تغيّره بعدين.",
+    he: "בחרו רק מה שעוזר להתחיל. אפשר לנהל הכול גם בהמשך.",
+  },
+  "Onboarding progress": { ar: "تقدّم التجهيز", he: "התקדמות ההגדרה" },
+  Account: { ar: "الحساب", he: "חשבון" },
+  Essentials: { ar: "الأساسيات", he: "היסודות" },
+  "What kind of business are you setting up?": {
+    ar: "شو نوع الشغل اللي بتجهّزه؟",
+    he: "איזה עסק אתם מקימים?",
+  },
+  "This guides the recommendation only; it does not lock your business into a category.": {
+    ar: "هالاختيار بس بساعدنا نقترح عليك، وما بحصر شغلك بتصنيف.",
+    he: "הבחירה רק מנחה את ההמלצה ואינה נועלת את העסק לקטגוריה.",
+  },
+  "Restaurant, café, bakery or food business": {
+    ar: "مطعم، كافيه، مخبز أو شغل أكل",
+    he: "מסעדה, בית קפה, מאפייה או עסק מזון",
+  },
+  "Salon, barber or beauty": { ar: "صالون، حلاق أو تجميل", he: "סלון, ספר או יופי" },
+  "Clinic or professional services": {
+    ar: "عيادة أو خدمات مهنية",
+    he: "קליניקה או שירותים מקצועיים",
+  },
+  Retail: { ar: "بيع بالتجزئة", he: "קמעונאות" },
+  Other: { ar: "إشي ثاني", he: "אחר" },
+  "Choose your starting product": { ar: "اختار المنتج اللي بدك تبدأ فيه", he: "בחירת מוצר להתחלה" },
+  "Restaurant is ready today. Other Darb products will appear only when they are genuinely available.":
+    {
+      ar: "منتج المطاعم جاهز اليوم. باقي منتجات درب بتظهر بس لما تكون جاهزة فعلًا.",
+      he: "Restaurant מוכן היום. מוצרי Darb נוספים יופיעו רק כשהם באמת זמינים.",
+    },
+  "Available now": { ar: "متاح هسا", he: "זמין עכשיו" },
+  "Business workspace only": { ar: "مساحة الشغل بس", he: "סביבת עסק בלבד" },
+  "Start with the core tools and enable products later.": {
+    ar: "ابدأ بأدوات الإدارة وفعّل المنتجات بعدين.",
+    he: "מתחילים בכלי הליבה ומפעילים מוצרים בהמשך.",
+  },
+  "Which languages should customers see?": {
+    ar: "بأي لغات بدك الزباين يشوفوا شغلك؟",
+    he: "אילו שפות הלקוחות יראו?",
+  },
+  "Your Admin language stays personal. These choices belong to the business public experience.": {
+    ar: "لغة الإدارة بتضل اختيارك الشخصي. هاي اللغات لواجهة الشغل قدّام الزباين.",
+    he: "שפת הניהול נשארת אישית. הבחירות האלה שייכות לחוויה הציבורית של העסק.",
+  },
+  "Add your first location": { ar: "ضيف أول فرع", he: "הוספת הסניף הראשון" },
+  "Restaurant needs one location so availability has a clear home.": {
+    ar: "المطعم بحاجة لفرع واحد عشان يكون توفر الأصناف واضح.",
+    he: "Restaurant צריך סניף אחד כדי שלזמינות תהיה מסגרת ברורה.",
+  },
+  "Add a location now, or continue and create one later.": {
+    ar: "ضيف فرع هسا، أو كمّل وضيفه بعدين.",
+    he: "אפשר להוסיף סניף עכשיו או להמשיך ולהוסיף בהמשך.",
+  },
+  "Create a location now": { ar: "أنشئ فرع هسا", he: "יצירת סניף עכשיו" },
+  "Location name": { ar: "اسم الفرع", he: "שם הסניף" },
+  "Main location": { ar: "الفرع الرئيسي", he: "הסניף הראשי" },
+  "ILS · Asia/Jerusalem · {locale}": {
+    ar: "ILS · Asia/Jerusalem · {locale}",
+    he: "ILS · Asia/Jerusalem · {locale}",
+  },
+  "Finish setup": { ar: "كمّل التجهيز", he: "סיום ההגדרה" },
+  "Finishing setup…": { ar: "جاري إكمال التجهيز…", he: "מסיימים הגדרה…" },
 } as const satisfies AdminTranslations;

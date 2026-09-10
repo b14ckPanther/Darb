@@ -17,10 +17,24 @@ interface LoginInput {
   password: string;
 }
 
+export interface RegistrationInput {
+  email: string;
+  password: string;
+}
+
 interface BusinessBootstrapInput {
   defaultLocale: SupportedLocale;
   displayName: string;
   slug: string;
+}
+
+export interface FirstBusinessSetupInput {
+  createLocation: boolean;
+  enabledLocales: SupportedLocale[];
+  locationAddress: string;
+  locationLocality: string;
+  locationName: string;
+  moduleKey: "" | "restaurant";
 }
 
 export interface BusinessSettingsInput {
@@ -45,6 +59,24 @@ type ParseResult<T> = { data: T; success: true } | { errors: FieldErrors; succes
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const reservedBusinessSlugs = new Set([
+  "admin",
+  "api",
+  "app",
+  "book",
+  "booking",
+  "commerce",
+  "darb",
+  "help",
+  "mail",
+  "pages",
+  "platform",
+  "rest",
+  "shop",
+  "status",
+  "support",
+  "www",
+]);
 const currencyCodePattern = /^[A-Z]{3}$/;
 const countryCodePattern = /^[A-Z]{2}$/;
 
@@ -68,6 +100,29 @@ export function parseLoginInput(formData: FormData): ParseResult<LoginInput> {
     : { data: { email, password }, success: true };
 }
 
+export function parseRegistrationInput(formData: FormData): ParseResult<RegistrationInput> {
+  const email = readString(formData, "email").trim().toLowerCase();
+  const password = readString(formData, "password");
+  const confirmation = readString(formData, "passwordConfirmation");
+  const errors: Record<string, string> = {};
+
+  if (!email || email.length > 254 || !emailPattern.test(email)) {
+    errors.email = "Enter a valid email address.";
+  }
+  if (password.length < 8) {
+    errors.password = "Use at least 8 characters for your password.";
+  } else if (password.length > 1_024) {
+    errors.password = "Password is too long.";
+  }
+  if (confirmation !== password) {
+    errors.passwordConfirmation = "The passwords do not match.";
+  }
+
+  return Object.keys(errors).length > 0
+    ? { errors, success: false }
+    : { data: { email, password }, success: true };
+}
+
 export function parseBusinessBootstrapInput(
   formData: FormData,
 ): ParseResult<BusinessBootstrapInput> {
@@ -82,6 +137,8 @@ export function parseBusinessBootstrapInput(
 
   if (slug.length < 3 || slug.length > 63 || !slugPattern.test(slug)) {
     errors.slug = "Use 3–63 lowercase letters, numbers, and single hyphens.";
+  } else if (reservedBusinessSlugs.has(slug)) {
+    errors.slug = "That address is reserved by Darb. Choose another.";
   }
 
   if (!isSupportedLocale(locale)) {
@@ -96,6 +153,53 @@ export function parseBusinessBootstrapInput(
     data: { defaultLocale: locale, displayName, slug },
     success: true,
   };
+}
+
+export function parseFirstBusinessSetupInput(
+  formData: FormData,
+  defaultLocale: SupportedLocale,
+): ParseResult<FirstBusinessSetupInput> {
+  const moduleKey = readString(formData, "moduleKey");
+  const enabledLocales = [
+    ...new Set(
+      formData
+        .getAll("enabledLocales")
+        .filter(
+          (value): value is SupportedLocale =>
+            typeof value === "string" && isSupportedLocale(value),
+        ),
+    ),
+  ];
+  const createLocation = formData.get("createLocation") === "true" || moduleKey === "restaurant";
+  const locationName = readString(formData, "locationName").trim();
+  const locationAddress = readString(formData, "locationAddress").trim();
+  const locationLocality = readString(formData, "locationLocality").trim();
+  const errors: Record<string, string> = {};
+
+  if (moduleKey !== "" && moduleKey !== "restaurant")
+    errors.moduleKey = "Choose an available Darb product.";
+  if (!enabledLocales.includes(defaultLocale))
+    errors.enabledLocales = "Keep the default public language enabled.";
+  if (createLocation && (!locationName || locationName.length > 160))
+    errors.locationName = "Enter a location name between 1 and 160 characters.";
+  if (locationAddress.length > 500)
+    errors.locationAddress = "Address must be 500 characters or fewer.";
+  if (locationLocality.length > 160)
+    errors.locationLocality = "Locality must be 160 characters or fewer.";
+
+  return Object.keys(errors).length > 0 || (moduleKey !== "" && moduleKey !== "restaurant")
+    ? { errors, success: false }
+    : {
+        data: {
+          createLocation,
+          enabledLocales,
+          locationAddress,
+          locationLocality,
+          locationName,
+          moduleKey,
+        },
+        success: true,
+      };
 }
 
 export function parseBusinessSettingsInput(formData: FormData): ParseResult<BusinessSettingsInput> {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { ArrowRightIcon, BuildingIcon } from "@darb/icons";
 
@@ -15,8 +15,11 @@ const localeOptions = [
 ] as const;
 
 export function OnboardingForm() {
-  const { t } = useAdminI18n();
+  const { locale: interfaceLocale, t } = useAdminI18n();
   const [state, action, pending] = useActionState(bootstrapBusinessAction, initialFormState);
+  const [displayName, setDisplayName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [defaultLocale, setDefaultLocale] = useState(interfaceLocale);
 
   return (
     <form action={action} className="auth-form onboarding-form">
@@ -31,6 +34,8 @@ export function OnboardingForm() {
             dir="auto"
             autoComplete="organization"
             maxLength={160}
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
             aria-invalid={Boolean(state.fieldErrors?.displayName)}
             aria-describedby={
               state.fieldErrors?.displayName ? "display-name-error" : "display-name-hint"
@@ -64,6 +69,8 @@ export function OnboardingForm() {
             minLength={3}
             maxLength={63}
             pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+            value={slug}
+            onChange={(event) => setSlug(event.target.value)}
             aria-invalid={Boolean(state.fieldErrors?.slug)}
             aria-describedby={state.fieldErrors?.slug ? "slug-error" : "slug-hint"}
             required
@@ -91,7 +98,8 @@ export function OnboardingForm() {
                 type="radio"
                 name="defaultLocale"
                 value={locale.value}
-                defaultChecked={locale.value === "en"}
+                checked={locale.value === defaultLocale}
+                onChange={() => setDefaultLocale(locale.value)}
                 required
               />
               <span lang={locale.lang} dir={locale.lang === "en" ? "ltr" : "rtl"}>

@@ -31,6 +31,9 @@ export default async function BusinessChooserPage() {
   }
 
   if (snapshot.businesses.length === 1 && !platformContext) {
+    if (!snapshot.businesses[0]!.onboarding_completed_at) {
+      redirect(`${businessPath(snapshot.businesses[0]!.slug)}/setup`);
+    }
     redirect(businessPath(snapshot.businesses[0]!.slug));
   }
 

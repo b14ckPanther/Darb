@@ -2,10 +2,34 @@ import { darbApplications } from "@darb/config/platform";
 
 const ADMIN_ORIGIN = `https://${darbApplications.admin.productionHost}`;
 
+export function resolveTrustedAdminOrigin(
+  value: string | null,
+  allowLocalDevelopment = process.env.NODE_ENV !== "production",
+): string {
+  if (value) {
+    try {
+      const origin = new URL(value);
+      const isProductionAdmin = origin.protocol === "https:" && origin.origin === ADMIN_ORIGIN;
+      const isLocalDevelopment =
+        allowLocalDevelopment &&
+        origin.protocol === "http:" &&
+        ["localhost", "127.0.0.1"].includes(origin.hostname);
+
+      if (isProductionAdmin || isLocalDevelopment) return origin.origin;
+    } catch {
+      // Fall through to the production-owned origin.
+    }
+  }
+
+  return ADMIN_ORIGIN;
+}
+
 export const adminPaths = {
   home: "/",
   login: "/login",
   onboarding: "/onboarding",
+  register: "/register",
+  verify: "/verify",
 } as const;
 
 export type BusinessSection =
@@ -344,6 +368,10 @@ export function getLoginDestination(state: AdminAccessState): string | null {
   return state.accessibleBusinessCount > 0 ? adminPaths.home : adminPaths.onboarding;
 }
 
+export function getRegistrationDestination(state: AdminAccessState): string | null {
+  return getLoginDestination(state);
+}
+
 export function getPostSignInDestination(
   accessibleBusinessCount: number,
   requestedPath: string | null | undefined,
@@ -354,7 +382,12 @@ export function getPostSignInDestination(
 
   const safePath = sanitizeReturnPath(requestedPath);
 
-  if (safePath === adminPaths.login || safePath.startsWith(`${adminPaths.onboarding}/`)) {
+  if (
+    safePath === adminPaths.login ||
+    safePath === adminPaths.register ||
+    safePath === adminPaths.verify ||
+    safePath.startsWith(`${adminPaths.onboarding}/`)
+  ) {
     return adminPaths.home;
   }
 

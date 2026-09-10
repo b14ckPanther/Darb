@@ -40,16 +40,21 @@ export default async function OnboardingPage() {
           <h1 id="onboarding-heading">{t("Create your business")}</h1>
           <p className="auth-intro">
             {t(
-              "Start with the identity Darb will use across every future product. You can add locations and modules later.",
+              "Start with the identity Darb will use across every product. The next step tailors the essentials.",
             )}
           </p>
+          <ol className="setup-progress" aria-label={t("Onboarding progress")}>
+            <li className="is-complete">{t("Account")}</li>
+            <li aria-current="step">{t("Business")}</li>
+            <li>{t("Essentials")}</li>
+          </ol>
         </div>
         <OnboardingForm />
       </section>
 
       <p className="onboarding-note">
         {t(
-          "Currency starts as ILS and the timezone as Asia/Jerusalem. No product modules are enabled during this step.",
+          "Currency starts as ILS and the timezone as Asia/Jerusalem. You will choose products and locations next.",
         )}
       </p>
     </main>

@@ -321,6 +321,59 @@ export const actionMessages = {
     ar: "ما قدرنا ننشئ الشغل. راجع التفاصيل وجرّب كمان مرة.",
     he: "לא הצלחנו ליצור את העסק. בדקו את הפרטים ונסו שוב.",
   },
+  "Enter a valid email address.": {
+    ar: "اكتب بريد إلكتروني صحيح.",
+    he: "יש להזין כתובת אימייל תקינה.",
+  },
+  "Use at least 8 characters for your password.": {
+    ar: "استخدم 8 خانات على الأقل لكلمة السر.",
+    he: "יש להשתמש ב-8 תווים לפחות לסיסמה.",
+  },
+  "The passwords do not match.": { ar: "كلمتا السر مش متطابقات.", he: "הסיסמאות אינן תואמות." },
+  "Choose a stronger password and try again.": {
+    ar: "اختار كلمة سر أقوى وجرّب كمان مرة.",
+    he: "בחרו סיסמה חזקה יותר ונסו שוב.",
+  },
+  "An account may already exist for this email. Try signing in instead.": {
+    ar: "ممكن يكون في حساب بهاد البريد. جرّب تسجّل دخول.",
+    he: "ייתכן שכבר קיים חשבון לאימייל הזה. נסו להתחבר.",
+  },
+  "We could not create the account. Please try again.": {
+    ar: "ما قدرنا نعمل الحساب. جرّب كمان مرة.",
+    he: "לא הצלחנו ליצור את החשבון. נסו שוב.",
+  },
+  "We could not create the account. Check your connection and try again.": {
+    ar: "ما قدرنا نعمل الحساب. افحص الاتصال وجرّب كمان مرة.",
+    he: "לא הצלחנו ליצור את החשבון. בדקו את החיבור ונסו שוב.",
+  },
+  "Check your email to confirm your account, then return to sign in.": {
+    ar: "افحص بريدك وأكّد الحساب، وبعدها ارجع وسجّل دخول.",
+    he: "בדקו את האימייל ואמתו את החשבון, ואז חזרו להתחבר.",
+  },
+  "That confirmation link is invalid or expired. Try signing in or register again.": {
+    ar: "رابط التأكيد مش صالح أو انتهت مدته. جرّب تسجّل دخول أو اعمل الحساب كمان مرة.",
+    he: "קישור האימות אינו תקין או שפג תוקפו. נסו להתחבר או להירשם מחדש.",
+  },
+  "Choose an available Darb product.": {
+    ar: "اختار منتج متاح من درب.",
+    he: "יש לבחור מוצר Darb זמין.",
+  },
+  "Keep the default public language enabled.": {
+    ar: "خلّي اللغة الأساسية مفعّلة.",
+    he: "יש להשאיר את שפת ברירת המחדל פעילה.",
+  },
+  "That address is reserved by Darb. Choose another.": {
+    ar: "هاد الرابط محجوز لدرب. اختار رابط ثاني.",
+    he: "הכתובת הזו שמורה ל-Darb. בחרו כתובת אחרת.",
+  },
+  "You no longer have access to complete this setup.": {
+    ar: "ما عاد عندك صلاحية تكمل التجهيز.",
+    he: "אין לכם עוד הרשאה להשלים את ההגדרה.",
+  },
+  "We could not finish setup. Nothing partial was saved; review the details and try again.": {
+    ar: "ما قدرنا نكمّل التجهيز، وما انحفظ إشي ناقص. راجع التفاصيل وجرّب كمان مرة.",
+    he: "לא הצלחנו להשלים את ההגדרה ולא נשמר מצב חלקי. בדקו ונסו שוב.",
+  },
   "You do not have permission to make this change.": {
     ar: "ما عندك صلاحية تعمل هالتغيير.",
     he: "אין לכם הרשאה לבצע את השינוי.",
