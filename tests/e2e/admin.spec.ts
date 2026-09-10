@@ -9,6 +9,7 @@ test.describe.configure({ mode: "serial" });
 const runId = randomUUID().slice(0, 8);
 const fixturePrefix = `darb-e2e-${runId}`;
 const ownerEmail = `owner-${runId}@example.test`;
+const registrationEmail = `registration-${runId}@example.test`;
 const scopedEmail = `scoped-${runId}@example.test`;
 const platformEmail = `platform-${runId}@example.test`;
 const password = `Darb-${runId}-secure-password`;
@@ -44,6 +45,7 @@ const ownerPermissionBundle = [
 
 let adminClient: SupabaseClient;
 let ownerUserId: string | undefined;
+let registrationUserId: string | undefined;
 let scopedUserId: string | undefined;
 let platformUserId: string | undefined;
 let primaryBusinessId: string | undefined;
@@ -73,7 +75,9 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await cleanLocalStorageFixtures();
-  cleanLocalDatabaseFixtures([ownerUserId, scopedUserId, platformUserId].filter(isPresent));
+  cleanLocalDatabaseFixtures(
+    [ownerUserId, scopedUserId, platformUserId, registrationUserId].filter(isPresent),
+  );
 });
 
 test("redirects an unauthenticated admin request to login", async ({ page }) => {
@@ -157,6 +161,117 @@ test("applies a validated Main-site locale handoff to the login screen", async (
   expect(optionColors.color).not.toBe(optionColors.backgroundColor);
 });
 
+test("keeps registration responsive, localized, and motion-safe at the exact QA viewports", async ({
+  page,
+}) => {
+  const locales = [
+    { code: "ar", direction: "rtl", font: "Cairo", heading: "يلا نجهّز شغلك" },
+    { code: "he", direction: "rtl", font: "Heebo", heading: "בואו נניע את העסק" },
+    { code: "en", direction: "ltr", font: "Ubuntu", heading: "Let’s get your business moving" },
+  ] as const;
+  const viewports = [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+    { width: 1920, height: 1080 },
+  ] as const;
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const locale of locales) {
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      await page.goto(`/register?locale=${locale.code}`);
+      await expect(page.locator("html")).toHaveAttribute("lang", locale.code);
+      await expect(page.locator("html")).toHaveAttribute("dir", locale.direction);
+      const heading = page.getByRole("heading", { name: locale.heading });
+      await expect(heading).toBeVisible();
+      await expect
+        .poll(() => heading.evaluate((element) => getComputedStyle(element).fontFamily))
+        .toContain(locale.font);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth),
+      ).toBeLessThanOrEqual(1);
+    }
+
+    await page.setViewportSize(viewports[0]);
+    await page.goto(`/register?locale=${locale.code}`);
+    await page.addStyleTag({ content: "html { font-size: 200%; }" });
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth),
+    ).toBeLessThanOrEqual(1);
+  }
+});
+
+test("registers a new Restaurant owner and completes resumable first-business setup", async ({
+  page,
+}) => {
+  const signupSlug = `${fixturePrefix}-signup`;
+  await page.goto("/register?locale=ar");
+  await expect(page).toHaveURL(/\/register$/);
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+
+  await page.getByLabel("البريد الإلكتروني").fill("not-an-email");
+  await page.getByLabel("اعمل كلمة سر").fill("short");
+  await page.getByLabel("أكّد كلمة السر").fill("different");
+  await page.getByRole("button", { name: "اعمل الحساب" }).click();
+  expect(
+    await page
+      .getByLabel("البريد الإلكتروني")
+      .evaluate((input: HTMLInputElement) => input.checkValidity()),
+  ).toBe(false);
+
+  await page.getByLabel("البريد الإلكتروني").fill(registrationEmail);
+  await page.getByLabel("اعمل كلمة سر").fill(password);
+  await page.getByLabel("أكّد كلمة السر").fill("different-password");
+  await page.getByRole("button", { name: "اعمل الحساب" }).click();
+  await expect(page.getByText("كلمتا السر مش متطابقات.")).toBeVisible();
+
+  await page.getByLabel("أكّد كلمة السر").fill(password);
+  await page.getByRole("button", { name: "اعمل الحساب" }).click();
+  await expect(page).toHaveURL(/\/onboarding$/);
+
+  await page.getByLabel("اسم الشغل").fill(`مقهى درب ${runId}`);
+  await page.getByRole("radio", { name: "עברית HE" }).check();
+  await page.getByLabel("رابط الشغل").fill("admin");
+  await page.getByRole("button", { name: "أنشئ الشغل" }).click();
+  await expect(page.getByText("هاد الرابط محجوز لدرب. اختار رابط ثاني.")).toBeVisible();
+  await page.getByLabel("رابط الشغل").fill(signupSlug);
+  await page.getByRole("button", { name: "أنشئ الشغل" }).click();
+  await expect(page).toHaveURL(new RegExp(`/b/${signupSlug}/setup$`));
+
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "رتّب أول مساحة إلك على درب" })).toBeVisible();
+  await page.getByLabel("اسم الفرع").fill("الفرع الرئيسي");
+  await page.getByLabel("العربية").check();
+  await page.getByRole("button", { name: "كمّل التجهيز" }).click();
+  await expect(page).toHaveURL(new RegExp(`/b/${signupSlug}/restaurant$`));
+  await page.reload();
+  await expect(page).toHaveURL(new RegExp(`/b/${signupSlug}/restaurant$`));
+
+  await page.getByRole("button", { name: "تسجيل خروج" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await page.getByLabel("البريد الإلكتروني").fill(registrationEmail);
+  await page.getByLabel("كلمة السر", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "دخول" }).click();
+  await expect(page).toHaveURL(new RegExp(`/b/${signupSlug}$`));
+
+  const { data: userData } = await adminClient.auth.admin.listUsers();
+  registrationUserId = userData.users.find((user) => user.email === registrationEmail)?.id;
+  expect(registrationUserId).toBeTruthy();
+});
+
+test("fails closed for an invalid email confirmation and rejects its external return path", async ({
+  page,
+}) => {
+  await page.goto("/auth/confirm?next=%2F%2Fattacker.example");
+  await expect(page).toHaveURL(/\/login\?confirmation=failed$/);
+  await expect(
+    page.getByText(
+      "That confirmation link is invalid or expired. Try signing in or register again.",
+    ),
+  ).toBeVisible();
+});
+
 test("keeps Admin private at both metadata and response-header boundaries", async ({ request }) => {
   const [login, robots, health] = await Promise.all([
     request.get("/login"),
@@ -204,6 +319,10 @@ test("completes first-business onboarding and enters the canonical workspace rou
   await page.getByLabel("العربية").check();
   await page.getByRole("button", { name: "Create business" }).click();
 
+  await expect(page).toHaveURL(new RegExp(`/b/${initialBusinessSlug}/setup$`));
+  await page.getByLabel("Business workspace only").check();
+  await page.getByLabel("Create a location now").uncheck();
+  await page.getByRole("button", { name: "Finish setup" }).click();
   await expect(page).toHaveURL(new RegExp(`/b/${initialBusinessSlug}$`));
   await expect(page.getByRole("heading", { level: 1, name: initialBusinessName })).toBeVisible();
 

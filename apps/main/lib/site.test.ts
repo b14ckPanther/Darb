@@ -7,6 +7,7 @@ import { serializeJsonLd } from "./seo";
 import {
   defaultPublicLocale,
   getAdminSignInUrl,
+  getAdminRegistrationUrl,
   getPublicAlternates,
   getPublicLocaleDirection,
   getPublicLocalePath,
@@ -57,6 +58,12 @@ describe("public locale routing", () => {
     expect(getAdminSignInUrl("ar")).toBe("https://admin.darb.co.il/login?locale=ar");
     expect(getAdminSignInUrl("he")).toBe("https://admin.darb.co.il/login?locale=he");
     expect(getAdminSignInUrl("en")).toBe("https://admin.darb.co.il/login?locale=en");
+  });
+
+  it("hands the selected Main locale to the registration boundary", () => {
+    expect(getAdminRegistrationUrl("ar")).toBe("https://admin.darb.co.il/register?locale=ar");
+    expect(getAdminRegistrationUrl("he")).toBe("https://admin.darb.co.il/register?locale=he");
+    expect(getAdminRegistrationUrl("en")).toBe("https://admin.darb.co.il/register?locale=en");
   });
 });
 

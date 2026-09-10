@@ -12,6 +12,7 @@ import {
   getPostSignInDestination,
   getProtectedAdminDestination,
   isAdminNavigationItemActive,
+  resolveTrustedAdminOrigin,
   sanitizeReturnPath,
   type AdminEngineContribution,
   type AdminNavigationContext,
@@ -254,5 +255,27 @@ describe("safe return paths", () => {
 
   it("always sends a signed-in user without a business to onboarding", () => {
     expect(getPostSignInDestination(0, "/settings")).toBe("/onboarding");
+  });
+});
+
+describe("trusted Admin origins", () => {
+  it("uses only the production Admin origin in production", () => {
+    expect(resolveTrustedAdminOrigin("https://admin.darb.co.il", false)).toBe(
+      "https://admin.darb.co.il",
+    );
+    expect(resolveTrustedAdminOrigin("https://attacker.example", false)).toBe(
+      "https://admin.darb.co.il",
+    );
+    expect(resolveTrustedAdminOrigin("http://localhost:3001", false)).toBe(
+      "https://admin.darb.co.il",
+    );
+  });
+
+  it("permits loopback origins only for local development", () => {
+    expect(resolveTrustedAdminOrigin("http://localhost:3001", true)).toBe("http://localhost:3001");
+    expect(resolveTrustedAdminOrigin("http://127.0.0.1:3001", true)).toBe("http://127.0.0.1:3001");
+    expect(resolveTrustedAdminOrigin("http://attacker.example", true)).toBe(
+      "https://admin.darb.co.il",
+    );
   });
 });

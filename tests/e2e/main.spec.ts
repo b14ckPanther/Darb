@@ -68,6 +68,10 @@ for (const localeCase of localeCases) {
       "href",
       `https://admin.darb.co.il/login?locale=${localeCase.locale}`,
     );
+    await expect(page.locator(".hero__actions .button--gold")).toHaveAttribute(
+      "href",
+      `https://admin.darb.co.il/register?locale=${localeCase.locale}`,
+    );
   });
 }
 
