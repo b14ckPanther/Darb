@@ -308,6 +308,7 @@ export type Database = {
           default_locale: Database["core"]["Enums"]["locale_code"];
           display_name: string;
           id: string;
+          onboarding_completed_at: string | null;
           slug: string;
           status: Database["core"]["Enums"]["business_status"];
           timezone: string;
@@ -320,6 +321,7 @@ export type Database = {
           default_locale: Database["core"]["Enums"]["locale_code"];
           display_name: string;
           id?: string;
+          onboarding_completed_at?: string | null;
           slug: string;
           status?: Database["core"]["Enums"]["business_status"];
           timezone?: string;
@@ -332,6 +334,7 @@ export type Database = {
           default_locale?: Database["core"]["Enums"]["locale_code"];
           display_name?: string;
           id?: string;
+          onboarding_completed_at?: string | null;
           slug?: string;
           status?: Database["core"]["Enums"]["business_status"];
           timezone?: string;
@@ -850,6 +853,25 @@ export type Database = {
           was_created: boolean;
         }[];
       };
+      complete_first_business_onboarding: {
+        Args: {
+          requested_create_location: boolean;
+          requested_enabled_locales: string[];
+          requested_location_address: string;
+          requested_location_locality: string;
+          requested_location_name: string;
+          requested_module_key: string;
+          target_business_id: string;
+        };
+        Returns: {
+          business_id: string;
+          business_slug: string;
+          completed_at: string;
+          enabled_module_key: string;
+          location_id: string;
+          was_completed: boolean;
+        }[];
+      };
       complete_media_asset: {
         Args: { target_business_id: string; target_media_asset_id: string };
         Returns: {
@@ -1303,6 +1325,7 @@ export type Database = {
           default_locale: Database["core"]["Enums"]["locale_code"];
           display_name: string;
           id: string;
+          onboarding_completed_at: string | null;
           slug: string;
           status: Database["core"]["Enums"]["business_status"];
           timezone: string;
