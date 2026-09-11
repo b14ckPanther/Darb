@@ -62,6 +62,9 @@ test.beforeAll(async () => {
       ('${businessId}', '${slug}', '${publicBusinessName}', 'ar', 'ILS', 'Asia/Jerusalem'),
       ('${gatedBusinessId}', '${gatedSlug}', 'Gated Restaurant', 'en', 'ILS', 'Asia/Jerusalem');
 
+    update core.business_plan_assignments set plan_key = 'restaurant-starter'
+    where business_id in ('${businessId}', '${gatedBusinessId}');
+
     insert into core.business_locales (business_id, locale_code, is_enabled) values
       ('${businessId}', 'ar', true), ('${businessId}', 'he', true), ('${businessId}', 'en', true),
       ('${gatedBusinessId}', 'en', true)

@@ -560,8 +560,8 @@ test("enables Restaurant with persistent multi-business isolation", async ({ pag
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}/modules`);
 
-  await expect(page.getByRole("heading", { name: "Modules" })).toBeVisible();
-  await expect(page.getByText("Capability state, not a product launch")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Plan & access" })).toBeVisible();
+  await expect(page.getByText("Access and activation are separate")).toBeVisible();
   await expect(page.locator('a[href*="/restaurant"]')).toHaveCount(0);
 
   const primaryRestaurant = page.getByRole("article", { name: "Restaurant" });
@@ -598,6 +598,7 @@ test("selects, customizes, previews, isolates, and resets an appearance foundati
 }) => {
   await signIn(page, ownerEmail);
   await page.goto(`/b/${updatedBusinessSlug}/modules`);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const primaryPages = page.getByRole("article", { name: "Pages" });
   await primaryPages.getByRole("button", { name: "Enable capability" }).click();
   await expect(primaryPages.getByText("Pages enabled.")).toBeVisible();
@@ -1326,6 +1327,60 @@ test("assigns, replaces, and removes Restaurant branding through the visual Medi
   await expect(hero.getByText("Template fallback", { exact: true })).toBeVisible();
 });
 
+test("keeps business commercial access readable in every locale and target viewport", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await signIn(page, ownerEmail);
+  await page.goto(`/b/${updatedBusinessSlug}/modules`);
+
+  for (const locale of [
+    { code: "ar", direction: "rtl", font: "Cairo" },
+    { code: "he", direction: "rtl", font: "Heebo" },
+    { code: "en", direction: "ltr", font: "Ubuntu" },
+  ] as const) {
+    await page.locator(".admin-language-switcher select").selectOption(locale.code);
+    await expect(page.locator("html")).toHaveAttribute("lang", locale.code);
+    await expect(page.locator("html")).toHaveAttribute("dir", locale.direction);
+
+    for (const viewport of [
+      { height: 844, width: 390 },
+      { height: 1024, width: 768 },
+      { height: 900, width: 1440 },
+      { height: 1080, width: 1920 },
+    ]) {
+      await page.setViewportSize(viewport);
+      if (viewport.width <= 1024) {
+        await expect(page.locator(".admin-sidebar")).toHaveCSS("visibility", "hidden");
+      }
+      await expect(page.locator(".commercial-summary")).toBeVisible();
+      await expect
+        .poll(() =>
+          page.locator("main h1").evaluate((element) => getComputedStyle(element).fontFamily),
+        )
+        .toContain(locale.font);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+        viewport.width + 1,
+      );
+      if (process.env.DARB_VISUAL_QA_OUTPUT) {
+        await page.screenshot({
+          fullPage: true,
+          path: `${process.env.DARB_VISUAL_QA_OUTPUT}/business-commercial-${locale.code}-${viewport.width}x${viewport.height}.png`,
+        });
+      }
+    }
+
+    await page.setViewportSize({ height: 844, width: 390 });
+    await page.locator("html").evaluate((element) => {
+      element.style.fontSize = "200%";
+    });
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+      .toBeLessThanOrEqual(391);
+    await page.locator("html").evaluate((element) => element.style.removeProperty("font-size"));
+  }
+});
+
 test("enforces read-only business access and exact location scope in the UI", async ({ page }) => {
   if (!assignedLocationId || !otherLocationId) {
     throw new Error("Location scope fixtures were not prepared.");
@@ -1349,7 +1404,7 @@ test("enforces read-only business access and exact location scope in the UI", as
   await expect(page.getByText("The business.manage permission is required")).toBeVisible();
   await expect(page.getByLabel("Display name")).toBeDisabled();
 
-  await page.getByRole("link", { exact: true, name: "Modules" }).click();
+  await page.getByRole("link", { exact: true, name: "Plan & access" }).click();
   await expect(page.getByText("Module state is read-only.")).toBeVisible();
   await expect(page.getByRole("article", { name: "Restaurant" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Enable capability" })).toHaveCount(0);
@@ -1474,7 +1529,7 @@ test("keeps mobile navigation and the business switcher keyboard-operable", asyn
   await expect(page.getByRole("link", { exact: true, name: "Domains" })).toBeVisible();
   await expect(page.getByRole("link", { exact: true, name: "Languages" })).toBeVisible();
   await expect(page.getByRole("link", { exact: true, name: "Appearance" })).toBeVisible();
-  await page.getByRole("link", { exact: true, name: "Modules" }).click();
+  await page.getByRole("link", { exact: true, name: "Plan & access" }).click();
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}/modules$`));
   const mobileRestaurant = page.getByRole("article", { name: "Restaurant" });
   await expect(mobileRestaurant.getByRole("button", { name: "Enable capability" })).toBeVisible();
@@ -1638,6 +1693,118 @@ test("keeps the platform control plane responsive and keyboard-safe at exact QA 
   });
 
   expect(consoleProblems).toEqual([]);
+});
+
+test("applies guarded platform plan and entitlement changes without deleting tenant state", async ({
+  page,
+}) => {
+  if (!platformBusinessId) throw new Error("The platform inspection business was not prepared.");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await signIn(page, platformEmail);
+  await page.goto(`/platform/businesses/${platformBusinessId}`);
+
+  await page.getByRole("button", { name: "Restaurant Starter" }).click();
+  let confirmation = page.getByRole("dialog", { name: "Confirm commercial access change" });
+  await expect(confirmation).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(confirmation).not.toBeVisible();
+
+  await page.getByRole("button", { name: "Restaurant Starter" }).click();
+  confirmation = page.getByRole("dialog", { name: "Confirm commercial access change" });
+  await confirmation.getByRole("button", { name: "Confirm change" }).click();
+  await expect(confirmation).not.toBeVisible();
+  await expect(page.getByText("Commercial access updated.")).toBeVisible();
+
+  const restaurant = page.locator(".platform-commercial-module").filter({ hasText: "Restaurant" });
+  await expect(restaurant.getByText("Included, not effective")).toBeVisible();
+  await restaurant.getByLabel("Override decision").selectOption("deny");
+  await restaurant.getByLabel("Operator reason").fill("Contract access paused for E2E review");
+  await restaurant.getByRole("button", { name: "Review change" }).click();
+  confirmation = page.getByRole("dialog", { name: "Confirm commercial access change" });
+  await confirmation.getByRole("button", { name: "Confirm change" }).click();
+  await expect(confirmation).not.toBeVisible();
+  await expect(page.getByText("Commercial access updated.")).toBeVisible();
+  await expect(restaurant.getByText("Not entitled")).toBeVisible();
+
+  for (const locale of [
+    { code: "ar", direction: "rtl", font: "Cairo" },
+    { code: "he", direction: "rtl", font: "Heebo" },
+    { code: "en", direction: "ltr", font: "Ubuntu" },
+  ] as const) {
+    await page.locator(".admin-language-switcher select").selectOption(locale.code);
+    await expect(page.locator("html")).toHaveAttribute("lang", locale.code);
+    await expect(page.locator("html")).toHaveAttribute("dir", locale.direction);
+
+    for (const viewport of [
+      { height: 844, width: 390 },
+      { height: 1024, width: 768 },
+      { height: 900, width: 1440 },
+      { height: 1080, width: 1920 },
+    ]) {
+      await page.setViewportSize(viewport);
+      if (viewport.width <= 1024) {
+        await expect(page.locator(".platform-sidebar")).toHaveCSS("visibility", "hidden");
+      }
+      await expect(page.locator(".platform-commercial-grid")).toBeVisible();
+      await expect
+        .poll(() =>
+          page.locator("main h1").evaluate((element) => getComputedStyle(element).fontFamily),
+        )
+        .toContain(locale.font);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+        viewport.width + 1,
+      );
+      if (process.env.DARB_VISUAL_QA_OUTPUT) {
+        await page.screenshot({
+          fullPage: true,
+          path: `${process.env.DARB_VISUAL_QA_OUTPUT}/platform-commercial-${locale.code}-${viewport.width}x${viewport.height}.png`,
+        });
+      }
+    }
+
+    await page.setViewportSize({ height: 844, width: 390 });
+    await page.locator("html").evaluate((element) => {
+      element.style.fontSize = "200%";
+    });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      391,
+    );
+    await page.locator("html").evaluate((element) => element.style.removeProperty("font-size"));
+  }
+});
+
+test("removes public Restaurant access without deleting configured tenant data", async ({
+  page,
+}) => {
+  if (!primaryBusinessId) throw new Error("The primary business fixture was not prepared.");
+  const { count: menuCountBefore } = await adminClient
+    .schema("restaurant")
+    .from("menus")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", primaryBusinessId);
+
+  setLocalFixtureEntitlementOverride(primaryBusinessId, "restaurant", "deny");
+  try {
+    await signIn(page, ownerEmail);
+    await page.goto(`/b/${updatedBusinessSlug}/restaurant`);
+    await expect(page.getByText("Restaurant access is currently read-only.")).toBeVisible();
+
+    await page.goto(`http://localhost:3002/${updatedBusinessSlug}/en`);
+    await expect(page.getByRole("heading", { name: "Restaurant unavailable" })).toBeVisible();
+
+    const { count: menuCountAfter } = await adminClient
+      .schema("restaurant")
+      .from("menus")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", primaryBusinessId);
+    expect(menuCountAfter).toBe(menuCountBefore);
+  } finally {
+    setLocalFixtureEntitlementOverride(primaryBusinessId, "restaurant", "grant");
+  }
+
+  await page.goto(`http://localhost:3002/${updatedBusinessSlug}/en`);
+  await expect(page.getByRole("heading", { name: updatedBusinessName })).toBeVisible();
 });
 
 test("applies audited platform lifecycle actions with deliberate confirmation", async ({
@@ -1834,6 +2001,8 @@ async function provisionMultiBusinessFixture(): Promise<void> {
   if (permissionError) {
     throw permissionError;
   }
+
+  grantLocalFixtureEntitlements([primaryBusinessId, business.id]);
 }
 
 async function provisionPlatformBusinessFixture(): Promise<void> {
@@ -1961,6 +2130,73 @@ function promoteLocalSuperAdmin(userId: string): void {
 
   if (promotion.status !== 0) {
     throw new Error(promotion.stderr || promotion.stdout || "Unable to promote the E2E operator.");
+  }
+}
+
+function grantLocalFixtureEntitlements(businessIds: string[]): void {
+  const databaseUrl = requiredEnvironment("SUPABASE_TEST_DATABASE_URL");
+  const hostname = new URL(databaseUrl).hostname;
+  if (!["127.0.0.1", "localhost", "[::1]"].includes(hostname)) {
+    throw new Error("Entitlement fixture setup is restricted to a local Supabase database.");
+  }
+  const values = businessIds
+    .flatMap((businessId) =>
+      ["restaurant", "booking", "pages", "commerce"].map(
+        (moduleKey) =>
+          `('${businessId}'::uuid, '${moduleKey}'::text, 'grant'::core.entitlement_override_decision, 'Existing Admin E2E capability coverage')`,
+      ),
+    )
+    .join(",\n");
+  const result = spawnSync("psql", [databaseUrl, "--no-psqlrc", "--set", "ON_ERROR_STOP=1"], {
+    encoding: "utf8",
+    input: `insert into core.business_module_entitlement_overrides
+      (business_id, module_key, decision, reason) values ${values};`,
+  });
+  if (result.status !== 0) {
+    throw new Error(result.stderr || result.stdout || "Unable to prepare entitlement fixtures.");
+  }
+}
+
+function setLocalFixtureEntitlementOverride(
+  businessId: string,
+  moduleKey: string,
+  decision: "deny" | "grant",
+): void {
+  const databaseUrl = requiredEnvironment("SUPABASE_TEST_DATABASE_URL");
+  const hostname = new URL(databaseUrl).hostname;
+  if (!["127.0.0.1", "localhost", "[::1]"].includes(hostname)) {
+    throw new Error("Entitlement fixture mutation is restricted to a local Supabase database.");
+  }
+  const result = spawnSync(
+    "psql",
+    [
+      databaseUrl,
+      "--no-psqlrc",
+      "--set",
+      "ON_ERROR_STOP=1",
+      "--set",
+      `business_id=${businessId}`,
+      "--set",
+      `module_key=${moduleKey}`,
+      "--set",
+      `decision=${decision}`,
+    ],
+    {
+      encoding: "utf8",
+      input: `insert into core.business_module_entitlement_overrides
+        (business_id, module_key, decision, reason)
+        values (
+          :'business_id'::uuid,
+          :'module_key',
+          :'decision'::core.entitlement_override_decision,
+          'Local-only entitlement loss E2E coverage'
+        )
+        on conflict (business_id, module_key) do update
+        set decision = excluded.decision, reason = excluded.reason, updated_at = now();`,
+    },
+  );
+  if (result.status !== 0) {
+    throw new Error(result.stderr || result.stdout || "Unable to update entitlement fixture.");
   }
 }
 
