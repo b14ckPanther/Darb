@@ -3,7 +3,7 @@ import "server-only";
 import type { DarbServerSupabaseClient } from "@darb/database/server";
 
 import {
-  mapBusinessModuleStates,
+  mapBusinessModuleAccessRows,
   requireEnabledBusinessModule,
   type BusinessModuleState,
   type BusinessStatus,
@@ -14,39 +14,42 @@ export async function listBusinessModuleStates(
   businessId: string,
   businessStatus: BusinessStatus,
 ): Promise<BusinessModuleState[]> {
-  const [definitionsResult, stateResult] = await Promise.all([
-    supabase
-      .schema("core")
-      .from("modules")
-      .select("key, display_name, description, is_available, sort_order")
-      .order("sort_order", { ascending: true })
-      .order("key", { ascending: true }),
-    supabase
-      .schema("core")
-      .from("business_modules")
-      .select("module_key, is_enabled, updated_at")
-      .eq("business_id", businessId),
-  ]);
+  void businessStatus;
+  const { data, error } = await supabase
+    .schema("core")
+    .rpc("get_business_module_access", { target_business_id: businessId });
+  if (error) throw new Error(`Unable to resolve business module access (${error.code}).`);
+  return mapBusinessModuleAccessRows(data);
+}
 
-  if (definitionsResult.error) {
-    throw new Error(`Unable to resolve platform modules (${definitionsResult.error.code}).`);
+export interface BusinessCommercialSummary {
+  currentLocations: number;
+  initialSetupStatus: string;
+  maxLocations: number | null;
+  planDescription: string;
+  planDisplayName: string;
+  planKey: string;
+}
+
+export async function getBusinessCommercialSummary(
+  supabase: DarbServerSupabaseClient,
+  businessId: string,
+): Promise<BusinessCommercialSummary> {
+  const { data, error } = await supabase
+    .schema("core")
+    .rpc("get_business_commercial_summary", { target_business_id: businessId })
+    .single();
+  if (error || !data) {
+    throw new Error(`Unable to resolve business commercial summary (${error?.code ?? "NO_DATA"}).`);
   }
-
-  if (stateResult.error) {
-    throw new Error(`Unable to resolve business module state (${stateResult.error.code}).`);
-  }
-
-  return mapBusinessModuleStates(
-    definitionsResult.data.map((definition) => ({
-      description: definition.description,
-      displayName: definition.display_name,
-      isAvailable: definition.is_available,
-      key: definition.key,
-      sortOrder: definition.sort_order,
-    })),
-    stateResult.data,
-    businessStatus,
-  );
+  return {
+    currentLocations: Number(data.current_locations),
+    initialSetupStatus: data.initial_setup_status,
+    maxLocations: data.max_locations,
+    planDescription: data.plan_description,
+    planDisplayName: data.plan_display_name,
+    planKey: data.plan_key,
+  };
 }
 
 export async function businessHasModule(

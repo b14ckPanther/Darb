@@ -83,7 +83,7 @@ describe("admin navigation registry", () => {
       "Appearance",
       "Media",
       "Domains",
-      "Modules",
+      "Plan & access",
     ]);
   });
 

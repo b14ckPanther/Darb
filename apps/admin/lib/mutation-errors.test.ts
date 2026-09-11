@@ -44,6 +44,12 @@ describe("safe mutation error mapping", () => {
       message: "Capabilities cannot be changed while this business is not active.",
       status: "error",
     });
+    expect(
+      mapMutationError({ code: "42501", message: "MODULE_NOT_ENTITLED private detail" }, "module"),
+    ).toEqual({
+      message: "This capability is not included in the business’s current access arrangement.",
+      status: "error",
+    });
   });
 
   it("maps appearance trust-boundary failures to safe product language", () => {

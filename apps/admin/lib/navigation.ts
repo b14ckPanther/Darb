@@ -177,7 +177,7 @@ export const coreAdminNavigation = [
     group: "products",
     icon: "modules",
     key: "modules",
-    label: "Modules",
+    label: "Plan & access",
     order: 10,
     section: "modules",
     visibility: "always",

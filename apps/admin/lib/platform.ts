@@ -67,6 +67,35 @@ export interface PlatformAuditFilters {
   to?: string;
 }
 
+export interface PlatformPlan {
+  assignedBusinesses: number;
+  description: string;
+  displayName: string;
+  isAvailable: boolean;
+  key: string;
+  maxLocations: number | null;
+  status: string;
+}
+
+export interface PlatformBusinessCommercial {
+  modules: Array<{
+    displayName: string;
+    effective: boolean;
+    enabled: boolean;
+    entitled: boolean;
+    entitlementSource: string;
+    isAvailable: boolean;
+    key: string;
+  }>;
+  overrides: Array<{ decision: string; moduleKey: string; reason: string }>;
+  summary: {
+    initialSetupStatus: string;
+    maxLocations: number | null;
+    planDisplayName: string;
+    planKey: string;
+  };
+}
+
 const resolvePlatformAuthorization = cache(async (): Promise<PlatformAuthorizationState> => {
   const supabase = await createServerComponentSupabaseClient();
   const user = await resolveCurrentUser(supabase);
@@ -145,6 +174,75 @@ export async function listPlatformModules(): Promise<PlatformModuleItem[]> {
   return parsePlatformModules(data);
 }
 
+export async function listPlatformPlans(): Promise<PlatformPlan[]> {
+  const data = await callPlatformRpc("list_platform_plans", {});
+  if (!Array.isArray(data)) return [];
+  return data.flatMap((value) => {
+    const row = readRecord(value);
+    if (!row || typeof row.plan_key !== "string" || typeof row.display_name !== "string") return [];
+    return [
+      {
+        assignedBusinesses: Number(row.assigned_businesses ?? 0),
+        description: String(row.description ?? ""),
+        displayName: row.display_name,
+        isAvailable: row.is_available === true,
+        key: row.plan_key,
+        maxLocations: typeof row.max_locations === "number" ? row.max_locations : null,
+        status: String(row.status ?? "active"),
+      },
+    ];
+  });
+}
+
+export async function getPlatformBusinessCommercial(
+  businessId: string,
+): Promise<PlatformBusinessCommercial | null> {
+  const data = await callPlatformRpc("get_platform_business_commercial", {
+    target_business_id: businessId,
+  });
+  const root = readRecord(data);
+  const summary = readRecord(root?.summary);
+  if (!root || !summary || typeof summary.plan_key !== "string") return null;
+  return {
+    modules: Array.isArray(root.modules)
+      ? root.modules.flatMap((value) => {
+          const row = readRecord(value);
+          if (!row || typeof row.module_key !== "string") return [];
+          return [
+            {
+              displayName: String(row.display_name ?? row.module_key),
+              effective: row.effective === true,
+              enabled: row.enabled === true,
+              entitled: row.entitled === true,
+              entitlementSource: String(row.entitlement_source ?? "none"),
+              isAvailable: row.platform_available === true,
+              key: row.module_key,
+            },
+          ];
+        })
+      : [],
+    overrides: Array.isArray(root.overrides)
+      ? root.overrides.flatMap((value) => {
+          const row = readRecord(value);
+          if (!row || typeof row.module_key !== "string") return [];
+          return [
+            {
+              decision: String(row.decision ?? ""),
+              moduleKey: row.module_key,
+              reason: String(row.reason ?? ""),
+            },
+          ];
+        })
+      : [],
+    summary: {
+      initialSetupStatus: String(summary.initial_setup_status ?? "not_requested"),
+      maxLocations: typeof summary.max_locations === "number" ? summary.max_locations : null,
+      planDisplayName: String(summary.plan_display_name ?? summary.plan_key),
+      planKey: summary.plan_key,
+    },
+  };
+}
+
 export async function listPlatformTemplates(): Promise<PlatformTemplateItem[]> {
   const data = await callPlatformRpc("list_platform_templates", {});
   return parsePlatformTemplates(data);
@@ -184,11 +282,13 @@ export async function listPlatformAuditEvents(
 async function callPlatformRpc<
   Name extends
     | "get_platform_business_detail"
+    | "get_platform_business_commercial"
     | "get_platform_overview"
     | "list_platform_audit_events"
     | "list_platform_businesses"
     | "list_platform_domains"
     | "list_platform_modules"
+    | "list_platform_plans"
     | "list_platform_super_admins"
     | "list_platform_templates"
     | "list_platform_users",
@@ -203,4 +303,10 @@ async function callPlatformRpc<
   const { data, error } = await supabase.schema("core").rpc(name, args);
   if (error) throw new Error(`Unable to load platform operations (${error.code}).`);
   return data;
+}
+
+function readRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }

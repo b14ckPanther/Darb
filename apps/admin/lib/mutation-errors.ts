@@ -25,6 +25,16 @@ export function mapMutationError(error: DatabaseErrorLike, kind: MutationKind): 
     };
   }
 
+  if (
+    error.message?.includes("MODULE_NOT_ENTITLED") ||
+    error.message?.includes("MODULE_ACCESS_UNAVAILABLE")
+  ) {
+    return {
+      message: "This capability is not included in the business’s current access arrangement.",
+      status: "error",
+    };
+  }
+
   if (error.code === "42501") {
     return {
       message: "You do not have permission to make this change.",

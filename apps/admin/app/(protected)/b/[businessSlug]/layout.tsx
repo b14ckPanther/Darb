@@ -31,7 +31,7 @@ export default async function BusinessLayout({ children, params }: BusinessLayou
     canManageAllLocations: context.access.canManageAllLocations,
     canReadAllLocations: context.access.canReadAllLocations,
     enabledModules: context.modules
-      .filter((module) => module.isEffectivelyEnabled)
+      .filter((module) => module.isEnabled)
       .map((module) => module.key),
     permissionKeys,
     visibleLocationCount: context.locations.length,

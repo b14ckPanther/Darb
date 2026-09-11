@@ -19,7 +19,9 @@ export interface RestaurantAdminContext {
   businessContext: BusinessAdminContext;
   capabilityAvailable: boolean;
   capabilityEnabled: boolean;
+  capabilityEntitled: boolean;
   capabilityEffective: boolean;
+  restrictionReason: string | null;
 }
 
 export const getRestaurantAccessSnapshot = cache(
@@ -58,7 +60,9 @@ export async function requireRestaurantAdminContext(
     businessContext,
     capabilityAvailable: capability.isAvailable,
     capabilityEnabled: capability.isEnabled,
+    capabilityEntitled: capability.isEntitled,
     capabilityEffective: capability.isEffectivelyEnabled,
+    restrictionReason: capability.unavailableReason,
   };
 }
 

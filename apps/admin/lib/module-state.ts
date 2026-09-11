@@ -11,9 +11,28 @@ export interface PlatformModuleDefinition {
 }
 
 export interface BusinessModuleState extends PlatformModuleDefinition {
+  entitlementSource: string;
+  isEntitled: boolean;
   isEffectivelyEnabled: boolean;
   isEnabled: boolean;
+  planKey: string | null;
+  unavailableReason: string | null;
   updatedAt: string | null;
+}
+
+export interface BusinessModuleAccessRow {
+  description: string;
+  display_name: string;
+  effective: boolean;
+  enabled: boolean;
+  entitled: boolean;
+  entitlement_source: string;
+  module_key: string;
+  plan_key: string | null;
+  platform_available: boolean;
+  sort_order: number;
+  unavailable_reason: string | null;
+  updated_at: string | null;
 }
 
 export interface BusinessModuleStateRow {
@@ -22,7 +41,8 @@ export interface BusinessModuleStateRow {
   updated_at: string;
 }
 
-export type ModuleGateFailure = "business-inactive" | "disabled" | "not-found" | "unavailable";
+export type ModuleGateFailure =
+  "business-inactive" | "disabled" | "not-entitled" | "not-found" | "unavailable";
 
 export class ModuleGateError extends Error {
   constructor(readonly reason: ModuleGateFailure) {
@@ -44,11 +64,34 @@ export function mapBusinessModuleStates(
 
     return {
       ...definition,
+      entitlementSource: "legacy",
+      isEntitled: true,
       isEffectivelyEnabled: businessStatus === "active" && definition.isAvailable && isEnabled,
       isEnabled,
+      planKey: null,
+      unavailableReason: null,
       updatedAt: state?.updated_at ?? null,
     };
   });
+}
+
+export function mapBusinessModuleAccessRows(
+  rows: BusinessModuleAccessRow[],
+): BusinessModuleState[] {
+  return rows.map((row) => ({
+    description: row.description,
+    displayName: row.display_name,
+    entitlementSource: row.entitlement_source,
+    isAvailable: row.platform_available,
+    isEffectivelyEnabled: row.effective,
+    isEnabled: row.enabled,
+    isEntitled: row.entitled,
+    key: row.module_key,
+    planKey: row.plan_key,
+    sortOrder: row.sort_order,
+    unavailableReason: row.unavailable_reason,
+    updatedAt: row.updated_at,
+  }));
 }
 
 export function businessHasEnabledModule(
@@ -75,6 +118,10 @@ export function requireEnabledBusinessModule(
 
   if (!capability.isAvailable) {
     throw new ModuleGateError("unavailable");
+  }
+
+  if (!capability.isEntitled) {
+    throw new ModuleGateError("not-entitled");
   }
 
   if (!capability.isEnabled) {

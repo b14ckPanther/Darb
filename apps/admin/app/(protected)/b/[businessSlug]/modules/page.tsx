@@ -6,7 +6,10 @@ import { PermissionNotice } from "../../../../_components/permission-notice";
 import { canManageModules } from "../../../../../lib/admin-access";
 import { requireBusinessAdminContext } from "../../../../../lib/admin-context";
 import { businessPath } from "../../../../../lib/navigation";
+import { getBusinessCommercialSummary } from "../../../../../lib/modules";
+import { createServerComponentSupabaseClient } from "../../../../../lib/supabase/server";
 import { ModuleCard } from "./module-card";
+import { CommercialSummary } from "./commercial-summary";
 
 interface ModulesPageProps {
   params: Promise<{ businessSlug: string }>;
@@ -17,19 +20,28 @@ export default async function ModulesPage({ params }: ModulesPageProps) {
   const { businessSlug } = await params;
   const context = await requireBusinessAdminContext(businessSlug);
   const editable = canManageModules(context.access, context.business.status);
+  const supabase = await createServerComponentSupabaseClient();
+  const commercial = await getBusinessCommercialSummary(supabase, context.business.id);
 
   return (
     <>
       <PageHeader
         breadcrumbs={[
           { href: businessPath(context.business.slug), label: t("Overview") },
-          { label: t("Modules") },
+          { label: t("Plan & access") },
         ]}
-        eyebrow={t("Business capabilities")}
-        title={t("Modules")}
+        eyebrow={t("Commercial access")}
+        title={t("Plan & access")}
         summary={t(
-          "Control the administrative capability state for this business. Enablement does not grant user permission or imply that an engine is available yet.",
+          "See what this business is entitled to use, then control which included capabilities are enabled.",
         )}
+      />
+
+      <CommercialSummary
+        businessId={context.business.id}
+        businessSlug={context.business.slug}
+        canRequestSetup={context.access.canManageBusiness && context.business.status === "active"}
+        summary={commercial}
       />
 
       {!editable ? (
@@ -45,10 +57,10 @@ export default async function ModulesPage({ params }: ModulesPageProps) {
           <InformationCircleIcon size={20} />
         </span>
         <div>
-          <h2 id="module-registry-note-heading">{t("Capability state, not a product launch")}</h2>
+          <h2 id="module-registry-note-heading">{t("Access and activation are separate")}</h2>
           <p>
             {t(
-              "These records prepare Darb for future engines. They do not create engine data, routes, billing, or customer-facing features.",
+              "A capability must be available from Darb, included for this business, and enabled here before it becomes active. Turning it off retains existing data.",
             )}
           </p>
         </div>

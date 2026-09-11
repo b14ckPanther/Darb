@@ -19,24 +19,35 @@ interface ModuleCardProps {
   module: BusinessModuleState;
 }
 
+const moduleDescriptions: Readonly<Record<string, string>> = {
+  booking: "Appointments and reservations when this service becomes available.",
+  commerce: "Digital selling tools when this service becomes available.",
+  pages: "Managed pages and publishing when this service becomes available.",
+  restaurant: "Manage your Restaurant presence and public menu.",
+};
+
 export function ModuleCard({ businessId, businessSlug, editable, module }: ModuleCardProps) {
   const { t } = useAdminI18n();
   const [confirmingDisable, setConfirmingDisable] = useState(false);
   const action = setBusinessModuleEnabledAction.bind(null, businessId, businessSlug);
   const [state, formAction, pending] = useActionState(action, initialFormState);
-  const canEnable = editable && module.isAvailable;
+  const canEnable = editable && module.isAvailable && module.isEntitled;
   const canDisable = editable && module.isEnabled;
   const statusLabel = !module.isAvailable
     ? module.isEnabled
       ? "Stored on · unavailable"
       : "Unavailable"
-    : module.isEnabled
-      ? "Enabled"
-      : "Disabled";
+    : !module.isEntitled
+      ? module.isEnabled
+        ? "Stored on · not included"
+        : "Not included"
+      : module.isEnabled
+        ? "Enabled"
+        : "Disabled";
 
   return (
     <article
-      className={`module-card${module.isEffectivelyEnabled ? " is-enabled" : ""}${!module.isAvailable ? " is-unavailable" : ""}`}
+      className={`module-card${module.isEffectivelyEnabled ? " is-enabled" : ""}${!module.isAvailable || !module.isEntitled ? " is-unavailable" : ""}`}
       aria-labelledby={`module-${module.key}-heading`}
     >
       <div className="module-card__topline">
@@ -47,7 +58,7 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
           status={
             module.isEffectivelyEnabled
               ? "enabled"
-              : module.isAvailable
+              : module.isAvailable && module.isEntitled
                 ? "disabled"
                 : "unavailable"
           }
@@ -60,16 +71,18 @@ export function ModuleCard({ businessId, businessSlug, editable, module }: Modul
           {module.key}
         </p>
         <h2 id={`module-${module.key}-heading`}>{t(module.displayName)}</h2>
-        <p>{t(module.description)}</p>
+        <p>{t(moduleDescriptions[module.key] ?? module.description)}</p>
       </div>
 
       <div className="module-card__footer">
         <p className="module-card__boundary">
-          {module.isEnabled && !module.isAvailable
+          {module.isEnabled && (!module.isAvailable || !module.isEntitled)
             ? t(
-                "Stored state is retained, but the capability is inactive while platform-unavailable.",
+                "Stored state is retained, but this capability is inactive while access is unavailable.",
               )
-            : t("No engine route or product workflow is created by this setting.")}
+            : !module.isEntitled
+              ? t("This capability is not included in the current arrangement.")
+              : t("Included access still requires this business-level switch to be enabled.")}
         </p>
 
         {state.message ? (

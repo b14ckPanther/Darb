@@ -163,6 +163,16 @@ export function getHonestModuleAvailability(
     };
   }
 
+  if (!module.isEntitled) {
+    return {
+      detail: module.isEnabled
+        ? "Stored as enabled with data retained, but the current arrangement does not include access."
+        : "This capability is not included in the current access arrangement.",
+      label: "Not included",
+      state: "unavailable",
+    };
+  }
+
   if (module.isEffectivelyEnabled) {
     if (engineAdminAvailable) {
       return {

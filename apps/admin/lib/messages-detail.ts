@@ -1,6 +1,153 @@
 import type { AdminTranslations } from "./i18n";
 
 export const detailMessages = {
+  "Plan & access": { ar: "الخطة والصلاحيات", he: "תוכנית וגישה" },
+  "Commercial access": { ar: "صلاحيات الاستخدام", he: "גישה מסחרית" },
+  "Current access": { ar: "صلاحياتك الحالية", he: "הגישה הנוכחית" },
+  "Core workspace": { ar: "مساحة الشغل الأساسية", he: "סביבת העבודה הבסיסית" },
+  "Business administration without a product engine.": {
+    ar: "إدارة الشغل بدون محرّك منتج.",
+    he: "ניהול העסק ללא מנוע מוצר.",
+  },
+  "Restaurant Starter": { ar: "مطعم — بداية", he: "מסעדה — התחלה" },
+  "Manage your Restaurant presence and public menu.": {
+    ar: "إدارة حضور المطعم وقائمته على درب.",
+    he: "ניהול הנוכחות והתפריט של המסעדה ב-Darb.",
+  },
+  "Appointments and reservations when this service becomes available.": {
+    ar: "إدارة الحجوزات والمواعيد لما تصير الخدمة متاحة.",
+    he: "ניהול הזמנות ותורים כשהשירות יהיה זמין.",
+  },
+  "Managed pages and publishing when this service becomes available.": {
+    ar: "إدارة الصفحات والنشر لما تصير الخدمة متاحة.",
+    he: "ניהול עמודים ופרסום כשהשירות יהיה זמין.",
+  },
+  "Digital selling tools when this service becomes available.": {
+    ar: "إدارة البيع الرقمي لما تصير الخدمة متاحة.",
+    he: "ניהול מסחר דיגיטלי כשהשירות יהיה זמין.",
+  },
+  "Restaurant access with Darb core administration.": {
+    ar: "صلاحية المطعم مع أدوات إدارة درب الأساسية.",
+    he: "גישה למסעדה יחד עם כלי הניהול הבסיסיים של Darb.",
+  },
+  "See what this business is entitled to use, then control which included capabilities are enabled.":
+    {
+      ar: "شوف شو متاح لهالشغل، وبعدها اختار أي إمكانيات مشمولة بدك تفعّل.",
+      he: "ראו למה העסק זכאי, ואז בחרו אילו יכולות כלולות להפעיל.",
+    },
+  "Access and activation are separate": {
+    ar: "الصلاحية والتفعيل شغلتين مختلفات",
+    he: "גישה והפעלה הן שני דברים נפרדים",
+  },
+  "A capability must be available from Darb, included for this business, and enabled here before it becomes active. Turning it off retains existing data.":
+    {
+      ar: "عشان الإمكانية تشتغل، لازم تكون متاحة من درب ومشمولة لهالشغل ومفعّلة هون. إيقافها بحافظ على البيانات الموجودة.",
+      he: "כדי שיכולת תהיה פעילה, היא צריכה להיות זמינה ב-Darb, כלולה לעסק ומופעלת כאן. כיבוי שלה שומר את הנתונים הקיימים.",
+    },
+  "Location allowance": { ar: "عدد الفروع المتاح", he: "מכסת סניפים" },
+  "Unlimited for this arrangement": { ar: "بدون حد بهاي الخطة", he: "ללא הגבלה בהסדר הזה" },
+  "{current} of {maximum} locations": {
+    ar: "{current} من أصل {maximum} فروع",
+    he: "{current} מתוך {maximum} סניפים",
+  },
+  "Initial setup service": { ar: "خدمة التجهيز الأولي", he: "שירות הקמה ראשונית" },
+  "Not requested": { ar: "مش مطلوبة", he: "לא התבקש" },
+  Requested: { ar: "انطلبت", he: "התבקש" },
+  Accepted: { ar: "تم قبولها", he: "אושר" },
+  "In progress": { ar: "قيد التجهيز", he: "בתהליך" },
+  Completed: { ar: "اكتملت", he: "הושלם" },
+  Cancelled: { ar: "ملغية", he: "בוטל" },
+  "Request initial setup": { ar: "اطلب خدمة التجهيز", he: "בקשת שירות הקמה" },
+  "Sending request…": { ar: "جاري إرسال الطلب…", he: "שולחים בקשה…" },
+  "Initial setup can only be requested for an active business.": {
+    ar: "بتقدر تطلب التجهيز بس للشغل الفعّال.",
+    he: "אפשר לבקש הקמה רק לעסק פעיל.",
+  },
+  "Business management permission is required to request initial setup.": {
+    ar: "بدك صلاحية إدارة الشغل عشان تطلب التجهيز.",
+    he: "נדרשת הרשאת ניהול עסק כדי לבקש הקמה.",
+  },
+  "Initial setup could not be requested. Try again.": {
+    ar: "ما قدرنا نرسل طلب التجهيز. جرّب كمان مرة.",
+    he: "לא הצלחנו לשלוח את בקשת ההקמה. נסו שוב.",
+  },
+  "Initial setup request sent. Darb can now coordinate the service with you.": {
+    ar: "وصلنا طلب التجهيز. درب بتقدر هسا تنسّق الخدمة معك.",
+    he: "בקשת ההקמה נשלחה. Darb יכולה עכשיו לתאם את השירות איתכם.",
+  },
+  "Initial setup has already been requested.": {
+    ar: "خدمة التجهيز مطلوبة من قبل.",
+    he: "שירות ההקמה כבר התבקש.",
+  },
+  "Stored on · not included": { ar: "محفوظة · مش مشمولة", he: "שמור · לא כלול" },
+  "Not included": { ar: "مش مشمولة", he: "לא כלול" },
+  "Stored state is retained, but this capability is inactive while access is unavailable.": {
+    ar: "الحالة والبيانات محفوظة، بس الإمكانية مش فعّالة طول ما الصلاحية مش متاحة.",
+    he: "המצב והנתונים נשמרים, אבל היכולת אינה פעילה כל עוד אין גישה.",
+  },
+  "This capability is not included in the current arrangement.": {
+    ar: "هاي الإمكانية مش مشمولة بالخطة الحالية.",
+    he: "היכולת הזו אינה כלולה בהסדר הנוכחי.",
+  },
+  "Included access still requires this business-level switch to be enabled.": {
+    ar: "الإمكانية مشمولة، ولسه لازم تفعّلها لهالشغل.",
+    he: "הגישה כלולה, ועדיין צריך להפעיל אותה לעסק הזה.",
+  },
+  "This capability is not included in the business’s current access arrangement.": {
+    ar: "هاي الإمكانية مش مشمولة بصلاحيات الشغل الحالية.",
+    he: "היכולת הזו אינה כלולה בהסדר הגישה הנוכחי של העסק.",
+  },
+  "Restaurant access is currently read-only.": {
+    ar: "صلاحية المطعم حاليًا للقراءة بس.",
+    he: "הגישה למסעדה כרגע לקריאה בלבד.",
+  },
+  "Restaurant data is retained, but the capability is not currently effective.": {
+    ar: "بيانات المطعم محفوظة، بس الإمكانية مش فعّالة حاليًا.",
+    he: "נתוני המסעדה נשמרים, אבל היכולת אינה פעילה כרגע.",
+  },
+  "Restaurant data is retained, but Restaurant is not included in this business’s current access arrangement.":
+    {
+      ar: "بيانات المطعم محفوظة، بس المطعم مش مشمول بصلاحيات الشغل الحالية.",
+      he: "נתוני המסעדה נשמרים, אבל מסעדה אינה כלולה בהסדר הגישה הנוכחי של העסק.",
+    },
+  "Platform controlled": { ar: "بتحكّم المنصة", he: "בשליטת הפלטפורמה" },
+  "Plans and entitlements": { ar: "الخطط والصلاحيات", he: "תוכניות וזכאויות" },
+  "Plan inclusion, explicit overrides, tenant enablement, and effective access remain separate.": {
+    ar: "شمول الخطة والاستثناءات والتفعيل للشغل والصلاحية الفعلية بضلّوا حالات منفصلة.",
+    he: "הכללה בתוכנית, חריגות מפורשות, הפעלה לעסק וגישה בפועל נשארים מצבים נפרדים.",
+  },
+  "Current plan": { ar: "الخطة الحالية", he: "התוכנית הנוכחית" },
+  "Effective access": { ar: "صلاحية فعّالة", he: "גישה פעילה" },
+  "Included, not effective": { ar: "مشمولة، مش فعّالة", he: "כלול, לא פעיל" },
+  "Not entitled": { ar: "مش مشمولة", he: "אין זכאות" },
+  Override: { ar: "استثناء", he: "חריגה" },
+  "Override decision": { ar: "قرار الاستثناء", he: "החלטת חריגה" },
+  "Use plan": { ar: "حسب الخطة", he: "לפי התוכנית" },
+  Grant: { ar: "امنح", he: "הענקה" },
+  Deny: { ar: "امنع", he: "שלילה" },
+  grant: { ar: "منح", he: "הענקה" },
+  deny: { ar: "منع", he: "שלילה" },
+  "Operator reason": { ar: "سبب المشغّل", he: "סיבת המפעיל" },
+  "Review change": { ar: "راجع التغيير", he: "בדיקת השינוי" },
+  "Confirm commercial access change": {
+    ar: "أكد تغيير الصلاحيات",
+    he: "אישור שינוי הגישה המסחרית",
+  },
+  "This changes platform-controlled access for {businessName}. Existing product data is retained and the action is audited.":
+    {
+      ar: "هالتغيير بحدّث صلاحيات {businessName} اللي بتتحكّم فيها المنصة. بيانات المنتج الموجودة بتضل محفوظة والعملية بتنحفظ بسجل التدقيق.",
+      he: "השינוי מעדכן את הגישה שבשליטת הפלטפורמה עבור {businessName}. נתוני המוצר הקיימים נשמרים והפעולה נרשמת ביומן הביקורת.",
+    },
+  "Confirm change": { ar: "أكد التغيير", he: "אישור השינוי" },
+  "Commercial access updated.": { ar: "تم تحديث الصلاحيات.", he: "הגישה המסחרית עודכנה." },
+  "The requested commercial access change is invalid.": {
+    ar: "تغيير الصلاحيات المطلوب مش صالح.",
+    he: "שינוי הגישה המסחרית המבוקש אינו תקין.",
+  },
+  "The commercial access change was rejected. Review the requested transition and try again.": {
+    ar: "ما تم قبول تغيير الصلاحيات. راجع التغيير وجرّب كمان مرة.",
+    he: "שינוי הגישה המסחרית נדחה. בדקו את המעבר המבוקש ונסו שוב.",
+  },
   Signature: { ar: "سيغنتشر", he: "Signature" },
   Editorial: { ar: "إديتوريال", he: "Editorial" },
   Counter: { ar: "كاونتر", he: "Counter" },

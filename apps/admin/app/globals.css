@@ -1597,6 +1597,96 @@ button {
   margin: 0;
 }
 
+.commercial-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(10rem, 0.75fr)) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: clamp(1.15rem, 2vw, 1.6rem);
+  margin-block-end: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 1.35rem;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 9%, var(--surface)),
+    var(--surface)
+  );
+}
+
+.commercial-summary__heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: start;
+  min-width: 0;
+}
+
+.commercial-summary__heading > span {
+  display: grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: 0.8rem;
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+}
+
+.commercial-summary h2,
+.commercial-summary p,
+.commercial-summary dl {
+  margin: 0;
+}
+
+.commercial-summary__facts {
+  display: contents;
+}
+
+.commercial-summary__facts > div {
+  min-width: 0;
+}
+
+.commercial-summary dt {
+  color: var(--muted-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.commercial-summary dd {
+  margin: 0.25rem 0 0;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .commercial-summary {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .commercial-summary__heading {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .commercial-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .commercial-summary__heading {
+    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .commercial-summary form,
+  .commercial-summary .secondary-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .commercial-summary .secondary-button {
+    white-space: normal;
+  }
+}
+
 .module-feedback {
   min-height: 2.65rem;
   display: flex;
@@ -3105,6 +3195,15 @@ button {
     padding: 1.15rem;
   }
 
+  .module-registry-note {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .module-card__topline {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
   .domain-card__heading {
     grid-template-columns: auto minmax(0, 1fr);
   }
@@ -3663,6 +3762,92 @@ button {
 
 .platform-detail-card--wide {
   align-items: center;
+}
+
+.platform-commercial-grid,
+.platform-commercial-modules {
+  display: grid;
+  gap: 1rem;
+}
+
+.platform-commercial-grid {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
+}
+
+.platform-commercial-modules {
+  min-width: 0;
+}
+
+.platform-commercial-module {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(9rem, 0.55fr) minmax(12rem, 0.8fr) auto;
+  gap: 0.8rem;
+  align-items: end;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.platform-commercial-module p,
+.platform-commercial-module small,
+.platform-commercial-module label span {
+  color: var(--muted-text);
+}
+
+.platform-commercial-module p {
+  margin: 0.25rem 0;
+}
+
+.platform-commercial-module label {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.platform-commercial-module input,
+.platform-commercial-module select {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.85rem;
+  padding-inline: 0.8rem;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  outline: 0;
+  background: #fffefa;
+}
+
+.platform-commercial-module input:focus,
+.platform-commercial-module select:focus {
+  border-color: rgba(18, 60, 46, 0.55);
+  box-shadow: 0 0 0 4px rgba(18, 60, 46, 0.08);
+}
+
+.platform-commercial-module .secondary-button {
+  min-height: 2.85rem;
+}
+
+.platform-commercial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-block-start: 0.8rem;
+}
+
+@media (max-width: 1500px) {
+  .platform-commercial-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1050px) {
+  .platform-commercial-module {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .platform-key-values {

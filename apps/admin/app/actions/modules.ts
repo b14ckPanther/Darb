@@ -48,6 +48,10 @@ export async function setBusinessModuleEnabledAction(
     return mapMutationError({ message: "MODULE_UNAVAILABLE" }, "module");
   }
 
+  if (parsed.data.enabled && !capability.isEntitled) {
+    return mapMutationError({ message: "MODULE_NOT_ENTITLED" }, "module");
+  }
+
   const { data, error } = await supabase
     .schema("core")
     .rpc("set_business_module_enabled", {

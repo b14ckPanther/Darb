@@ -74,11 +74,15 @@ describe("honest engine readiness", () => {
   const moduleState: BusinessModuleState = {
     description: "A platform capability",
     displayName: "Pages",
+    entitlementSource: "plan",
     isAvailable: true,
+    isEntitled: true,
     isEffectivelyEnabled: true,
     isEnabled: true,
     key: "pages",
+    planKey: "sample-plan",
     sortOrder: 10,
+    unavailableReason: null,
     updatedAt: null,
   };
 

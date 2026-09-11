@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   ModuleGateError,
   businessHasEnabledModule,
+  mapBusinessModuleAccessRows,
   mapBusinessModuleStates,
   requireEnabledBusinessModule,
   type PlatformModuleDefinition,
@@ -99,6 +100,36 @@ describe("business module state", () => {
     );
     expect(() => requireEnabledBusinessModule(enabled, "commerce", "active")).toThrowError(
       new ModuleGateError("not-found"),
+    );
+  });
+
+  it("keeps entitlement, enablement, and effective access distinct", () => {
+    const [module] = mapBusinessModuleAccessRows([
+      {
+        description: "Restaurant engine",
+        display_name: "Restaurant",
+        effective: false,
+        enabled: true,
+        entitled: false,
+        entitlement_source: "override_deny",
+        module_key: "restaurant",
+        plan_key: "restaurant-starter",
+        platform_available: true,
+        sort_order: 10,
+        unavailable_reason: "not_entitled",
+        updated_at: "2026-09-10T10:00:00.000Z",
+      },
+    ]);
+
+    expect(module).toMatchObject({
+      entitlementSource: "override_deny",
+      isEnabled: true,
+      isEntitled: false,
+      isEffectivelyEnabled: false,
+      unavailableReason: "not_entitled",
+    });
+    expect(() => requireEnabledBusinessModule([module!], "restaurant", "active")).toThrowError(
+      new ModuleGateError("not-entitled"),
     );
   });
 });

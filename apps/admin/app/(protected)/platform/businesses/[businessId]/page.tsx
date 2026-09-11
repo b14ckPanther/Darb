@@ -13,11 +13,16 @@ import {
 import { PageHeader } from "../../../../_components/page-header";
 import { PlatformSectionHeading } from "../../../../_components/platform-summary";
 import { StatusBadge } from "../../../../_components/status-badge";
-import { getPlatformBusinessDetail } from "../../../../../lib/platform";
+import {
+  getPlatformBusinessDetail,
+  getPlatformBusinessCommercial,
+  listPlatformPlans,
+} from "../../../../../lib/platform";
 import { getAdminI18n } from "../../../../../lib/i18n-server";
 import { getPlatformBusinessTransitions, platformPaths } from "../../../../../lib/platform-model";
 import { businessPath } from "../../../../../lib/navigation";
 import { PlatformBusinessStatusControl } from "./platform-business-status-control";
+import { PlatformCommercialControls } from "./platform-commercial-controls";
 
 export default async function PlatformBusinessDetailPage({
   params,
@@ -28,8 +33,10 @@ export default async function PlatformBusinessDetailPage({
 }) {
   const { businessId } = await params;
   const query = await searchParams;
-  const [detail, { locale, t }] = await Promise.all([
+  const [detail, commercial, plans, { locale, t }] = await Promise.all([
     getPlatformBusinessDetail(businessId),
+    getPlatformBusinessCommercial(businessId),
+    listPlatformPlans(),
     getAdminI18n(),
   ]);
   if (!detail) notFound();
@@ -138,6 +145,15 @@ export default async function PlatformBusinessDetailPage({
         </article>
       </section>
 
+      {commercial ? (
+        <PlatformCommercialControls
+          businessId={business.id}
+          businessName={business.displayName}
+          commercial={commercial}
+          plans={plans}
+        />
+      ) : null}
+
       <section className="platform-detail-section" aria-labelledby="capabilities-heading">
         <PlatformSectionHeading
           id="capabilities-heading"
@@ -147,6 +163,10 @@ export default async function PlatformBusinessDetailPage({
         <div className="platform-registry-list">
           {detail.modules.map((module) => {
             const appearance = detail.appearances.find((item) => item.moduleKey === module.key);
+            const effectiveAccess = commercial?.modules.find((item) => item.key === module.key);
+            const isEffective = effectiveAccess?.effective ?? module.isEffective;
+            const isAvailable = effectiveAccess?.isAvailable ?? module.isAvailable;
+            const isEntitled = effectiveAccess?.entitled ?? true;
             return (
               <article key={module.key}>
                 <span>
@@ -162,14 +182,16 @@ export default async function PlatformBusinessDetailPage({
                 </div>
                 <StatusBadge
                   status={
-                    module.isEffective ? "enabled" : module.isAvailable ? "disabled" : "unavailable"
+                    isEffective ? "enabled" : isAvailable && isEntitled ? "disabled" : "unavailable"
                   }
                   label={t(
-                    module.isEffective
+                    isEffective
                       ? "Effective"
-                      : module.isAvailable
+                      : isAvailable && isEntitled
                         ? "Disabled"
-                        : "Unavailable",
+                        : isAvailable
+                          ? "Not entitled"
+                          : "Unavailable",
                   )}
                 />
               </article>
