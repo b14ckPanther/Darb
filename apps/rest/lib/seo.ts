@@ -88,11 +88,38 @@ export function createRestaurantJsonLd(
   ).toString();
 
   const image = findFirstPublicImage(publication);
+  const publicLocation =
+    publication.selectedLocation ??
+    (publication.locations.length === 1 ? publication.locations[0] : null);
+  const address = publicLocation
+    ? {
+        "@type": "PostalAddress",
+        addressCountry: publicLocation.countryCode,
+        addressLocality: publicLocation.locality ?? undefined,
+        postalCode: publicLocation.postalCode ?? undefined,
+        streetAddress: publicLocation.addressLine ?? undefined,
+      }
+    : undefined;
   return {
     "@context": "https://schema.org",
     "@type": "Restaurant",
     "@id": `${url}#restaurant`,
     name: publication.business.displayName,
+    address:
+      publicLocation &&
+      (publicLocation.addressLine || publicLocation.locality || publicLocation.postalCode)
+        ? address
+        : undefined,
+    telephone: publicLocation?.contact?.phone ?? undefined,
+    openingHoursSpecification:
+      publicLocation && publicLocation.openingHours.length > 0
+        ? publicLocation.openingHours.map((interval) => ({
+            "@type": "OpeningHoursSpecification",
+            closes: interval.closesAt,
+            dayOfWeek: isoWeekdayToSchemaDay(interval.weekday),
+            opens: interval.opensAt,
+          }))
+        : undefined,
     url,
     inLanguage: localeToLanguageTag(publication.locale),
     image:
@@ -139,6 +166,14 @@ export function createRestaurantJsonLd(
       })),
     })),
   };
+}
+
+function isoWeekdayToSchemaDay(weekday: number): string {
+  const day = ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][
+    weekday
+  ];
+  if (!day) throw new RangeError("Invalid Restaurant opening weekday");
+  return `https://schema.org/${day}`;
 }
 
 export function serializeJsonLd(value: Record<string, unknown>): string {

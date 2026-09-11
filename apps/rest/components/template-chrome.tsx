@@ -2,9 +2,22 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { darbApplications } from "@darb/config/platform";
-import { ArrowRightIcon, LanguagesSettingsIcon, LocationIcon, RestaurantIcon } from "@darb/icons";
+import {
+  ArrowRightIcon,
+  ExternalLinkIcon,
+  LanguagesSettingsIcon,
+  LocationIcon,
+  MailIcon,
+  RestaurantIcon,
+} from "@darb/icons";
 import { getTextDirection } from "@darb/i18n";
-import type { LocalizedRestaurantPublication } from "@darb/restaurant";
+import {
+  formatRestaurantTime,
+  formatRestaurantWeekday,
+  getRestaurantOpeningStatus,
+  type LocalizedRestaurantPublication,
+  type PublicRestaurantLocation,
+} from "@darb/restaurant";
 
 import { getRestaurantCopy } from "../lib/copy";
 import { getPublicSupabaseConfig } from "../lib/config";
@@ -220,19 +233,165 @@ export function TemplateCategoryRail({ publication }: Pick<TemplateProps, "publi
 export function TemplateFooter({ publication }: Pick<TemplateProps, "publication">) {
   const copy = getRestaurantCopy(publication.locale);
   return (
-    <footer className="site-footer">
-      <span lang={publication.business.defaultLocale} dir="auto">
-        {publication.business.displayName}
-      </span>
-      <a
-        href={`https://${darbApplications.main.productionHost}`}
-        lang="en"
-        data-analytics-event="outbound-darb"
-      >
-        {copy.poweredBy}
-        <ArrowRightIcon size={16} />
-      </a>
-    </footer>
+    <>
+      <RestaurantLocationDetails publication={publication} />
+      <footer className="site-footer">
+        <span lang={publication.business.defaultLocale} dir="auto">
+          {publication.business.displayName}
+        </span>
+        <a
+          href={`https://${darbApplications.main.productionHost}`}
+          lang="en"
+          data-analytics-event="outbound-darb"
+        >
+          {copy.poweredBy}
+          <ArrowRightIcon size={16} />
+        </a>
+      </footer>
+    </>
+  );
+}
+
+function RestaurantLocationDetails({ publication }: Pick<TemplateProps, "publication">) {
+  const locations = publication.selectedLocation
+    ? [publication.selectedLocation]
+    : publication.locations;
+  const visible = locations.filter(hasPublicLocationDetails);
+  if (visible.length === 0) return null;
+  return (
+    <section
+      className="location-details"
+      aria-label={getRestaurantCopy(publication.locale).location}
+    >
+      <div className="location-details__inner">
+        {visible.map((location) => (
+          <LocationDetailsCard key={location.id} location={location} locale={publication.locale} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function LocationDetailsCard({
+  locale,
+  location,
+}: {
+  locale: LocalizedRestaurantPublication["locale"];
+  location: PublicRestaurantLocation;
+}) {
+  const copy = getRestaurantCopy(locale);
+  const status =
+    location.openingHours.length > 0
+      ? getRestaurantOpeningStatus(location.openingHours, location.timezone)
+      : null;
+  const grouped = Array.from({ length: 7 }, (_, index) => index + 1).map((weekday) => ({
+    intervals: location.openingHours.filter((interval) => interval.weekday === weekday),
+    weekday,
+  }));
+  const address = [location.addressLine, location.locality, location.postalCode]
+    .filter(Boolean)
+    .join(" · ");
+  const next = status?.nextOpening;
+  const nextLabel = next
+    ? next.dayOffset === 0
+      ? copy.opensAt(formatRestaurantTime(next.opensAt, locale))
+      : next.dayOffset === 1
+        ? copy.opensTomorrowAt(formatRestaurantTime(next.opensAt, locale))
+        : copy.opensOn(
+            formatRestaurantWeekday(next.weekday, locale),
+            formatRestaurantTime(next.opensAt, locale),
+          )
+    : null;
+  const whatsappHref = location.contact?.whatsappPhone
+    ? `https://wa.me/${location.contact.whatsappPhone.replace("+", "")}`
+    : null;
+
+  return (
+    <article className="location-details__card">
+      <div className="location-details__heading">
+        <div>
+          <p className="eyebrow">{copy.location}</p>
+          <h2 dir="auto">{location.displayName}</h2>
+        </div>
+        {status ? (
+          <div className={`open-state ${status.isOpen ? "open-state--open" : ""}`}>
+            <strong>{status.isOpen ? copy.openNow : copy.closedNow}</strong>
+            {!status.isOpen && nextLabel ? <span>{nextLabel}</span> : null}
+          </div>
+        ) : null}
+      </div>
+      <div className="location-details__grid">
+        {address ? (
+          <div className="location-details__address">
+            <LocationIcon size={20} />
+            <div>
+              <strong>{copy.address}</strong>
+              <span dir="auto">{address}</span>
+            </div>
+          </div>
+        ) : null}
+        {location.openingHours.length > 0 ? (
+          <div className="opening-hours">
+            <strong>{copy.openingHours}</strong>
+            <dl>
+              {grouped.map(({ intervals, weekday }) => (
+                <div key={weekday}>
+                  <dt>{formatRestaurantWeekday(weekday, locale, "short")}</dt>
+                  <dd dir={intervals.length > 0 ? "ltr" : undefined}>
+                    {intervals.length > 0
+                      ? intervals
+                          .map(
+                            (interval) =>
+                              `${formatRestaurantTime(interval.opensAt, locale)} – ${formatRestaurantTime(interval.closesAt, locale)}`,
+                          )
+                          .join(" · ")
+                      : copy.closed}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ) : null}
+      </div>
+      {location.contact ? (
+        <div className="contact-links">
+          {location.contact.phone ? (
+            <a href={`tel:${location.contact.phone}`} dir="ltr">
+              {copy.call} · {location.contact.phone}
+            </a>
+          ) : null}
+          {location.contact.email ? (
+            <a href={`mailto:${location.contact.email}`} dir="ltr">
+              <MailIcon size={16} /> {copy.email}
+            </a>
+          ) : null}
+          {location.contact.websiteUrl ? (
+            <a href={location.contact.websiteUrl} target="_blank" rel="noreferrer">
+              <ExternalLinkIcon size={16} /> {copy.website}
+            </a>
+          ) : null}
+          {whatsappHref ? (
+            <a href={whatsappHref} target="_blank" rel="noreferrer">
+              {copy.whatsapp}
+            </a>
+          ) : null}
+          {location.contact.mapUrl ? (
+            <a href={location.contact.mapUrl} target="_blank" rel="noreferrer">
+              <LocationIcon size={16} /> {copy.map}
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
+function hasPublicLocationDetails(location: PublicRestaurantLocation): boolean {
+  return Boolean(
+    location.addressLine ||
+    location.locality ||
+    location.contact ||
+    location.openingHours.length > 0,
   );
 }
 

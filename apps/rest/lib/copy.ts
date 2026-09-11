@@ -1,16 +1,22 @@
 import type { SupportedLocale } from "@darb/i18n";
 
 interface RestaurantCopy {
+  address: string;
   allLocations: string;
   availableAt: string;
   categories: string;
+  call: string;
   chooseLocation: string;
   close: string;
+  closed: string;
+  closedNow: string;
   details: string;
+  email: string;
   language: string;
   location: string;
   loading: string;
   menu: string;
+  map: string;
   landingDescription: string;
   landingTitle: string;
   productName: string;
@@ -26,6 +32,11 @@ interface RestaurantCopy {
   noItems: string;
   noMenusDescription: string;
   noMenusTitle: string;
+  openNow: string;
+  openingHours: string;
+  opensAt: (time: string) => string;
+  opensOn: (day: string, time: string) => string;
+  opensTomorrowAt: (time: string) => string;
   poweredBy: string;
   selections: (minimum: number, maximum: number) => string;
   skipToMenu: string;
@@ -34,20 +45,28 @@ interface RestaurantCopy {
   unavailableTitle: string;
   variants: string;
   viewDetails: string;
+  website: string;
+  whatsapp: string;
 }
 
 const copy: Record<SupportedLocale, RestaurantCopy> = {
   ar: {
+    address: "العنوان",
     allLocations: "كل الفروع",
     availableAt: "المتوفر بهالفرع",
     categories: "التصنيفات",
+    call: "اتصل",
     chooseLocation: "اختار الفرع",
     close: "سكّر",
+    closed: "مغلق",
+    closedNow: "مغلق هلا",
     details: "التفاصيل",
+    email: "البريد الإلكتروني",
     language: "اللغة",
     location: "الفرع",
     loading: "عم نحمّل القائمة",
     menu: "القائمة",
+    map: "افتح الخريطة",
     landingDescription: "افتح رابط المطعم على درب عشان تشوف قائمته المنشورة.",
     landingTitle: "قائمة المطعم، بتجربة مرتّبة وواضحة.",
     productName: "درب للمطاعم",
@@ -63,6 +82,11 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     noItems: "لسّه ما في أصناف منشورة بهالقسم.",
     noMenusDescription: "لسّه ما اننشرت القائمة. ارجع شوفها بعد شوي.",
     noMenusTitle: "القائمة عم تتحضّر",
+    openNow: "مفتوح هلا",
+    openingHours: "ساعات الدوام",
+    opensAt: (time) => `بفتح اليوم الساعة ${time}`,
+    opensOn: (day, time) => `بفتح يوم ${day} الساعة ${time}`,
+    opensTomorrowAt: (time) => `بفتح بكرا الساعة ${time}`,
     poweredBy: "بدعم من درب",
     selections: (minimum, maximum) =>
       minimum > 0
@@ -74,18 +98,26 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     unavailableTitle: "المطعم مش متاح هلا",
     variants: "الأحجام والخيارات",
     viewDetails: "شوف التفاصيل",
+    website: "الموقع",
+    whatsapp: "واتساب",
   },
   he: {
+    address: "כתובת",
     allLocations: "כל הסניפים",
     availableAt: "זמינות בסניף זה",
     categories: "קטגוריות",
+    call: "התקשרות",
     chooseLocation: "בחירת סניף",
     close: "סגירה",
+    closed: "סגור",
+    closedNow: "סגור עכשיו",
     details: "פרטים",
+    email: "אימייל",
     language: "שפה",
     location: "סניף",
     loading: "טוענים את התפריט",
     menu: "תפריט",
+    map: "פתיחה במפה",
     landingDescription: "פותחים את הקישור של המסעדה ב-Darb כדי לראות את התפריט שפורסם.",
     landingTitle: "תפריט המסעדה, בחוויה ברורה ונעימה.",
     productName: "Darb למסעדות",
@@ -101,6 +133,11 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     noItems: "עדיין אין פריטים שפורסמו בחלק זה.",
     noMenusDescription: "עדיין לא פורסם תפריט לתצוגה. כדאי לחזור בהמשך.",
     noMenusTitle: "התפריט בהכנה",
+    openNow: "פתוח עכשיו",
+    openingHours: "שעות פתיחה",
+    opensAt: (time) => `נפתח היום ב-${time}`,
+    opensOn: (day, time) => `נפתח ביום ${day} ב-${time}`,
+    opensTomorrowAt: (time) => `נפתח מחר ב-${time}`,
     poweredBy: "מופעל באמצעות Darb",
     selections: (minimum, maximum) =>
       minimum > 0
@@ -112,18 +149,26 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     unavailableTitle: "המסעדה אינה זמינה",
     variants: "גדלים ואפשרויות",
     viewDetails: "הצגת פרטים",
+    website: "אתר",
+    whatsapp: "WhatsApp",
   },
   en: {
+    address: "Address",
     allLocations: "All locations",
     availableAt: "Availability at this location",
     categories: "Categories",
+    call: "Call",
     chooseLocation: "Choose a location",
     close: "Close",
+    closed: "Closed",
+    closedNow: "Closed now",
     details: "Details",
+    email: "Email",
     language: "Language",
     location: "Location",
     loading: "Loading restaurant menu",
     menu: "Menu",
+    map: "Open map",
     landingDescription: "Use a restaurant’s Darb link to view its published menu.",
     landingTitle: "Restaurant experiences, thoughtfully served.",
     productName: "Darb Restaurant",
@@ -139,6 +184,11 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     noItems: "No items have been published in this section yet.",
     noMenusDescription: "No menu is published for viewing yet. Please check back later.",
     noMenusTitle: "The menu is being prepared",
+    openNow: "Open now",
+    openingHours: "Opening hours",
+    opensAt: (time) => `Opens today at ${time}`,
+    opensOn: (day, time) => `Opens ${day} at ${time}`,
+    opensTomorrowAt: (time) => `Opens tomorrow at ${time}`,
     poweredBy: "Powered by Darb",
     selections: (minimum, maximum) =>
       minimum > 0
@@ -150,6 +200,8 @@ const copy: Record<SupportedLocale, RestaurantCopy> = {
     unavailableTitle: "Restaurant unavailable",
     variants: "Sizes and options",
     viewDetails: "View details",
+    website: "Website",
+    whatsapp: "WhatsApp",
   },
 };
 

@@ -38,7 +38,28 @@ const publication: PublicRestaurantPublication = {
     timezone: "Asia/Jerusalem",
   },
   locales: ["ar", "he", "en"],
-  locations: [],
+  locations: [
+    {
+      addressLine: "1 Market Street",
+      contact: {
+        email: "hello@example.com",
+        mapUrl: "https://maps.example/location",
+        phone: "+972501234567",
+        websiteUrl: "https://example.com",
+        whatsappPhone: "+972501234567",
+      },
+      countryCode: "IL",
+      displayName: "Jerusalem",
+      id: "location-1",
+      locality: "Jerusalem",
+      openingHours: [
+        { closesAt: "14:00", opensAt: "09:00", weekday: 1 },
+        { closesAt: "02:00", opensAt: "18:00", weekday: 1 },
+      ],
+      postalCode: "91000",
+      timezone: "Asia/Jerusalem",
+    },
+  ],
   menus: [
     {
       categories: [
@@ -207,6 +228,36 @@ describe("public Restaurant app helpers", () => {
     });
     expect(metadata.twitter).toMatchObject({ card: "summary" });
     expect(JSON.stringify(metadata)).not.toContain("internal_name");
+  });
+
+  it("projects only factual location, contact, and regular-hours JSON-LD", () => {
+    const jsonLd = createRestaurantJsonLd(localizeRestaurantPublication(publication, "en"));
+    expect(jsonLd).toMatchObject({
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: "IL",
+        addressLocality: "Jerusalem",
+        postalCode: "91000",
+        streetAddress: "1 Market Street",
+      },
+      openingHoursSpecification: [
+        {
+          "@type": "OpeningHoursSpecification",
+          closes: "14:00",
+          dayOfWeek: "https://schema.org/Monday",
+          opens: "09:00",
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          closes: "02:00",
+          dayOfWeek: "https://schema.org/Monday",
+          opens: "18:00",
+        },
+      ],
+      telephone: "+972501234567",
+    });
+    expect(JSON.stringify(jsonLd)).not.toContain("hello@example.com");
+    expect(JSON.stringify(jsonLd)).not.toContain("whatsapp");
   });
 
   it("uses only a trusted primary custom hostname throughout metadata", () => {
