@@ -30,7 +30,8 @@ for Restaurant), and hands the owner directly to the useful core or Restaurant w
 
 - `/b/[businessSlug]` shows the real platform-state Overview and setup guidance;
 - `/b/[businessSlug]/settings` reads core identity, locale, currency, timezone, and lifecycle;
-- `/b/[businessSlug]/modules` reads the platform registry and current business capability state;
+- `/b/[businessSlug]/modules` presents the current plan, effective module access, location allowance,
+  optional initial-setup request, and tenant capability switches;
 - `/b/[businessSlug]/appearance` resolves enabled template contexts and controlled theme state;
 - `/b/[businessSlug]/media` uploads, describes, lists, and archives shared business assets;
 - `/b/[businessSlug]/domains` manages ownership verification, Restaurant targeting, provider
@@ -75,7 +76,8 @@ authoritative, and the privileged client is not used. Each successful write atom
 `business.updated`, `location.created`, `location.updated`, or `location.archived` with allowlisted
 metadata.
 
-Module state uses its own narrow Server Action and `core.set_business_module_enabled` RPC. It emits
+Module state uses its own narrow Server Action and `core.set_business_module_enabled` RPC. New
+enablement requires plan/override entitlement. It emits
 `business.module_enabled` or `business.module_disabled` only for actual transitions. The page is
 explicit that capability state does not launch an engine, create engine data, or represent billing.
 

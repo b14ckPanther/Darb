@@ -1,8 +1,8 @@
 # Modules and capabilities
 
-Status: the platform registry, per-business state, audited mutation boundary, server-side feature
-gates, and tenant administration surface are implemented. The Restaurant domain exists without an
-admin/public runtime; the other product engines remain unimplemented.
+Status: the platform registry, plan entitlement, per-business enablement, audited mutation
+boundaries, server-side effective-access gates, and tenant administration surface are implemented.
+Restaurant has Admin and public runtimes; the other product engines remain unimplemented.
 
 ## Vocabulary and ownership
 
@@ -30,7 +30,7 @@ capability vocabulary only.
 - `is_enabled = false` is an explicit disabled state retained after a prior enable;
 - the primary key prevents duplicate business/module rows;
 - a business remains valid with zero enabled modules;
-- enablement is administrative capability state, not a plan, subscription, or entitlement.
+- enablement is the tenant's operational choice and remains separate from plan entitlement.
 
 `core.modules.is_available` controls new enablement. If the platform makes a module unavailable, an
 existing enabled row is retained for operational clarity but is not considered effectively enabled
@@ -53,13 +53,13 @@ handle a suspended business through the same authenticated database authorizatio
 exists. Archived businesses must be reactivated before any module change, including by a super
 admin.
 
-## Application gate
+## Entitlement and application gate
 
-The server loads the RLS-visible registry and business state into the current-business context.
-`businessHasModule` and `requireBusinessModule` provide the future server-side capability gate. An
-effective module requires an active business, an available registry definition, and enabled tenant
-state. A future engine route must additionally authenticate the user and require its own action
-permission: module enablement never grants authorization.
+The server loads one database-authoritative module-access snapshot into the current-business
+context. An effective module requires an active business, an available registry definition,
+platform-controlled entitlement, and enabled tenant state. Engine routes additionally authenticate
+the user and require their action permission: neither enablement nor entitlement grants user
+authorization. See [`COMMERCIAL.md`](./COMMERCIAL.md).
 
 The `/b/[businessSlug]/modules` surface is readable by authorized business members. Mutation controls
 appear only with `modules.manage` on an active business. It deliberately offers no engine launch
@@ -78,7 +78,7 @@ See [`RESTAURANT.md`](./RESTAURANT.md).
 
 - Restaurant admin/public routes and other engine-specific schemas, permissions, and configuration;
 - module dependencies or a dependency graph;
-- billing, plans, subscriptions, and entitlement reconciliation;
+- billing providers, prices, subscriptions, trials, invoices, and entitlement expiry;
 - template dependencies across modules, advanced template composition, and vertical classification;
 - platform-super-admin registry UI and module marketplace behavior;
 - localization of platform module labels and descriptions.

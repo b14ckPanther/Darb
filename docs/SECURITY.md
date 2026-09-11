@@ -163,8 +163,9 @@ service-role execution of these public RPCs are explicitly revoked.
 
 Normal capability management uses the same request-scoped authenticated client. Direct tenant
 writes to `core.business_modules` are revoked, and `core.set_business_module_enabled` repeats the
-`modules.manage`, registry availability, and business lifecycle checks in Postgres. The caller
-cannot provide an actor, create a registry definition, attach metadata, or cross tenants. Module
+`modules.manage`, registry availability, platform entitlement, and business lifecycle checks in
+Postgres. The caller cannot provide an actor, create a registry definition, attach metadata, or cross
+tenants. Module
 enablement is a business capability decision and is never treated as user authorization.
 
 Appearance management also uses the request-scoped authenticated client. Direct writes to the
@@ -185,8 +186,8 @@ audit metadata.
 Restaurant administration uses the normal request-scoped authenticated client. Its Server Actions
 re-resolve the RLS-visible business, active lifecycle, module state, and Restaurant permission
 before calling the existing narrow RPCs; direct table writes remain withheld. Those RPCs require
-`restaurant.manage`, active tenant lifecycle, and an enabled/available Restaurant module, then
-re-resolve every parent inside the target business. Composite foreign keys prevent cross-tenant
+`restaurant.manage`, active tenant lifecycle, and an enabled/available/entitled Restaurant module,
+then re-resolve every parent inside the target business. Composite foreign keys prevent cross-tenant
 menu/category/item, media, modifier, translation, and location relationships even for trusted SQL.
 Anonymous and service-role execution of tenant mutation RPCs is revoked. Public Restaurant delivery
 uses only `public.get_restaurant_publication(text)`, a separate stable security-definer function

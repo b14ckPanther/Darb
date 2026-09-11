@@ -20,25 +20,30 @@ to the hosted project's exposed-schema allowlist before clients can address them
 
 ## Tables
 
-| Table                             | Responsibility                                                                        |
-| --------------------------------- | ------------------------------------------------------------------------------------- |
-| `core.profiles`                   | Minimal display identity and optional locale preference linked 1:1 to `auth.users`    |
-| `core.businesses`                 | Canonical tenant identity, lifecycle, locale, regional defaults, and onboarding state |
-| `core.locations`                  | Reusable business locations with minimal postal fields and no engine-specific data    |
-| `core.memberships`                | Unique user-to-business relationship with active or suspended lifecycle               |
-| `core.modules`                    | Platform-owned capability key, label, description, availability, and order            |
-| `core.permissions`                | Stable permission-key registry and allowed assignment scope                           |
-| `core.membership_permissions`     | Normalized business-wide or location-scoped permission assignments                    |
-| `core.business_modules`           | Data-driven module enablement per business, independent of billing                    |
-| `core.templates`                  | Platform-owned template compositions and validated default semantic themes            |
-| `core.business_visual_settings`   | Tenant template selection and partial theme overrides per module context              |
-| `core.media_assets`               | Shared business media metadata and immutable Storage object identity                  |
-| `core.module_media_roles`         | Platform-owned module branding-role registry and allowed media kinds                  |
-| `core.business_media_assignments` | Tenant branding-role assignment to a canonical shared media asset                     |
-| `core.business_domains`           | Retained ownership claims plus explicit engine-target routing lifecycle               |
-| `core.business_locales`           | Per-business enabled locale set; business default remains canonical                   |
-| `core.audit_events`               | Append-oriented sensitive-operation event foundation                                  |
-| `private.super_admins`            | Revocable platform-wide administrators, separate from tenant access                   |
+| Table                                        | Responsibility                                                                        |
+| -------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `core.profiles`                              | Minimal display identity and optional locale preference linked 1:1 to `auth.users`    |
+| `core.businesses`                            | Canonical tenant identity, lifecycle, locale, regional defaults, and onboarding state |
+| `core.locations`                             | Reusable business locations with minimal postal fields and no engine-specific data    |
+| `core.memberships`                           | Unique user-to-business relationship with active or suspended lifecycle               |
+| `core.modules`                               | Platform-owned capability key, label, description, availability, and order            |
+| `core.permissions`                           | Stable permission-key registry and allowed assignment scope                           |
+| `core.membership_permissions`                | Normalized business-wide or location-scoped permission assignments                    |
+| `core.business_modules`                      | Tenant operational module enablement, separate from platform entitlement              |
+| `core.plans`                                 | Platform-owned provider-neutral commercial arrangement registry                       |
+| `core.plan_module_entitlements`              | Capabilities included by each plan                                                    |
+| `core.business_plan_assignments`             | One current platform-controlled plan per business                                     |
+| `core.business_module_entitlement_overrides` | Reasoned platform grant/deny overrides                                                |
+| `core.business_initial_setup_services`       | Optional assisted-setup lifecycle, independent of entitlement                         |
+| `core.templates`                             | Platform-owned template compositions and validated default semantic themes            |
+| `core.business_visual_settings`              | Tenant template selection and partial theme overrides per module context              |
+| `core.media_assets`                          | Shared business media metadata and immutable Storage object identity                  |
+| `core.module_media_roles`                    | Platform-owned module branding-role registry and allowed media kinds                  |
+| `core.business_media_assignments`            | Tenant branding-role assignment to a canonical shared media asset                     |
+| `core.business_domains`                      | Retained ownership claims plus explicit engine-target routing lifecycle               |
+| `core.business_locales`                      | Per-business enabled locale set; business default remains canonical                   |
+| `core.audit_events`                          | Append-oriented sensitive-operation event foundation                                  |
+| `private.super_admins`                       | Revocable platform-wide administrators, separate from tenant access                   |
 
 Internal identifiers are UUIDs and slugs remain human-readable identifiers. All stored timestamps
 use `timestamptz`; business defaults are ILS and `Asia/Jerusalem`, while no naive local timestamp or
@@ -252,8 +257,9 @@ delivery decision, not a write grant.
 Migrations deterministically register the module identifiers `restaurant`, `booking`, `pages`, and
 `commerce`, with platform labels, descriptions, availability, and sort order, plus the minimal
 permissions needed by the core model. These rows define platform vocabulary only. They do not
-enable a module for any business or seed tenant content. An absent
-`core.business_modules` row means disabled; first-business bootstrap continues to create zero rows.
+enable a module for any business or seed tenant content. An absent `core.business_modules` row means
+disabled. First-business bootstrap creates a `core-only` plan assignment and zero module rows;
+database-owned onboarding may select `restaurant-starter` and enable Restaurant atomically.
 
 The migration also registers two generic, platform-owned `pages` composition foundations to prove
 template resolution. They seed no tenant row or business content and create no pages engine. An

@@ -56,8 +56,10 @@ assignments reveal only matching rows through RLS. Creating a location requires 
 
 The business route context also resolves all platform module definitions and the caller-visible
 `core.business_modules` rows. Authorized members may read this state; only business-wide
-`modules.manage` can change it. Absence means disabled, and capability state remains independent
-from membership permissions and tenant identity.
+`modules.manage` can change it. Absence means disabled. Tenant enablement remains independent from
+platform-controlled plan and entitlement state; tenant permissions never grant platform commercial
+authority, and members receive only a narrow effective-access projection. Capability state remains
+independent from membership permissions and tenant identity.
 
 Shared media, domain claims, and enabled locale rows are business-owned core resources. Immutable
 media paths use business UUIDs; hostname claims are globally unique but every read and mutation is

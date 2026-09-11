@@ -128,10 +128,14 @@ the initiating user's `domains.manage` permission. Only Restaurant is an impleme
 
 The module/capability registry is a shared platform concern, while engines remain isolated
 implementations. The current-business context loads RLS-visible capability state and provides a
-server-side enablement gate. Capability enablement never replaces engine-specific authorization or
-creates engine data. Restaurant contributes its authenticated admin route statically when both
-effective capability state and Restaurant permission are present; other enabled engines remain
-honestly unavailable until their implementation phase.
+server-side effective-access gate. Platform plan entitlement and optional explicit overrides remain
+separate from tenant enablement and contain no billing-provider logic. Capability enablement never
+replaces engine-specific authorization or creates engine data. Restaurant contributes its
+authenticated admin route statically when both effective capability state and Restaurant permission
+are present; other enabled engines remain honestly unavailable until their implementation phase.
+
+See [`COMMERCIAL.md`](./COMMERCIAL.md) for the provider-neutral plan, entitlement, effective-access,
+location-limit, and assisted-setup boundaries.
 
 The template/theme foundation remains separate from both module enablement and the admin design
 system. Platform-owned templates are scoped to a module rendering context; tenant rows store only a

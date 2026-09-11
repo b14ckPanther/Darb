@@ -10,11 +10,12 @@ memberships, media, domains, locales, currency, templates, and themes remain in 
 referenced rather than duplicated. The domain is suitable for restaurants, cafés, bakeries,
 dessert shops, food trucks, bars, and similar food businesses.
 
-The platform-owned `restaurant` module remains the capability gate. Enabling it creates no
+The platform-owned `restaurant` module remains the capability gate. Plan entitlement and tenant
+enablement are separate, and enabling it creates no
 configuration or content. An absent `restaurant.configurations` row means unconfigured and not
-publicly active. Disabling the module or making it unavailable retains Restaurant data for
-authorized historical reads, while every mutation is blocked. Capability state is not user
-authorization and is not billing entitlement.
+publicly active. Losing entitlement, disabling the module, or making it unavailable retains
+Restaurant data for authorized historical reads, while mutations and public delivery fail closed.
+Capability state is not user authorization. See [`COMMERCIAL.md`](./COMMERCIAL.md).
 
 ## Entity model
 

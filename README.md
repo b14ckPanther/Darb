@@ -108,7 +108,8 @@ no-op analytics boundary are documented in [`docs/PRODUCTION.md`](./docs/PRODUCT
 
 This repository has completed the monorepo, core database, authentication, platform-resource,
 theme/appearance, unified tenant-admin, platform super-admin control plane, Restaurant Engine
-domain, Restaurant Admin foundations, and the Darb public brand website.
+domain, Restaurant Admin foundations, provider-neutral plans/entitlements (without billing), and
+the Darb public brand website.
 It includes migration-driven tenancy, RLS authorization, atomic first-business bootstrap, protected
 multi-business routes, audited core mutations, shared image/video Storage coordination,
 DNS-verified domain claims with explicit provider-attested Restaurant routing, business locale
