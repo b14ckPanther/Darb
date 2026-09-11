@@ -1017,6 +1017,7 @@ test("creates and edits a core location through audited tenant actions", async (
 test("manages real Restaurant menus, localization, variants, modifiers, media, and location state", async ({
   page,
 }) => {
+  test.setTimeout(150_000);
   if (!primaryBusinessId || !assignedLocationId) {
     throw new Error("Restaurant dependencies were not prepared.");
   }
@@ -1040,6 +1041,75 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   await page.getByLabel("Public Restaurant experience active").check();
   await page.getByRole("button", { name: "Save configuration" }).click();
   await expect(page.getByText("Restaurant public experience marked active.")).toBeVisible();
+
+  await page.getByRole("link", { name: "Hours & contact" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Hours & contact" })).toBeVisible();
+  const publicDetails = page.getByRole("region", { name: otherLocationName });
+  await publicDetails.getByLabel("Public phone").fill("+972501234567");
+  await publicDetails.getByLabel("Public email").fill("hello@example.test");
+  await publicDetails.getByLabel("Website").fill("http://unsafe.example.test");
+  await publicDetails.getByRole("button", { name: "Save hours & contact" }).click();
+  await expect(publicDetails.getByText("Use a complete HTTPS website address.")).toBeVisible();
+  await expect(publicDetails.getByRole("button", { name: "Save hours & contact" })).toBeEnabled();
+  await publicDetails.getByLabel("Website").fill("https://example.test");
+  await publicDetails
+    .getByText("Monday", { exact: true })
+    .locator("..")
+    .getByRole("button", { name: "Add hours" })
+    .click();
+  await publicDetails.getByLabel("Opening time for Monday").fill("18:00");
+  await publicDetails.getByLabel("Closing time for Monday").fill("02:00");
+  await publicDetails.getByRole("button", { name: "Save hours & contact" }).click();
+  await expect(publicDetails.getByText("Location hours and public details saved.")).toBeVisible();
+  await page.reload();
+  const persistedPublicDetails = page.getByRole("region", {
+    name: otherLocationName,
+  });
+  await expect(persistedPublicDetails.getByLabel("Public phone")).toHaveValue("+972501234567");
+  await expect(persistedPublicDetails.getByLabel("Opening time for Monday")).toHaveValue("18:00");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const locale of [
+    { code: "ar", direction: "rtl", font: "Cairo" },
+    { code: "he", direction: "rtl", font: "Heebo" },
+    { code: "en", direction: "ltr", font: "Ubuntu" },
+  ] as const) {
+    await page.locator(".admin-language-switcher select").selectOption(locale.code);
+    await expect(page.locator("html")).toHaveAttribute("lang", locale.code);
+    await expect(page.locator("html")).toHaveAttribute("dir", locale.direction);
+    await expect
+      .poll(() =>
+        page.locator("main h1").evaluate((element) => getComputedStyle(element).fontFamily),
+      )
+      .toContain(locale.font);
+    for (const viewport of [
+      { height: 844, width: 390 },
+      { height: 1024, width: 768 },
+      { height: 900, width: 1440 },
+      { height: 1080, width: 1920 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await expect(page.locator(`input[name="phone"][value="+972501234567"]`)).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+        viewport.width + 1,
+      );
+      if (process.env.DARB_VISUAL_QA_OUTPUT) {
+        await page.screenshot({
+          fullPage: true,
+          path: `${process.env.DARB_VISUAL_QA_OUTPUT}/restaurant-hours-${locale.code}-${viewport.width}x${viewport.height}.png`,
+        });
+      }
+    }
+    await page.setViewportSize({ height: 844, width: 390 });
+    await page.locator("html").evaluate((element) => {
+      element.style.fontSize = "200%";
+    });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      391,
+    );
+    await page.locator("html").evaluate((element) => element.style.removeProperty("font-size"));
+  }
+  await page.emulateMedia({ reducedMotion: "no-preference" });
 
   await page.getByRole("link", { name: "Menus & items" }).click();
   const createMenu = page.locator("details").filter({ hasText: "Create a menu" }).first();
@@ -1084,6 +1154,7 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
   const publicRestaurantHtml = await publicRestaurant.text();
   expect(publicRestaurantHtml).toContain("Coffee");
   expect(publicRestaurantHtml).toContain("House espresso");
+  expect(publicRestaurantHtml).toContain("+972501234567");
 
   const englishItem = page.locator('form[data-content-locale="en"]').first();
   await englishItem.getByLabel("Customer-facing name").fill("House espresso");
@@ -1211,6 +1282,62 @@ test("manages real Restaurant menus, localization, variants, modifiers, media, a
     );
   }
 
+  const scaleMenuId = menuUrl.match(/\/menus\/([0-9a-f-]+)$/)?.[1];
+  if (!scaleMenuId) throw new Error("Unable to resolve the Restaurant menu fixture.");
+  const scaleCategories = Array.from({ length: 15 }, () => randomUUID());
+  const scaleItems = Array.from({ length: 225 }, () => randomUUID());
+  runLocalFixtureSql(`
+    begin;
+    insert into restaurant.categories (
+      id, business_id, menu_id, internal_name, is_visible, lifecycle_status, display_order
+    ) values
+      ${scaleCategories
+        .map(
+          (id, index) =>
+            `('${id}', '${primaryBusinessId}', '${scaleMenuId}', 'scale-category-${index + 1}', true, 'active', ${100 + index})`,
+        )
+        .join(",\n      ")};
+    insert into restaurant.category_translations (business_id, category_id, locale_code, name)
+    values
+      ${scaleCategories
+        .map(
+          (id, index) => `('${primaryBusinessId}', '${id}', 'en', 'Scale category ${index + 1}')`,
+        )
+        .join(",\n      ")};
+    insert into restaurant.items (
+      id, business_id, menu_id, category_id, internal_name, base_price_minor,
+      is_visible, availability_status, lifecycle_status, display_order
+    ) values
+      ${scaleItems
+        .map(
+          (id, index) =>
+            `('${id}', '${primaryBusinessId}', '${scaleMenuId}', '${scaleCategories[index % scaleCategories.length]}', 'scale-item-${index + 1}', ${1000 + index}, true, '${index % 17 === 0 ? "sold_out" : "available"}', 'active', ${index + 1})`,
+        )
+        .join(",\n      ")};
+    insert into restaurant.item_translations (business_id, item_id, locale_code, name, description)
+    values
+      ${scaleItems
+        .map(
+          (id, index) =>
+            `('${primaryBusinessId}', '${id}', 'en', 'Scale item ${index + 1}', 'Deterministic large-menu content for local launch QA.')`,
+        )
+        .join(",\n      ")};
+    commit;
+  `);
+  await page.reload();
+  await inventory.getByPlaceholder("Search by customer or internal name").fill("Scale item 225");
+  await expect(page.getByText("Scale item 225", { exact: true })).toBeVisible();
+  await page.setViewportSize({ height: 844, width: 390 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
+  runLocalFixtureSql(`
+    begin;
+    delete from restaurant.items where id in (${scaleItems.map((id) => `'${id}'`).join(",")});
+    delete from restaurant.categories where id in (${scaleCategories.map((id) => `'${id}'`).join(",")});
+    commit;
+  `);
+  await page.reload();
+
+  await page.setViewportSize({ height: 900, width: 1440 });
   await page.getByLabel("Current business").selectOption(secondBusinessSlug);
   await expect(page).toHaveURL(new RegExp(`/b/${secondBusinessSlug}$`));
   await expect(page.getByText("House espresso", { exact: true })).toHaveCount(0);
@@ -2101,6 +2228,21 @@ function requiredEnvironment(name: string): string {
   }
 
   return value;
+}
+
+function runLocalFixtureSql(sql: string): void {
+  const databaseUrl = requiredEnvironment("SUPABASE_TEST_DATABASE_URL");
+  const hostname = new URL(databaseUrl).hostname;
+  if (!["127.0.0.1", "localhost", "[::1]"].includes(hostname)) {
+    throw new Error("Restaurant scale fixtures are restricted to a local Supabase database.");
+  }
+  const result = spawnSync("psql", [databaseUrl, "--no-psqlrc", "--set", "ON_ERROR_STOP=1"], {
+    encoding: "utf8",
+    input: sql,
+  });
+  if (result.status !== 0) {
+    throw new Error(result.stderr || result.stdout || "Unable to apply Restaurant scale fixtures.");
+  }
 }
 
 function promoteLocalSuperAdmin(userId: string): void {

@@ -79,6 +79,19 @@ test.beforeAll(async () => {
       ('${locationOneId}', '${businessId}', 'البلدة القديمة', 'شارع السوق 12', 'الناصرة', 'active'),
       ('${locationTwoId}', '${businessId}', 'فرع الحديقة', 'طريق الحديقة 7', 'حيفا', 'active');
 
+    insert into restaurant.location_public_profiles (
+      business_id, location_id, public_phone, public_email, website_url, whatsapp_phone, map_url
+    ) values (
+      '${businessId}', '${locationOneId}', '+972501234567', 'hello@example.test',
+      'https://example.test', '+972509876543', 'https://maps.example.test/place'
+    );
+    insert into restaurant.location_opening_intervals (
+      business_id, location_id, iso_weekday, opens_at, closes_at
+    ) values
+      ('${businessId}', '${locationOneId}', 1, '09:00', '14:00'),
+      ('${businessId}', '${locationOneId}', 1, '18:00', '02:00'),
+      ('${businessId}', '${locationOneId}', 5, '10:00', '15:00');
+
     insert into core.media_assets (
       id, business_id, storage_bucket, storage_path, media_kind, mime_type,
       byte_size, width, height, alt_text, original_filename, status
@@ -273,6 +286,14 @@ test("renders the anonymous public projection with media and no admin metadata",
     .toContain("Cairo");
   await expect(page.getByRole("heading", { name: "قائمة الموسم" })).toBeVisible();
   await expect(page.getByAltText("طبق مميز من مطبخ درب").first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /اتصل/ })).toHaveAttribute(
+    "href",
+    "tel:+972501234567",
+  );
+  await expect(page.getByText("ساعات الدوام").first()).toBeVisible();
+  await expect(
+    page.locator(".location-details__card").filter({ hasText: "فرع الحديقة" }),
+  ).not.toContainText("ساعات الدوام");
   await expect(page.getByText("secret-draft-menu")).toHaveCount(0);
   await expect(page.getByText("Hidden item")).toHaveCount(0);
   await expect(page.locator("body")).not.toContainText("internal-signature");
@@ -411,7 +432,7 @@ test("keeps sold-out content visible and applies a selected location override", 
 });
 
 test("emits canonical metadata and foundational Restaurant JSON-LD", async ({ page }) => {
-  await page.goto(`/${slug}/en`);
+  await page.goto(`/${slug}/en?location=${locationOneId}`);
   await expect(page).toHaveTitle(`${publicBusinessName} · Seasonal menu`);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
@@ -440,10 +461,11 @@ test("emits canonical metadata and foundational Restaurant JSON-LD", async ({ pa
   const jsonLd = await page.locator('script[type="application/ld+json"]').textContent();
   expect(jsonLd).toContain('"@type":"Restaurant"');
   expect(jsonLd).toContain('"price":"45.90"');
+  expect(jsonLd).toContain('"telephone":"+972501234567"');
+  expect(jsonLd).toContain('"dayOfWeek":"https://schema.org/Monday"');
   expect(jsonLd).not.toContain("internal-signature");
   expect(jsonLd).not.toContain("secret-draft-menu");
 
-  await page.goto(`/${slug}/en?location=${locationOneId}`);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
     `https://${customHost}/en`,
@@ -756,6 +778,67 @@ test("renders every Restaurant template across the exact responsive QA matrix", 
   }
 
   expect(consoleIssues).toEqual([]);
+});
+
+test("keeps a deterministic 225-item Restaurant usable without overflow", async ({ page }) => {
+  const scaleCategories = Array.from({ length: 15 }, () => randomUUID());
+  const scaleItems = Array.from({ length: 225 }, () => randomUUID());
+  try {
+    runFixtureSql(`
+      begin;
+      insert into restaurant.categories (
+        id, business_id, menu_id, internal_name, is_visible, lifecycle_status, display_order
+      ) values
+        ${scaleCategories
+          .map(
+            (id, index) =>
+              `('${id}', '${businessId}', '${menuId}', 'scale-category-${index + 1}', true, 'active', ${100 + index})`,
+          )
+          .join(",\n        ")};
+      insert into restaurant.category_translations (business_id, category_id, locale_code, name)
+      values
+        ${scaleCategories
+          .map((id, index) => `('${businessId}', '${id}', 'en', 'Scale category ${index + 1}')`)
+          .join(",\n        ")};
+      insert into restaurant.items (
+        id, business_id, menu_id, category_id, internal_name, base_price_minor,
+        image_media_asset_id, is_visible, availability_status, lifecycle_status, display_order
+      ) values
+        ${scaleItems
+          .map(
+            (id, index) =>
+              `('${id}', '${businessId}', '${menuId}', '${scaleCategories[index % scaleCategories.length]}', 'scale-item-${index + 1}', ${1000 + index}, ${index % 5 === 0 ? `'${mediaId}'` : "null"}, true, '${index % 17 === 0 ? "sold_out" : "available"}', 'active', ${index + 1})`,
+          )
+          .join(",\n        ")};
+      insert into restaurant.item_translations (business_id, item_id, locale_code, name, description)
+      values
+        ${scaleItems
+          .map(
+            (id, index) =>
+              `('${businessId}', '${id}', 'en', 'Scale item ${index + 1}', 'Deterministic large-menu content for local launch QA.')`,
+          )
+          .join(",\n        ")};
+      commit;
+    `);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/${slug}/en`);
+    await expect(page.getByRole("heading", { name: "Scale item 225" })).toBeVisible();
+    await expect(
+      page.getByRole("navigation", { name: "Categories" }).getByRole("link"),
+    ).toHaveCount(21);
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBe(dimensions.clientWidth);
+  } finally {
+    runFixtureSql(`
+      begin;
+      delete from restaurant.items where id in (${scaleItems.map((id) => `'${id}'`).join(",")});
+      delete from restaurant.categories where id in (${scaleCategories.map((id) => `'${id}'`).join(",")});
+      commit;
+    `);
+  }
 });
 
 test("fails closed when the module is disabled after publication", async ({ page }) => {
