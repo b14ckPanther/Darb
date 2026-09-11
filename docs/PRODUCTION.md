@@ -149,6 +149,12 @@ Escape behavior, semantic landmarks/headings, touch-sized controls, Arabic/Hebre
 reduced motion, 200% text reflow, long content, image alternatives, and horizontal overflow. These
 checks are engineering validation, not a claim of formal certification.
 
+Restaurant launch operations—including readiness criteria, production Auth/email and domain
+checks, regular-hours semantics, first-customer onboarding, smoke testing, and support recovery—are
+maintained in [`RESTAURANT_LAUNCH.md`](./RESTAURANT_LAUNCH.md). Health endpoints remain deliberately
+cheap liveness probes; readiness confirmation uses the deployment checklist rather than exposing a
+tenant-aware or privileged public diagnostic endpoint.
+
 Platform operator lists are Server Component views backed by bounded database projections.
 Businesses, users, domains, and audit use 25-row pages, deterministic ordering, and server-side
 filters; the browser never downloads the full estate. The platform shell reuses the existing

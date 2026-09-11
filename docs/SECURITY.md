@@ -198,6 +198,13 @@ public application uses a stateless publishable-key client and has no privileged
 discovery is a separate narrow function returning only eligible slugs, locales, and trusted primary
 hostnames; it does not broaden raw table grants.
 
+Per-location public contact and regular hours remain behind the same boundary. Authenticated users
+have RLS-scoped reads but no direct writes; one `restaurant.manage` RPC validates the canonical
+location, E.164 numbers, normalized email, credential-free HTTPS links, interval shape, and weekly
+overlap before persisting atomically. Audit metadata contains only changed field names and interval
+count. Anonymous users receive these values only nested under active locations in the existing
+curated publication; profile metadata and raw tables are not granted.
+
 ## Storage and DNS boundaries
 
 Media upload is a three-step, fail-closed flow: an authenticated RPC reserves a UUID-derived bucket

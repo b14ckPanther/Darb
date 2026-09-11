@@ -144,6 +144,7 @@ are documented in:
 - [`docs/PLATFORM_ADMIN.md`](./docs/PLATFORM_ADMIN.md)
 - [`docs/PRODUCTION.md`](./docs/PRODUCTION.md)
 - [`docs/RESTAURANT.md`](./docs/RESTAURANT.md)
+- [`docs/RESTAURANT_LAUNCH.md`](./docs/RESTAURANT_LAUNCH.md)
 - [`docs/TENANCY.md`](./docs/TENANCY.md)
 - [`docs/I18N.md`](./docs/I18N.md)
 - [`docs/SECURITY.md`](./docs/SECURITY.md)

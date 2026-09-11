@@ -33,6 +33,8 @@ ownership through all relationships.
 | `restaurant.modifiers`                  | Ordered group options with non-negative price deltas and availability                  |
 | `restaurant.item_modifier_groups`       | Item/group assignment plus item-specific selection constraints                         |
 | `restaurant.item_location_availability` | Optional per-location item availability override                                       |
+| `restaurant.location_public_profiles`   | Allow-listed public phone/email/HTTPS links for a canonical location                   |
+| `restaurant.location_opening_intervals` | Regular weekly per-location hours, including split and overnight intervals             |
 | six `*_translations` tables             | Customer-facing names and supported descriptions by entity and locale                  |
 
 Menus are not restricted to one row per business. Categories are constrained to their declared
@@ -124,7 +126,7 @@ not imply Restaurant access. First-business bootstrap now grants both keys in it
 owner bundle. The migration backfill extends only active memberships holding the complete approved
 ten-key Phase 8 owner bundle; custom and partial memberships are not broadened.
 
-All 15 tenant tables have RLS and an authenticated SELECT policy for either Restaurant permission.
+All 17 tenant tables have RLS and an authenticated SELECT policy for either Restaurant permission.
 Authenticated direct writes are withheld and no anonymous table policy exists. Authorized reads
 remain available after module or business lifecycle changes for retained administration/history.
 Anonymous public delivery crosses only the curated `public.get_restaurant_publication(text)`
@@ -173,6 +175,7 @@ Restaurant Admin is statically contributed to the authenticated business shell w
 - `/b/[businessSlug]/restaurant/items/[itemId]` for item details, variants, modifier assignments,
   and per-location availability;
 - `/b/[businessSlug]/restaurant/modifiers` for the reusable modifier-group and option library.
+- `/b/[businessSlug]/restaurant/locations` for governed public contact details and regular hours.
 
 Pages are Server Components backed by set-based RLS-visible queries. Interactive forms are narrow
 client components whose Server Actions re-resolve the authenticated business and Restaurant access
@@ -189,10 +192,19 @@ section navigation for content, variants, modifiers, and location inheritance. N
 positions remain the deterministic, keyboard-accessible ordering mechanism; lower values render
 first.
 
-The Overview links to the public platform route, which then applies the existing trusted
-custom-domain canonicalization rules. It also highlights real missing-image, enabled-language, and
-sold-out counts. Restaurant media choices use business-authored alternative text rather than raw
-storage paths, identifiers, or filenames.
+The Overview links to the trusted primary custom hostname when one is live and otherwise uses the
+public platform route. It also highlights real missing-image, enabled-language, and sold-out counts.
+Its deterministic readiness list distinguishes required location, hours, content, localization,
+template, and publication checks from recommended contact/branding and optional modifiers, with
+direct resolution paths and no fabricated percentage. Restaurant media choices use
+business-authored alternative text rather than raw storage paths, identifiers, or filenames.
+
+Regular opening hours use the owning location timezone and support closed days, multiple daily
+intervals, and overnight service. The database rejects malformed and overlapping intervals.
+Public contact accepts E.164 phone/WhatsApp, normalized email, and credential-free HTTPS website or
+map links. Shared public chrome shows full-week localized hours and derives current status from
+canonical data; all three templates consume the same projection. Special/holiday overrides remain
+deferred. See [`RESTAURANT_LAUNCH.md`](./RESTAURANT_LAUNCH.md) for operating criteria and runbook.
 
 `restaurant.read` provides useful read-only administration. Mutation controls require
 `restaurant.manage`, an active business, and an effectively enabled capability. A disabled

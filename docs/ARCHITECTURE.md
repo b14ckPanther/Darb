@@ -60,7 +60,8 @@ curated anonymous projection. It never reads Restaurant administration tables di
 projection combines the active tenant,
 effective Restaurant capability, public configuration, enabled locales, active locations, resolved
 template/theme, governed tenant branding media, published menu graph, safe media fields, modifiers,
-and location overrides. Branding assignments reuse canonical shared media assets and remain
+location overrides, and allow-listed per-location contact/regular-hours data. Branding assignments
+reuse canonical shared media assets and remain
 separate from theme tokens and Restaurant content-image relationships. A null projection fails
 closed. Host routing uses an anonymous-safe exact-host resolver and an internal Next.js rewrite;
 custom and platform routes share one renderer. Canonical origin prefers the primary live Restaurant

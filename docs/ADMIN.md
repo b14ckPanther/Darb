@@ -46,6 +46,8 @@ for Restaurant), and hands the owner directly to the useful core or Restaurant w
   responsive searchable/filterable item inventory;
 - `/b/[businessSlug]/restaurant/items/[itemId]` manages variants, modifiers, and location state;
 - `/b/[businessSlug]/restaurant/modifiers` manages the reusable modifier library.
+- `/b/[businessSlug]/restaurant/locations` manages per-location public contact details and regular
+  opening hours through one recoverable, audited action.
 
 One typed, ordered navigation registry owns the implemented Workspace, Business, Experience,
 Products, and future Governance groups. The protected layout resolves and filters it from the

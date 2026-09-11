@@ -237,7 +237,7 @@ registry and their RLS-visible tenant assignments; ordinary writes cross only th
 RPC. Anonymous users receive neither table and see only active render-safe assignments nested in the
 existing Restaurant publication projection.
 
-Direct authenticated Restaurant writes are withheld across all 15 tables. RLS reads require
+Direct authenticated Restaurant writes are withheld across all 17 tables. RLS reads require
 `restaurant.read` or `restaurant.manage`, including explicit super-admin authorization through the
 existing helper. Anonymous access is absent. Disabled/unavailable module state and non-active
 business lifecycle retain data for authorized historical reads but block every mutation.
@@ -320,8 +320,10 @@ Phase 13 adds discovery grant, definer/search-path, lifecycle/module/publication
 locale, canonical-host, and raw-table-denial coverage. Restaurant branding media adds 37 assertions
 for governed-role grants, direct-write denial, assignment idempotency, lifecycle/module/permission
 gates, tenant-safe media relationships, redacted audits, and public fallback behavior. The full
-suite contains 618 assertions, including default-locale publication synchronization, wrapper
-grants/search paths, public projection delivery, and explicit-translation preservation.
+suite also covers governed Restaurant location contact/hours, credential-free HTTPS validation,
+split/overnight overlap rejection, redacted audit emission, cross-tenant denial, and the narrowed
+public projection. Exact current counts are reported by `pnpm db:test` rather than maintained as a
+static documentation contract.
 
 ## Intentionally deferred
 
