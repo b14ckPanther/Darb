@@ -61,12 +61,12 @@ select is(
   (select count(*)::integer from pg_class as relation
    join pg_namespace as namespace on namespace.oid = relation.relnamespace
    where namespace.nspname = 'restaurant' and relation.relkind = 'r' and relation.relrowsecurity),
-  15,
+  17,
   'RLS is enabled on every Restaurant tenant table'
 );
 select is(
   (select count(*)::integer from pg_policies where schemaname = 'restaurant' and cmd = 'SELECT'),
-  15,
+  17,
   'every Restaurant tenant table has an explicit authenticated read policy'
 );
 select is(

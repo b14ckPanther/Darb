@@ -2118,6 +2118,78 @@ export type Database = {
           },
         ];
       };
+      location_opening_intervals: {
+        Row: {
+          business_id: string;
+          closes_at: string;
+          created_at: string;
+          id: string;
+          iso_weekday: number;
+          location_id: string;
+          opens_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          closes_at: string;
+          created_at?: string;
+          id?: string;
+          iso_weekday: number;
+          location_id: string;
+          opens_at: string;
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          closes_at?: string;
+          created_at?: string;
+          id?: string;
+          iso_weekday?: number;
+          location_id?: string;
+          opens_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      location_public_profiles: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          created_by: string | null;
+          location_id: string;
+          map_url: string | null;
+          public_email: string | null;
+          public_phone: string | null;
+          updated_at: string;
+          website_url: string | null;
+          whatsapp_phone: string | null;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          location_id: string;
+          map_url?: string | null;
+          public_email?: string | null;
+          public_phone?: string | null;
+          updated_at?: string;
+          website_url?: string | null;
+          whatsapp_phone?: string | null;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          location_id?: string;
+          map_url?: string | null;
+          public_email?: string | null;
+          public_phone?: string | null;
+          updated_at?: string;
+          website_url?: string | null;
+          whatsapp_phone?: string | null;
+        };
+        Relationships: [];
+      };
       menu_translations: {
         Row: {
           business_id: string;
@@ -2531,6 +2603,22 @@ export type Database = {
           changed: boolean;
           created: boolean;
           modifier_group_id: string;
+        }[];
+      };
+      save_location_public_details: {
+        Args: {
+          requested_map_url: string;
+          requested_opening_hours: Json;
+          requested_public_email: string;
+          requested_public_phone: string;
+          requested_website_url: string;
+          requested_whatsapp_phone: string;
+          target_business_id: string;
+          target_location_id: string;
+        };
+        Returns: {
+          changed: boolean;
+          location_id: string;
         }[];
       };
       save_menu: {

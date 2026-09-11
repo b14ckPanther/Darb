@@ -4,8 +4,11 @@ import {
   deriveRestaurantReadiness,
   describeModifierSelection,
   formatMinorMoneyInput,
+  formatRestaurantTime,
+  formatRestaurantWeekday,
   formatRestaurantMoney,
   isRestaurantCapabilityEffective,
+  getRestaurantOpeningStatus,
   isMediaEligibleForRestaurantBrandingRole,
   isRestaurantBrandingRole,
   isRestaurantPublicExperienceEffective,
@@ -112,22 +115,59 @@ describe("Restaurant Engine domain helpers", () => {
   it("derives factual Restaurant setup states without a fabricated score", () => {
     expect(
       deriveRestaurantReadiness({
+        activeLocationCount: 1,
         activeCategoryCount: 1,
         activeItemCount: 2,
         activeMenuCount: 1,
         configured: true,
+        brandingConfigured: false,
         enabledLocaleCount: 2,
         modifierGroupCount: 0,
+        locationsWithContactCount: 0,
+        locationsWithHoursCount: 1,
         publishedMenuCount: 0,
+        publishableItemCount: 0,
         publiclyActive: false,
+        templateConfigured: true,
       }),
     ).toEqual([
       expect.objectContaining({ key: "configuration", ready: true }),
+      expect.objectContaining({ key: "location", ready: true }),
       expect.objectContaining({ key: "content", ready: true }),
+      expect.objectContaining({ key: "hours", ready: true }),
+      expect.objectContaining({ key: "contact", ready: false, requirement: "recommended" }),
       expect.objectContaining({ key: "localization", ready: true }),
+      expect.objectContaining({ key: "template", ready: true }),
+      expect.objectContaining({ key: "branding", ready: false, requirement: "recommended" }),
       expect.objectContaining({ key: "publication", ready: false }),
       expect.objectContaining({ key: "modifiers", ready: false, requirement: "optional" }),
     ]);
+  });
+
+  it("derives timezone-aware open status across overnight intervals", () => {
+    const intervals = [
+      { closesAt: "14:00", opensAt: "09:00", weekday: 1 },
+      { closesAt: "02:00", opensAt: "18:00", weekday: 1 },
+      { closesAt: "16:00", opensAt: "10:00", weekday: 3 },
+    ];
+    expect(
+      getRestaurantOpeningStatus(intervals, "Asia/Jerusalem", new Date("2024-01-01T10:30:00Z")),
+    ).toEqual({ isOpen: true, nextOpening: null });
+    expect(
+      getRestaurantOpeningStatus(intervals, "Asia/Jerusalem", new Date("2024-01-01T23:30:00Z")),
+    ).toEqual({ isOpen: true, nextOpening: null });
+    expect(
+      getRestaurantOpeningStatus(intervals, "Asia/Jerusalem", new Date("2024-01-02T01:30:00Z")),
+    ).toEqual({
+      isOpen: false,
+      nextOpening: { dayOffset: 1, opensAt: "10:00", weekday: 3 },
+    });
+  });
+
+  it("formats canonical weekdays and times in the requested locale", () => {
+    expect(formatRestaurantWeekday(1, "en")).toBe("Monday");
+    expect(formatRestaurantWeekday(7, "he")).toBe("יום ראשון");
+    expect(formatRestaurantTime("18:30", "en")).toMatch(/6:30\s*PM/i);
   });
 
   it("validates the curated public projection before rendering", () => {
@@ -339,10 +379,12 @@ const publicationFixture: PublicRestaurantPublication = {
   locations: [
     {
       addressLine: "1 Street",
+      contact: null,
       countryCode: "IL",
       displayName: "Jerusalem",
       id: "location-a",
       locality: "Jerusalem",
+      openingHours: [],
       postalCode: null,
       timezone: "Asia/Jerusalem",
     },

@@ -34,13 +34,29 @@ export interface PublicRestaurantBranding {
   logo: PublicRestaurantBrandingMedia | null;
 }
 
+export interface PublicRestaurantContact {
+  email: string | null;
+  mapUrl: string | null;
+  phone: string | null;
+  websiteUrl: string | null;
+  whatsappPhone: string | null;
+}
+
+export interface PublicRestaurantOpeningInterval {
+  closesAt: string;
+  opensAt: string;
+  weekday: number;
+}
+
 export interface PublicRestaurantLocation {
   addressLine: string | null;
+  contact: PublicRestaurantContact | null;
   countryCode: string;
   displayName: string;
   id: string;
   locality: string | null;
   postalCode: string | null;
+  openingHours: PublicRestaurantOpeningInterval[];
   timezone: string;
 }
 
@@ -555,18 +571,79 @@ function parseLocation(value: unknown): PublicRestaurantLocation | null {
     return null;
   }
   const addressLine = parseNullableString(value.addressLine);
+  const contact = value.contact === undefined ? null : parseNullable(value.contact, parseContact);
   const locality = parseNullableString(value.locality);
+  const openingHours =
+    value.openingHours === undefined ? [] : parseArray(value.openingHours, parseOpeningInterval);
   const postalCode = parseNullableString(value.postalCode);
-  if (addressLine === undefined || locality === undefined || postalCode === undefined) return null;
+  if (
+    addressLine === undefined ||
+    contact === undefined ||
+    locality === undefined ||
+    !openingHours ||
+    postalCode === undefined
+  )
+    return null;
   return {
     addressLine,
+    contact,
     countryCode: value.countryCode,
     displayName: value.displayName,
     id: value.id,
     locality,
+    openingHours,
     postalCode,
     timezone: value.timezone,
   };
+}
+
+function parseContact(value: unknown): PublicRestaurantContact | null {
+  if (!isRecord(value)) return null;
+  const email = parseNullableString(value.email);
+  const mapUrl = parseNullableString(value.mapUrl);
+  const phone = parseNullableString(value.phone);
+  const websiteUrl = parseNullableString(value.websiteUrl);
+  const whatsappPhone = parseNullableString(value.whatsappPhone);
+  if (
+    email === undefined ||
+    mapUrl === undefined ||
+    phone === undefined ||
+    websiteUrl === undefined ||
+    whatsappPhone === undefined
+  )
+    return null;
+  if (
+    (phone !== null && !/^\+[1-9]\d{7,14}$/.test(phone)) ||
+    (whatsappPhone !== null && !/^\+[1-9]\d{7,14}$/.test(whatsappPhone)) ||
+    (websiteUrl !== null && !isSafeHttpsUrl(websiteUrl)) ||
+    (mapUrl !== null && !isSafeHttpsUrl(mapUrl)) ||
+    (email !== null && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+  )
+    return null;
+  return { email, mapUrl, phone, websiteUrl, whatsappPhone };
+}
+
+function parseOpeningInterval(value: unknown): PublicRestaurantOpeningInterval | null {
+  return isRecord(value) &&
+    Number.isInteger(value.weekday) &&
+    Number(value.weekday) >= 1 &&
+    Number(value.weekday) <= 7 &&
+    typeof value.opensAt === "string" &&
+    /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value.opensAt) &&
+    typeof value.closesAt === "string" &&
+    /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value.closesAt) &&
+    value.opensAt !== value.closesAt
+    ? { closesAt: value.closesAt, opensAt: value.opensAt, weekday: value.weekday as number }
+    : null;
+}
+
+function isSafeHttpsUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password;
+  } catch {
+    return false;
+  }
 }
 
 function parseMenu(value: unknown): PublicRestaurantMenu | null {

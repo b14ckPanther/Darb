@@ -16,6 +16,19 @@ export type {
 } from "./analytics";
 
 export {
+  formatRestaurantTime,
+  formatRestaurantWeekday,
+  getRestaurantOpeningStatus,
+  isRestaurantOpeningInterval,
+  restaurantOpeningIntervalsOverlap,
+} from "./hours";
+export type {
+  RestaurantNextOpening,
+  RestaurantOpeningInterval,
+  RestaurantOpeningStatus,
+} from "./hours";
+
+export {
   formatRestaurantMoney,
   localizeRestaurantPublication,
   parsePublicRestaurantPublication,
@@ -37,7 +50,9 @@ export type {
   PublicRestaurantBranding,
   PublicRestaurantBrandingMedia,
   PublicRestaurantImage,
+  PublicRestaurantContact,
   PublicRestaurantLocation,
+  PublicRestaurantOpeningInterval,
   PublicRestaurantMediaKind,
   PublicRestaurantPublication,
   PublicRestaurantSitemapEntry,
@@ -70,18 +85,34 @@ export interface RestaurantPublicState extends RestaurantCapabilityState {
 }
 
 export interface RestaurantReadinessInput {
+  activeLocationCount: number;
   activeCategoryCount: number;
   activeItemCount: number;
   activeMenuCount: number;
   configured: boolean;
   enabledLocaleCount: number;
   modifierGroupCount: number;
+  locationsWithContactCount: number;
+  locationsWithHoursCount: number;
+  brandingConfigured: boolean;
+  templateConfigured: boolean;
   publishedMenuCount: number;
+  publishableItemCount: number;
   publiclyActive: boolean;
 }
 
 export interface RestaurantReadinessItem {
-  key: "configuration" | "content" | "localization" | "modifiers" | "publication";
+  key:
+    | "branding"
+    | "configuration"
+    | "contact"
+    | "content"
+    | "hours"
+    | "localization"
+    | "location"
+    | "modifiers"
+    | "publication"
+    | "template";
   label: string;
   ready: boolean;
   requirement: "optional" | "recommended" | "required";
@@ -161,11 +192,32 @@ export function deriveRestaurantReadiness(
       requirement: "required",
     },
     {
+      key: "location",
+      label: "Active location",
+      ready: input.activeLocationCount > 0,
+      requirement: "required",
+    },
+    {
       key: "content",
       label: "Menu structure",
       ready:
         input.activeMenuCount > 0 && input.activeCategoryCount > 0 && input.activeItemCount > 0,
       requirement: "required",
+    },
+    {
+      key: "hours",
+      label: "Opening hours",
+      ready:
+        input.activeLocationCount > 0 && input.locationsWithHoursCount >= input.activeLocationCount,
+      requirement: "required",
+    },
+    {
+      key: "contact",
+      label: "Public contact and address",
+      ready:
+        input.activeLocationCount > 0 &&
+        input.locationsWithContactCount >= input.activeLocationCount,
+      requirement: "recommended",
     },
     {
       key: "localization",
@@ -174,9 +226,21 @@ export function deriveRestaurantReadiness(
       requirement: "required",
     },
     {
+      key: "template",
+      label: "Restaurant template",
+      ready: input.templateConfigured,
+      requirement: "required",
+    },
+    {
+      key: "branding",
+      label: "Logo or hero media",
+      ready: input.brandingConfigured,
+      requirement: "recommended",
+    },
+    {
       key: "publication",
       label: "Publication intent",
-      ready: input.publishedMenuCount > 0 && input.publiclyActive,
+      ready: input.publishedMenuCount > 0 && input.publishableItemCount > 0 && input.publiclyActive,
       requirement: "required",
     },
     {
