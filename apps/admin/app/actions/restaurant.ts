@@ -10,6 +10,7 @@ import type { FormState } from "../../lib/forms";
 import { listBusinessModuleStates } from "../../lib/modules";
 import { mapMutationError } from "../../lib/mutation-errors";
 import { businessPath } from "../../lib/navigation";
+import { parseRestaurantLocationPublicDetailsInput } from "../../lib/restaurant-location-details-form";
 import {
   parseCategoryInput,
   parseItemInput,
@@ -44,6 +45,47 @@ export async function saveRestaurantConfigurationAction(
     message: data.changed
       ? `Restaurant public experience marked ${data.is_publicly_active ? "active" : "inactive"}.`
       : "Restaurant configuration was already up to date.",
+    status: "success",
+  };
+}
+
+export async function saveRestaurantLocationPublicDetailsAction(
+  businessId: string,
+  _businessSlug: string,
+  locationId: string,
+  _previousState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = parseRestaurantLocationPublicDetailsInput(formData);
+  if (!parsed.success) return { fieldErrors: parsed.errors, status: "error" };
+  const guarded = await prepareRestaurantMutation(businessId);
+  if (!guarded.ok) return guarded.error;
+
+  const { data, error } = await guarded.supabase
+    .schema("restaurant")
+    .rpc("save_location_public_details", {
+      requested_map_url: parsed.data.mapUrl,
+      requested_opening_hours: parsed.data.openingHours.map(({ closesAt, opensAt, weekday }) => ({
+        closesAt,
+        opensAt,
+        weekday,
+      })),
+      requested_public_email: parsed.data.email,
+      requested_public_phone: parsed.data.phone,
+      requested_website_url: parsed.data.websiteUrl,
+      requested_whatsapp_phone: parsed.data.whatsappPhone,
+      target_business_id: guarded.businessId,
+      target_location_id: locationId,
+    })
+    .single();
+
+  if (error || !data) return mapMutationError(error ?? {}, "restaurant");
+  revalidateRestaurantPaths(guarded.businessSlug);
+  revalidatePath(`${restaurantPath(guarded.businessSlug)}/locations`);
+  return {
+    message: data.changed
+      ? "Location hours and public details saved."
+      : "Location public details were already up to date.",
     status: "success",
   };
 }

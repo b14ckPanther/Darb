@@ -10,6 +10,7 @@ import {
   RestaurantIcon,
   TranslationIcon,
 } from "@darb/icons";
+import type { RestaurantReadinessItem } from "@darb/restaurant";
 
 import { PageHeader } from "../../../../_components/page-header";
 import { PermissionNotice } from "../../../../_components/permission-notice";
@@ -39,6 +40,7 @@ export default async function RestaurantOverviewPage({
     business.id,
     business.slug,
     business.default_locale,
+    context.businessContext.locations,
   );
   const editable = canMutateRestaurant(context);
   const restaurantBase = `${businessPath(business.slug)}/restaurant`;
@@ -133,6 +135,15 @@ export default async function RestaurantOverviewPage({
                   <small>{item.ready ? t("Configured") : t("Needs attention")}</small>
                 </span>
                 <StatusBadge status={item.requirement} />
+                {!item.ready ? (
+                  <Link
+                    className={styles.readinessAction}
+                    href={restaurantReadinessPath(restaurantBase, business.slug, item.key)}
+                  >
+                    {t("Resolve")}
+                    <ArrowRightIcon size={14} />
+                  </Link>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -205,6 +216,32 @@ export default async function RestaurantOverviewPage({
       </section>
     </div>
   );
+}
+
+function restaurantReadinessPath(
+  restaurantBase: string,
+  businessSlug: string,
+  key: RestaurantReadinessItem["key"],
+): string {
+  switch (key) {
+    case "location":
+      return `${businessPath(businessSlug)}/locations`;
+    case "hours":
+    case "contact":
+      return `${restaurantBase}/locations`;
+    case "localization":
+      return `${restaurantBase}/languages`;
+    case "template":
+    case "branding":
+      return `${businessPath(businessSlug)}/appearance`;
+    case "content":
+    case "publication":
+      return `${restaurantBase}/menus`;
+    case "modifiers":
+      return `${restaurantBase}/modifiers`;
+    case "configuration":
+      return `${restaurantBase}#restaurant-configuration-heading`;
+  }
 }
 
 function Metric({ label, value }: { label: string; value: number }) {

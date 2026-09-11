@@ -1,6 +1,10 @@
 import type { AdminTranslations } from "./i18n";
 
 export const actionMessages = {
+  "Archived locations cannot publish hours or contact details.": {
+    ar: "الفرع المؤرشف ما بقدر ينشر ساعات أو معلومات تواصل.",
+    he: "סניף בארכיון אינו יכול לפרסם שעות או פרטי קשר.",
+  },
   "The Restaurant request did not complete. Check your connection and try again.": {
     ar: "طلب المطعم ما اكتمل. افحص اتصالك وجرّب كمان مرة.",
     he: "בקשת המסעדה לא הושלמה. בדקו את החיבור ונסו שוב.",

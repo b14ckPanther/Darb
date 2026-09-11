@@ -1,6 +1,94 @@
 import type { AdminTranslations } from "./i18n";
 
 export const detailMessages = {
+  "Hours & contact": { ar: "الساعات والتواصل", he: "שעות ויצירת קשר" },
+  "Public location details": { ar: "تفاصيل الفرع للزبائن", he: "פרטי הסניף לציבור" },
+  "Set trustworthy opening hours and public contact details for each Restaurant location.": {
+    ar: "حدّد ساعات الدوام ومعلومات التواصل اللي بتظهر للزبائن بكل فرع.",
+    he: "הגדירו שעות פתיחה ופרטי קשר ציבוריים מדויקים לכל סניף.",
+  },
+  "Add an active location first": {
+    ar: "ضيف فرع فعّال بالأول",
+    he: "יש להוסיף תחילה סניף פעיל",
+  },
+  "Restaurant hours and contact details belong to a business location.": {
+    ar: "ساعات المطعم ومعلومات التواصل مربوطات بفرع من فروع الشغل.",
+    he: "שעות המסעדה ופרטי הקשר שייכים לסניף של העסק.",
+  },
+  "Public phone": { ar: "رقم الهاتف للزبائن", he: "טלפון ציבורי" },
+  "Public email": { ar: "البريد للزبائن", he: "אימייל ציבורי" },
+  Website: { ar: "الموقع الإلكتروني", he: "אתר" },
+  "WhatsApp phone": { ar: "رقم واتساب", he: "מספר WhatsApp" },
+  "Map link": { ar: "رابط الخريطة", he: "קישור למפה" },
+  "Regular opening hours": { ar: "ساعات الدوام العادية", he: "שעות פתיחה רגילות" },
+  "Hours use {timezone}. A closing time after midnight may be earlier than its opening time.": {
+    ar: "الساعات حسب توقيت {timezone}. إذا الإغلاق بعد نص الليل، عادي يكون وقته أبكر من وقت الفتح.",
+    he: "השעות מוצגות לפי {timezone}. בסגירה אחרי חצות שעת הסגירה יכולה להיות מוקדמת משעת הפתיחה.",
+  },
+  "Add hours": { ar: "ضيف ساعات", he: "הוספת שעות" },
+  "Add another interval": { ar: "ضيف فترة ثانية", he: "הוספת טווח נוסף" },
+  Closed: { ar: "مغلق", he: "סגור" },
+  Opens: { ar: "بفتح", he: "פתיחה" },
+  Closes: { ar: "بسكّر", he: "סגירה" },
+  "Opening time for {day}": { ar: "وقت الفتح يوم {day}", he: "שעת פתיחה ביום {day}" },
+  "Closing time for {day}": { ar: "وقت الإغلاق يوم {day}", he: "שעת סגירה ביום {day}" },
+  "Remove opening interval for {day}": {
+    ar: "احذف فترة الدوام ليوم {day}",
+    he: "הסרת טווח הפתיחה ביום {day}",
+  },
+  "Save hours & contact": { ar: "احفظ الساعات والتواصل", he: "שמירת שעות ופרטי קשר" },
+  "Saving hours & contact…": {
+    ar: "جاري حفظ الساعات والتواصل…",
+    he: "שומרים שעות ופרטי קשר…",
+  },
+  "Saving public details for {location}.": {
+    ar: "جاري حفظ تفاصيل {location} للزبائن.",
+    he: "שומרים פרטים ציבוריים עבור {location}.",
+  },
+  "Location hours and public details saved.": {
+    ar: "انحفظت ساعات الفرع وتفاصيله للزبائن.",
+    he: "שעות הסניף והפרטים הציבוריים נשמרו.",
+  },
+  "Location public details were already up to date.": {
+    ar: "تفاصيل الفرع للزبائن محدّثة من قبل.",
+    he: "הפרטים הציבוריים של הסניף כבר מעודכנים.",
+  },
+  "Use an international phone number.": {
+    ar: "اكتب رقم الهاتف بصيغة دولية.",
+    he: "יש להזין מספר טלפון בפורמט בינלאומי.",
+  },
+  "Use an international WhatsApp number.": {
+    ar: "اكتب رقم واتساب بصيغة دولية.",
+    he: "יש להזין מספר WhatsApp בפורמט בינלאומי.",
+  },
+  "Enter a valid public email address.": {
+    ar: "اكتب بريد إلكتروني صحيح للزبائن.",
+    he: "יש להזין כתובת אימייל ציבורית תקינה.",
+  },
+  "Use a complete HTTPS website address.": {
+    ar: "اكتب رابط موقع كامل وآمن يبدأ بـ https://.",
+    he: "יש להזין כתובת אתר HTTPS מלאה.",
+  },
+  "Use a complete HTTPS map address.": {
+    ar: "اكتب رابط خريطة كامل وآمن يبدأ بـ https://.",
+    he: "יש להזין כתובת מפה מלאה ב-HTTPS.",
+  },
+  "Check every opening and closing time.": {
+    ar: "راجع كل أوقات الفتح والإغلاق.",
+    he: "יש לבדוק את כל שעות הפתיחה והסגירה.",
+  },
+  "Opening intervals cannot overlap.": {
+    ar: "فترات الدوام ما بصير تتداخل.",
+    he: "טווחי הפתיחה אינם יכולים לחפוף.",
+  },
+  "Active location": { ar: "فرع فعّال", he: "סניף פעיל" },
+  "Opening hours": { ar: "ساعات الدوام", he: "שעות פתיחה" },
+  "Public contact and address": {
+    ar: "التواصل والعنوان للزبائن",
+    he: "פרטי קשר וכתובת לציבור",
+  },
+  "Restaurant template": { ar: "قالب المطعم", he: "תבנית המסעדה" },
+  "Logo or hero media": { ar: "الشعار أو صورة الغلاف", he: "לוגו או מדיית שער" },
   "Plan & access": { ar: "الخطة والصلاحيات", he: "תוכנית וגישה" },
   "Commercial access": { ar: "صلاحيات الاستخدام", he: "גישה מסחרית" },
   "Current access": { ar: "صلاحياتك الحالية", he: "הגישה הנוכחית" },

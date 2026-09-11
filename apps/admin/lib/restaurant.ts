@@ -28,8 +28,12 @@ export type RestaurantModifier = RestaurantTables["modifiers"]["Row"];
 export type RestaurantModifierTranslation = RestaurantTables["modifier_translations"]["Row"];
 export type RestaurantItemModifierGroup = RestaurantTables["item_modifier_groups"]["Row"];
 export type RestaurantLocationAvailability = RestaurantTables["item_location_availability"]["Row"];
+export type RestaurantLocationOpeningInterval =
+  RestaurantTables["location_opening_intervals"]["Row"];
+export type RestaurantLocationPublicProfile = RestaurantTables["location_public_profiles"]["Row"];
 
 export interface RestaurantOverviewSnapshot {
+  activeLocationCount: number;
   activeCategoryCount: number;
   activeItemCount: number;
   activeMenuCount: number;
@@ -39,13 +43,22 @@ export interface RestaurantOverviewSnapshot {
   itemsMissingImageCount: number;
   itemsMissingTranslationsCount: number;
   locationOverrideCount: number;
+  locationsWithContactCount: number;
+  locationsWithHoursCount: number;
   modifierGroupCount: number;
   publishedMenuCount: number;
+  publishableItemCount: number;
   publiclyActive: boolean;
   publicUrl: string;
   readiness: RestaurantReadinessItem[];
   soldOutItemCount: number;
   translatedItemCount: number;
+}
+
+export interface RestaurantLocationPublicDetailsSnapshot {
+  hours: RestaurantLocationOpeningInterval[];
+  locations: AccessibleLocation[];
+  profiles: RestaurantLocationPublicProfile[];
 }
 
 export interface RestaurantMenuListSnapshot {
@@ -94,6 +107,7 @@ export async function loadRestaurantOverview(
   businessId: string,
   businessSlug: string,
   defaultLocale: Database["core"]["Enums"]["locale_code"],
+  locations: AccessibleLocation[],
 ): Promise<RestaurantOverviewSnapshot> {
   const [
     configuration,
@@ -104,6 +118,11 @@ export async function loadRestaurantOverview(
     modifierGroups,
     overrides,
     locales,
+    profiles,
+    hours,
+    visualSettings,
+    brandingAssignments,
+    primaryDomain,
   ] = await Promise.all([
     selectConfiguration(supabase, businessId),
     selectMenus(supabase, businessId),
@@ -113,10 +132,35 @@ export async function loadRestaurantOverview(
     selectModifierGroups(supabase, businessId),
     selectLocationAvailability(supabase, businessId),
     listBusinessLocales(supabase, businessId),
+    selectLocationPublicProfiles(supabase, businessId),
+    selectLocationOpeningIntervals(supabase, businessId),
+    supabase
+      .schema("core")
+      .from("business_visual_settings")
+      .select("template_key")
+      .eq("business_id", businessId)
+      .eq("module_key", "restaurant")
+      .maybeSingle(),
+    supabase
+      .schema("core")
+      .from("business_media_assignments")
+      .select("role_key")
+      .eq("business_id", businessId)
+      .eq("module_key", "restaurant"),
+    supabase.schema("public").rpc("resolve_public_restaurant_primary_domain", {
+      requested_business_slug: businessSlug,
+    }),
   ]);
+  if (visualSettings.error)
+    throw new Error(`Unable to load Restaurant appearance (${visualSettings.error.code}).`);
+  if (brandingAssignments.error)
+    throw new Error(`Unable to load Restaurant branding (${brandingAssignments.error.code}).`);
+  if (primaryDomain.error)
+    throw new Error(`Unable to resolve Restaurant public address (${primaryDomain.error.code}).`);
   const activeMenus = menus.filter((menu) => menu.lifecycle_status === "active");
   const activeCategories = categories.filter((category) => category.lifecycle_status === "active");
   const activeItems = items.filter((item) => item.lifecycle_status === "active");
+  const activeLocations = locations.filter((location) => location.status === "active");
   const enabledLocaleCount = locales.filter((locale) => locale.is_enabled).length;
   const translatedItemCount = new Set(translations.map((translation) => translation.item_id)).size;
   const enabledLocales = locales
@@ -125,17 +169,54 @@ export async function loadRestaurantOverview(
   const itemWithImageCount = activeItems.filter(
     (item) => item.image_media_asset_id !== null,
   ).length;
+  const publishedMenuIds = new Set(
+    activeMenus.filter((menu) => menu.publication_status === "published").map((menu) => menu.id),
+  );
+  const visibleCategoryIds = new Set(
+    activeCategories
+      .filter((category) => category.is_visible && publishedMenuIds.has(category.menu_id))
+      .map((category) => category.id),
+  );
+  const publishableItemCount = activeItems.filter(
+    (item) =>
+      item.is_visible &&
+      publishedMenuIds.has(item.menu_id) &&
+      visibleCategoryIds.has(item.category_id) &&
+      translations.some(
+        (translation) =>
+          translation.item_id === item.id && enabledLocales.includes(translation.locale_code),
+      ),
+  ).length;
   const readinessInput = {
+    activeLocationCount: activeLocations.length,
     activeCategoryCount: activeCategories.length,
     activeItemCount: activeItems.length,
     activeMenuCount: activeMenus.length,
+    brandingConfigured: brandingAssignments.data.length > 0,
     configured: configuration !== null,
     enabledLocaleCount,
     modifierGroupCount: modifierGroups.filter((group) => group.lifecycle_status === "active")
       .length,
+    locationsWithContactCount: activeLocations.filter((location) => {
+      const profile = profiles.find((candidate) => candidate.location_id === location.id);
+      return (
+        Boolean(location.address_line || location.locality) &&
+        Boolean(
+          profile?.public_phone ||
+          profile?.public_email ||
+          profile?.website_url ||
+          profile?.whatsapp_phone,
+        )
+      );
+    }).length,
+    locationsWithHoursCount: activeLocations.filter((location) =>
+      hours.some((interval) => interval.location_id === location.id),
+    ).length,
     publishedMenuCount: activeMenus.filter((menu) => menu.publication_status === "published")
       .length,
+    publishableItemCount,
     publiclyActive: configuration?.is_publicly_active ?? false,
+    templateConfigured: visualSettings.data !== null,
   };
 
   return {
@@ -156,11 +237,23 @@ export async function loadRestaurantOverview(
       businessSlug,
       defaultLocale,
       locale: defaultLocale,
-      primaryHostname: null,
+      primaryHostname: primaryDomain.data,
     }),
     soldOutItemCount: activeItems.filter((item) => item.availability_status === "sold_out").length,
     translatedItemCount,
   };
+}
+
+export async function loadRestaurantLocationPublicDetails(
+  supabase: DarbServerSupabaseClient,
+  businessId: string,
+  locations: AccessibleLocation[],
+): Promise<RestaurantLocationPublicDetailsSnapshot> {
+  const [profiles, hours] = await Promise.all([
+    selectLocationPublicProfiles(supabase, businessId),
+    selectLocationOpeningIntervals(supabase, businessId),
+  ]);
+  return { hours, locations, profiles };
 }
 
 export async function loadRestaurantMenuList(
@@ -453,6 +546,34 @@ async function selectLocationAvailability(supabase: DarbServerSupabaseClient, bu
     .from("item_location_availability")
     .select("*")
     .eq("business_id", businessId);
+  if (error) throwRestaurantReadError(error.code);
+  return data;
+}
+
+async function selectLocationPublicProfiles(
+  supabase: DarbServerSupabaseClient,
+  businessId: string,
+) {
+  const { data, error } = await supabase
+    .schema("restaurant")
+    .from("location_public_profiles")
+    .select("*")
+    .eq("business_id", businessId);
+  if (error) throwRestaurantReadError(error.code);
+  return data;
+}
+
+async function selectLocationOpeningIntervals(
+  supabase: DarbServerSupabaseClient,
+  businessId: string,
+) {
+  const { data, error } = await supabase
+    .schema("restaurant")
+    .from("location_opening_intervals")
+    .select("*")
+    .eq("business_id", businessId)
+    .order("iso_weekday")
+    .order("opens_at");
   if (error) throwRestaurantReadError(error.code);
   return data;
 }

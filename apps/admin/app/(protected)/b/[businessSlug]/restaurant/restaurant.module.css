@@ -221,7 +221,7 @@
   border-bottom: 1px solid rgba(16, 36, 28, 0.09);
   display: grid;
   gap: 0.8rem;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   min-height: 3.7rem;
   padding: 0.55rem 0;
 }
@@ -253,6 +253,21 @@
 
 .readinessList small {
   color: var(--muted);
+}
+
+.readinessAction {
+  align-items: center;
+  color: var(--forest);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 750;
+  gap: 0.3rem;
+  min-height: 2.5rem;
+  text-decoration: none;
+}
+
+[dir="rtl"] .readinessAction svg {
+  transform: scaleX(-1);
 }
 
 .form {
@@ -882,6 +897,136 @@
   max-width: 38rem;
 }
 
+.locationPublicList {
+  display: grid;
+  gap: 1rem;
+}
+
+.publicContactGrid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hoursFieldset {
+  border: 1px solid #dedbd1;
+  border-radius: 1rem;
+  display: grid;
+  gap: 0;
+  margin: 0;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.hoursFieldset > legend {
+  color: var(--forest);
+  font-size: 0.9rem;
+  font-weight: 750;
+  padding-inline: 0.35rem;
+}
+
+.hoursFieldset > .hint {
+  margin-bottom: 0.7rem;
+}
+
+.hoursDay {
+  border-top: 1px solid #e8e4da;
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.8rem 0;
+}
+
+.hoursDay:first-of-type {
+  border-top: 0;
+}
+
+.hoursDayHeading {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.hoursDayHeading strong {
+  font-size: 0.84rem;
+}
+
+.compactButton {
+  background: transparent;
+  border: 0;
+  color: var(--forest);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 750;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.2rem;
+}
+
+.compactButton:disabled,
+.removeInterval:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.closedDay {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.hoursIntervals {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.hoursInterval {
+  align-items: end;
+  background: #f6f3ec;
+  border-radius: 0.8rem;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  min-width: 0;
+  padding: 0.65rem;
+}
+
+.hoursInterval label {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.hoursInterval label > span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.hoursInterval input {
+  background: #fffdf8;
+  border: 1px solid #d8d5cc;
+  border-radius: 0.65rem;
+  color: var(--ink);
+  min-height: 2.65rem;
+  min-width: 0;
+  padding: 0.55rem;
+  width: 100%;
+}
+
+.removeInterval {
+  align-items: center;
+  background: #fffdf8;
+  border: 1px solid #d8d5cc;
+  border-radius: 0.65rem;
+  color: #79594f;
+  cursor: pointer;
+  display: inline-flex;
+  height: 2.65rem;
+  justify-content: center;
+  width: 2.65rem;
+}
+
 @media (max-width: 68rem) {
   .metricGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -913,6 +1058,7 @@
 
   .metricGrid,
   .formGrid,
+  .publicContactGrid,
   .attentionGrid,
   .filterBar {
     grid-template-columns: 1fr;
@@ -924,6 +1070,24 @@
 
   .wide {
     grid-column: auto;
+  }
+
+  .readinessList li {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .readinessAction {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+
+  .hoursInterval {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .removeInterval {
+    justify-self: end;
   }
 
   .panel {

@@ -5,7 +5,7 @@ import { useAdminI18n } from "../../../../../lib/i18n-client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { ModulesIcon, RestaurantIcon, SettingsIcon } from "@darb/icons";
+import { LocationIcon, ModulesIcon, RestaurantIcon, SettingsIcon } from "@darb/icons";
 
 import styles from "./restaurant.module.css";
 
@@ -16,6 +16,7 @@ export function RestaurantSubnav({ businessSlug }: { businessSlug: string }) {
   const items = [
     { href: base, icon: RestaurantIcon, label: "Overview" },
     { href: `${base}/menus`, icon: ModulesIcon, label: "Menus & items" },
+    { href: `${base}/locations`, icon: LocationIcon, label: "Hours & contact" },
     { href: `${base}/modifiers`, icon: SettingsIcon, label: "Modifier library" },
   ];
 

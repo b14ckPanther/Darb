@@ -43,6 +43,15 @@ export function mapMutationError(error: DatabaseErrorLike, kind: MutationKind): 
   }
 
   if (kind === "restaurant") {
+    if (error.message?.includes("OVERLAPPING_RESTAURANT_OPENING_HOURS")) {
+      return { message: "Opening intervals cannot overlap.", status: "error" };
+    }
+    if (error.message?.includes("RESTAURANT_LOCATION_ARCHIVED")) {
+      return {
+        message: "Archived locations cannot publish hours or contact details.",
+        status: "error",
+      };
+    }
     if (error.message?.includes("RESTAURANT_MODULE_DISABLED")) {
       return {
         message: "Enable the Restaurant capability before changing its content.",
