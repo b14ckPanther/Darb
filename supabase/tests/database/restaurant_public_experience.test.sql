@@ -74,6 +74,14 @@ values
   ('a3000000-0000-0000-0000-000000000003', 'public-restaurant-suspended', 'Suspended Restaurant', 'en', 'suspended'),
   ('a4000000-0000-0000-0000-000000000004', 'public-restaurant-disabled', 'Disabled Restaurant', 'en', 'active');
 
+update core.business_plan_assignments set plan_key = 'restaurant-starter'
+where business_id in (
+  'a1000000-0000-0000-0000-000000000001',
+  'a2000000-0000-0000-0000-000000000002',
+  'a3000000-0000-0000-0000-000000000003',
+  'a4000000-0000-0000-0000-000000000004'
+);
+
 insert into core.business_locales (business_id, locale_code, is_enabled)
 values
   ('a1000000-0000-0000-0000-000000000001', 'en', true),
@@ -416,6 +424,18 @@ reset role;
 update restaurant.configurations
 set is_publicly_active = true
 where business_id = 'a1000000-0000-0000-0000-000000000001';
+insert into core.business_module_entitlement_overrides (business_id, module_key, decision, reason)
+values ('a1000000-0000-0000-0000-000000000001', 'restaurant', 'deny', 'Public entitlement gate test');
+set local role anon;
+select is(
+  public.get_restaurant_publication('public-restaurant-a'),
+  null,
+  'an entitlement deny removes public publication without deleting content'
+);
+
+reset role;
+delete from core.business_module_entitlement_overrides
+where business_id = 'a1000000-0000-0000-0000-000000000001' and module_key = 'restaurant';
 update core.modules set is_available = false where key = 'restaurant';
 set local role anon;
 select is(

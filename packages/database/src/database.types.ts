@@ -119,6 +119,47 @@ export type Database = {
           },
         ];
       };
+      business_initial_setup_services: {
+        Row: {
+          business_id: string;
+          completed_at: string | null;
+          created_at: string;
+          managed_by: string | null;
+          requested_at: string;
+          requested_by: string | null;
+          status: Database["core"]["Enums"]["initial_setup_status"];
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          completed_at?: string | null;
+          created_at?: string;
+          managed_by?: string | null;
+          requested_at?: string;
+          requested_by?: string | null;
+          status: Database["core"]["Enums"]["initial_setup_status"];
+          updated_at?: string;
+        };
+        Update: {
+          business_id?: string;
+          completed_at?: string | null;
+          created_at?: string;
+          managed_by?: string | null;
+          requested_at?: string;
+          requested_by?: string | null;
+          status?: Database["core"]["Enums"]["initial_setup_status"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_initial_setup_services_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: true;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       business_locales: {
         Row: {
           business_id: string;
@@ -203,6 +244,51 @@ export type Database = {
           },
         ];
       };
+      business_module_entitlement_overrides: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          decision: Database["core"]["Enums"]["entitlement_override_decision"];
+          module_key: string;
+          reason: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          decision: Database["core"]["Enums"]["entitlement_override_decision"];
+          module_key: string;
+          reason: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          decision?: Database["core"]["Enums"]["entitlement_override_decision"];
+          module_key?: string;
+          reason?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_module_entitlement_overrides_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "business_module_entitlement_overrides_module_key_fkey";
+            columns: ["module_key"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["key"];
+          },
+        ];
+      };
       business_modules: {
         Row: {
           business_id: string;
@@ -241,6 +327,48 @@ export type Database = {
             columns: ["module_key"];
             isOneToOne: false;
             referencedRelation: "modules";
+            referencedColumns: ["key"];
+          },
+        ];
+      };
+      business_plan_assignments: {
+        Row: {
+          assigned_at: string;
+          assigned_by: string | null;
+          business_id: string;
+          plan_key: string;
+          source: Database["core"]["Enums"]["commercial_assignment_source"];
+          updated_at: string;
+        };
+        Insert: {
+          assigned_at?: string;
+          assigned_by?: string | null;
+          business_id: string;
+          plan_key: string;
+          source: Database["core"]["Enums"]["commercial_assignment_source"];
+          updated_at?: string;
+        };
+        Update: {
+          assigned_at?: string;
+          assigned_by?: string | null;
+          business_id?: string;
+          plan_key?: string;
+          source?: Database["core"]["Enums"]["commercial_assignment_source"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_plan_assignments_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: true;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "business_plan_assignments_plan_key_fkey";
+            columns: ["plan_key"];
+            isOneToOne: false;
+            referencedRelation: "plans";
             referencedColumns: ["key"];
           },
         ];
@@ -653,6 +781,75 @@ export type Database = {
           },
         ];
       };
+      plan_module_entitlements: {
+        Row: {
+          created_at: string;
+          module_key: string;
+          plan_key: string;
+        };
+        Insert: {
+          created_at?: string;
+          module_key: string;
+          plan_key: string;
+        };
+        Update: {
+          created_at?: string;
+          module_key?: string;
+          plan_key?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "plan_module_entitlements_module_key_fkey";
+            columns: ["module_key"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "plan_module_entitlements_plan_key_fkey";
+            columns: ["plan_key"];
+            isOneToOne: false;
+            referencedRelation: "plans";
+            referencedColumns: ["key"];
+          },
+        ];
+      };
+      plans: {
+        Row: {
+          created_at: string;
+          description: string;
+          display_name: string;
+          is_available: boolean;
+          key: string;
+          max_locations: number | null;
+          sort_order: number;
+          status: Database["core"]["Enums"]["plan_status"];
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          description: string;
+          display_name: string;
+          is_available?: boolean;
+          key: string;
+          max_locations?: number | null;
+          sort_order?: number;
+          status?: Database["core"]["Enums"]["plan_status"];
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string;
+          display_name?: string;
+          is_available?: boolean;
+          key?: string;
+          max_locations?: number | null;
+          sort_order?: number;
+          status?: Database["core"]["Enums"]["plan_status"];
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           created_at: string;
@@ -1007,6 +1204,38 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      get_business_commercial_summary: {
+        Args: { target_business_id: string };
+        Returns: {
+          current_locations: number;
+          initial_setup_status: string;
+          max_locations: number;
+          plan_description: string;
+          plan_display_name: string;
+          plan_key: string;
+        }[];
+      };
+      get_business_module_access: {
+        Args: { target_business_id: string };
+        Returns: {
+          description: string;
+          display_name: string;
+          effective: boolean;
+          enabled: boolean;
+          entitled: boolean;
+          entitlement_source: string;
+          module_key: string;
+          plan_key: string;
+          platform_available: boolean;
+          sort_order: number;
+          unavailable_reason: string;
+          updated_at: string;
+        }[];
+      };
+      get_platform_business_commercial: {
+        Args: { target_business_id: string };
+        Returns: Json;
+      };
       get_platform_business_detail: {
         Args: { target_business_id: string };
         Returns: Json;
@@ -1050,6 +1279,19 @@ export type Database = {
         Returns: Json;
       };
       list_platform_modules: { Args: never; Returns: Json };
+      list_platform_plans: {
+        Args: never;
+        Returns: {
+          assigned_businesses: number;
+          description: string;
+          display_name: string;
+          is_available: boolean;
+          max_locations: number;
+          plan_key: string;
+          sort_order: number;
+          status: string;
+        }[];
+      };
       list_platform_super_admins: { Args: never; Returns: Json };
       list_platform_templates: { Args: never; Returns: Json };
       list_platform_users: {
@@ -1158,6 +1400,13 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      request_business_initial_setup: {
+        Args: { target_business_id: string };
+        Returns: {
+          changed: boolean;
+          status: string;
+        }[];
       };
       reset_business_theme_overrides: {
         Args: { target_business_id: string; target_module_key: string };
@@ -1293,9 +1542,35 @@ export type Database = {
           module_key: string;
         }[];
       };
+      set_platform_business_plan: {
+        Args: { requested_plan_key: string; target_business_id: string };
+        Returns: {
+          changed: boolean;
+          plan_key: string;
+        }[];
+      };
       set_platform_business_status: {
         Args: { requested_status: string; target_business_id: string };
         Returns: Json;
+      };
+      set_platform_initial_setup_status: {
+        Args: { requested_status: string; target_business_id: string };
+        Returns: {
+          changed: boolean;
+          status: string;
+        }[];
+      };
+      set_platform_module_entitlement_override: {
+        Args: {
+          requested_decision: string;
+          requested_reason: string;
+          target_business_id: string;
+          target_module_key: string;
+        };
+        Returns: {
+          changed: boolean;
+          decision: string;
+        }[];
       };
       update_business_locales: {
         Args: {
@@ -1406,15 +1681,19 @@ export type Database = {
     Enums: {
       audit_actor_kind: "user" | "system" | "service";
       business_status: "active" | "suspended" | "archived";
+      commercial_assignment_source: "starter" | "legacy" | "platform";
       domain_routing_status: "unconfigured" | "provisioning" | "live" | "failed" | "disconnected";
       domain_status: "pending" | "verified" | "failed" | "disabled";
       domain_verification_method: "dns_txt";
+      entitlement_override_decision: "grant" | "deny";
+      initial_setup_status: "requested" | "accepted" | "in_progress" | "completed" | "cancelled";
       locale_code: "ar" | "he" | "en";
       location_status: "active" | "inactive" | "archived";
       media_kind: "image" | "video";
       media_status: "pending" | "active" | "archived";
       membership_status: "active" | "suspended";
       permission_scope: "business" | "business_or_location";
+      plan_status: "active" | "archived";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -2476,15 +2755,19 @@ export const Constants = {
     Enums: {
       audit_actor_kind: ["user", "system", "service"],
       business_status: ["active", "suspended", "archived"],
+      commercial_assignment_source: ["starter", "legacy", "platform"],
       domain_routing_status: ["unconfigured", "provisioning", "live", "failed", "disconnected"],
       domain_status: ["pending", "verified", "failed", "disabled"],
       domain_verification_method: ["dns_txt"],
+      entitlement_override_decision: ["grant", "deny"],
+      initial_setup_status: ["requested", "accepted", "in_progress", "completed", "cancelled"],
       locale_code: ["ar", "he", "en"],
       location_status: ["active", "inactive", "archived"],
       media_kind: ["image", "video"],
       media_status: ["pending", "active", "archived"],
       membership_status: ["active", "suspended"],
       permission_scope: ["business", "business_or_location"],
+      plan_status: ["active", "archived"],
     },
   },
   public: {

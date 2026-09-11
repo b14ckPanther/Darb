@@ -36,6 +36,19 @@ values
   ('70000000-0000-0000-0000-000000000005', 'appearance-backfill-a', 'Appearance Backfill A', 'en', 'active'),
   ('70000000-0000-0000-0000-000000000006', 'appearance-backfill-b', 'Appearance Backfill B', 'en', 'active');
 
+insert into core.business_module_entitlement_overrides (business_id, module_key, decision, reason)
+select business.id, module.key, 'grant', 'Existing appearance test capability'
+from core.businesses as business
+cross join core.modules as module
+where business.id in (
+  '70000000-0000-0000-0000-000000000001',
+  '70000000-0000-0000-0000-000000000002',
+  '70000000-0000-0000-0000-000000000003',
+  '70000000-0000-0000-0000-000000000004',
+  '70000000-0000-0000-0000-000000000005',
+  '70000000-0000-0000-0000-000000000006'
+);
+
 insert into core.memberships (id, business_id, user_id)
 values
   ('71000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000007a1'),

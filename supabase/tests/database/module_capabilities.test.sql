@@ -42,6 +42,17 @@ values
   ('50000000-0000-0000-0000-000000000003', 'module-business-suspended', 'Suspended Module Business', 'ar', 'suspended'),
   ('50000000-0000-0000-0000-000000000004', 'module-business-archived', 'Archived Module Business', 'en', 'archived');
 
+insert into core.business_module_entitlement_overrides (business_id, module_key, decision, reason)
+select business.id, module.key, 'grant', 'Existing capability test coverage'
+from core.businesses as business
+cross join core.modules as module
+where business.id in (
+  '50000000-0000-0000-0000-000000000001',
+  '50000000-0000-0000-0000-000000000002',
+  '50000000-0000-0000-0000-000000000003',
+  '50000000-0000-0000-0000-000000000004'
+);
+
 insert into core.locations (id, business_id, display_name)
 values (
   '51000000-0000-0000-0000-000000000001',

@@ -117,6 +117,16 @@ values
   ('90000000-0000-0000-0000-000000000005', 'restaurant-backfill-a', 'Restaurant Backfill A', 'en', 'active'),
   ('90000000-0000-0000-0000-000000000006', 'restaurant-backfill-b', 'Restaurant Backfill B', 'en', 'active');
 
+update core.business_plan_assignments set plan_key = 'restaurant-starter'
+where business_id in (
+  '90000000-0000-0000-0000-000000000001',
+  '90000000-0000-0000-0000-000000000002',
+  '90000000-0000-0000-0000-000000000003',
+  '90000000-0000-0000-0000-000000000004',
+  '90000000-0000-0000-0000-000000000005',
+  '90000000-0000-0000-0000-000000000006'
+);
+
 insert into core.locations (id, business_id, display_name)
 values
   ('91000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', 'Location A'),

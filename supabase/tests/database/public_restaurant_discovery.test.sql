@@ -41,6 +41,15 @@ values
   ('13000000-0000-0000-0000-000000000004', 'suspended-restaurant', 'Suspended', 'en', 'suspended'),
   ('13000000-0000-0000-0000-000000000005', 'draft-only-restaurant', 'Draft only', 'en', 'active');
 
+update core.business_plan_assignments set plan_key = 'restaurant-starter'
+where business_id in (
+  '13000000-0000-0000-0000-000000000001',
+  '13000000-0000-0000-0000-000000000002',
+  '13000000-0000-0000-0000-000000000003',
+  '13000000-0000-0000-0000-000000000004',
+  '13000000-0000-0000-0000-000000000005'
+);
+
 insert into core.business_locales (business_id, locale_code, is_enabled)
 values
   ('13000000-0000-0000-0000-000000000001', 'ar', true),
@@ -117,6 +126,18 @@ select is(
 );
 
 reset role;
+insert into core.business_module_entitlement_overrides (business_id, module_key, decision, reason)
+values ('13000000-0000-0000-0000-000000000001', 'restaurant', 'deny', 'Sitemap entitlement gate test');
+set local role anon;
+select is(
+  (select count(*)::integer from public.list_public_restaurant_sitemap()),
+  0,
+  'entitlement loss removes retained Restaurant content from discovery'
+);
+
+reset role;
+delete from core.business_module_entitlement_overrides
+where business_id = '13000000-0000-0000-0000-000000000001' and module_key = 'restaurant';
 update core.modules set is_available = false where key = 'restaurant';
 set local role anon;
 select is(

@@ -31,6 +31,14 @@ values
   ('b3000000-0000-0000-0000-000000000003', 'branding-suspended', 'Branding Suspended', 'en', 'suspended'),
   ('b4000000-0000-0000-0000-000000000004', 'branding-archived', 'Branding Archived', 'en', 'archived');
 
+update core.business_plan_assignments set plan_key = 'restaurant-starter'
+where business_id in (
+  'b1000000-0000-0000-0000-000000000001',
+  'b2000000-0000-0000-0000-000000000002',
+  'b3000000-0000-0000-0000-000000000003',
+  'b4000000-0000-0000-0000-000000000004'
+);
+
 insert into core.memberships (id, business_id, user_id, status)
 values
   ('b1100000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000b1a1', 'active'),

@@ -110,6 +110,9 @@ values (
   'active'
 );
 
+update core.business_plan_assignments set plan_key = 'restaurant-starter'
+where business_id = 'de200000-0000-0000-0000-000000000001';
+
 insert into core.business_modules (business_id, module_key, is_enabled)
 values ('de200000-0000-0000-0000-000000000001', 'restaurant', true);
 

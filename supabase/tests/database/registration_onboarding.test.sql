@@ -9,7 +9,7 @@ exception when others then return sqlstate;
 end;
 $$;
 
-select plan(20);
+select plan(22);
 
 select has_column('core', 'businesses', 'onboarding_completed_at', 'businesses records first-setup completion');
 select has_function('core', 'complete_first_business_onboarding', array['uuid','text[]','text','boolean','text','text','text'], 'onboarding completion has a narrow typed RPC');
@@ -32,6 +32,11 @@ select is((select count(*) from core.businesses), 0::bigint, 'reserved slug reje
 
 select is((select was_created from core.bootstrap_first_business('Onboarding Cafe', 'onboarding-cafe', 'ar')), true, 'owner bootstraps the first business');
 select is((select onboarding_completed_at is null from core.businesses where slug = 'onboarding-cafe'), true, 'new tenant remains explicitly incomplete');
+select is(
+  (select plan_key from core.get_business_commercial_summary((select id from core.businesses where slug = 'onboarding-cafe'))),
+  'core-only',
+  'browser bootstrap receives only the platform starter arrangement through the safe summary'
+);
 
 select is(pg_temp.capture_sqlstate($$select * from core.complete_first_business_onboarding((select id from core.businesses where slug = 'onboarding-cafe'), array['he'], 'restaurant', true, 'Main', '', '')$$), '22023', 'default public locale must remain enabled');
 select is((select count(*) from core.locations), 0::bigint, 'failed setup leaves no partial location');
@@ -40,6 +45,11 @@ select is((select was_completed from core.complete_first_business_onboarding((se
 select is((select onboarding_completed_at is not null from core.businesses where slug = 'onboarding-cafe'), true, 'completion timestamp is persisted');
 select is((select count(*) from core.locations where display_name = 'Main'), 1::bigint, 'first location is created once');
 select is((select is_enabled from core.business_modules where module_key = 'restaurant'), true, 'selected available module is enabled');
+select is(
+  (select plan_key from core.get_business_commercial_summary((select id from core.businesses where slug = 'onboarding-cafe'))),
+  'restaurant-starter',
+  'database onboarding grants only the offered Restaurant starter access through the safe summary'
+);
 select set_eq($$select locale_code::text from core.business_locales where is_enabled$$, $$values ('ar'::text), ('he'::text)$$, 'selected public locales are enabled');
 select is((select count(*) from core.audit_events where action_key = 'business.onboarding_completed'), 1::bigint, 'completion emits one narrow audit event');
 select is((select was_completed from core.complete_first_business_onboarding((select id from core.businesses where slug = 'onboarding-cafe'), array['ar','he'], 'restaurant', true, 'Main', '1 Darb Street', 'Haifa')), false, 'exact completion retry is predictable');

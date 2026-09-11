@@ -21,6 +21,12 @@ values
   ('12000000-0000-0000-0000-000000000001', 'phase12-a', 'Phase 12 A', 'en', 'active'),
   ('12000000-0000-0000-0000-000000000002', 'phase12-b', 'Phase 12 B', 'ar', 'active');
 
+update core.business_plan_assignments set plan_key = 'restaurant-starter'
+where business_id in (
+  '12000000-0000-0000-0000-000000000001',
+  '12000000-0000-0000-0000-000000000002'
+);
+
 insert into core.business_modules (business_id, module_key, is_enabled)
 values
   ('12000000-0000-0000-0000-000000000001', 'restaurant', true),
@@ -152,6 +158,15 @@ reset role; set local role anon;
 select is(public.resolve_public_restaurant_primary_domain('phase12-a'), 'menu-a.example.test', 'platform routes resolve the trusted primary Restaurant origin');
 
 reset role;
+insert into core.business_module_entitlement_overrides (business_id, module_key, decision, reason)
+values ('12000000-0000-0000-0000-000000000001', 'restaurant', 'deny', 'Domain entitlement gate test');
+set local role anon;
+select is(public.resolve_public_domain('menu-a.example.test'), null, 'entitlement loss makes a retained live hostname unroutable');
+select is(public.resolve_public_restaurant_primary_domain('phase12-a'), null, 'entitlement loss removes the custom canonical origin');
+reset role;
+delete from core.business_module_entitlement_overrides
+where business_id = '12000000-0000-0000-0000-000000000001' and module_key = 'restaurant';
+
 update core.business_modules set is_enabled = false
 where business_id = '12000000-0000-0000-0000-000000000001' and module_key = 'restaurant';
 set local role anon;
