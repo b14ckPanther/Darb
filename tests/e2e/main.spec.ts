@@ -72,6 +72,14 @@ for (const localeCase of localeCases) {
       "href",
       `https://admin.darb.co.il/register?locale=${localeCase.locale}`,
     );
+    await expect(page.locator(".path-list__status.is-current")).toHaveAttribute(
+      "href",
+      `https://rest.darb.co.il/${localeCase.locale}`,
+    );
+    await expect(page.locator(".product-card--current")).toHaveAttribute(
+      "href",
+      `https://rest.darb.co.il/${localeCase.locale}`,
+    );
   });
 }
 

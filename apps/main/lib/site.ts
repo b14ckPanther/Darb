@@ -45,6 +45,10 @@ export function getAdminRegistrationUrl(locale: SupportedLocale): string {
   return url.toString();
 }
 
+export function getRestaurantLandingUrl(locale: SupportedLocale): string {
+  return `https://${darbApplications.rest.productionHost}/${locale}`;
+}
+
 export function getPublicAlternates(): Readonly<Record<string, string>> {
   return {
     ...Object.fromEntries(

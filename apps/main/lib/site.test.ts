@@ -12,6 +12,7 @@ import {
   getPublicLocaleDirection,
   getPublicLocalePath,
   getPublicLocaleUrl,
+  getRestaurantLandingUrl,
   resolvePublicLocale,
 } from "./site";
 
@@ -64,6 +65,12 @@ describe("public locale routing", () => {
     expect(getAdminRegistrationUrl("ar")).toBe("https://admin.darb.co.il/register?locale=ar");
     expect(getAdminRegistrationUrl("he")).toBe("https://admin.darb.co.il/register?locale=he");
     expect(getAdminRegistrationUrl("en")).toBe("https://admin.darb.co.il/register?locale=en");
+  });
+
+  it("links to the Restaurant landing in the selected Main locale", () => {
+    expect(getRestaurantLandingUrl("ar")).toBe("https://rest.darb.co.il/ar");
+    expect(getRestaurantLandingUrl("he")).toBe("https://rest.darb.co.il/he");
+    expect(getRestaurantLandingUrl("en")).toBe("https://rest.darb.co.il/en");
   });
 });
 

@@ -729,6 +729,19 @@ html[lang="he"] .final-cta h2 {
   white-space: nowrap;
 }
 
+a.path-list__status {
+  text-decoration: none;
+}
+
+a.path-list__status:hover {
+  border-color: rgb(18 60 46 / 52%);
+}
+
+a.path-list__status:focus-visible {
+  outline: 2px solid var(--forest-deep);
+  outline-offset: 3px;
+}
+
 .path-list__status.is-current {
   border-color: rgb(18 60 46 / 30%);
   color: var(--forest-deep);
@@ -783,6 +796,24 @@ html[lang="he"] .final-cta h2 {
 
 .product-card--current {
   background: linear-gradient(150deg, rgb(218 166 77 / 14%), rgb(6 26 20 / 78%) 54%);
+}
+
+.product-card--link {
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.product-card--link:hover {
+  background: linear-gradient(150deg, rgb(218 166 77 / 20%), rgb(6 26 20 / 72%) 54%);
+}
+
+.product-card--link:focus-visible {
+  z-index: 1;
+  outline: 2px solid var(--gold-soft);
+  outline-offset: -4px;
 }
 
 .product-card__topline {

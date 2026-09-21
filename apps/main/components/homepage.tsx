@@ -11,7 +11,7 @@ import {
 import type { SupportedLocale } from "@darb/i18n";
 
 import { mainSiteCopy } from "../lib/copy";
-import { getAdminRegistrationUrl, getAdminSignInUrl } from "../lib/site";
+import { getAdminRegistrationUrl, getAdminSignInUrl, getRestaurantLandingUrl } from "../lib/site";
 import { BrandLockup } from "./brand-lockup";
 import { HeroArt } from "./hero-art";
 import { LocaleLinks } from "./locale-links";
@@ -30,6 +30,7 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
   const copy = mainSiteCopy[locale];
   const adminSignInUrl = getAdminSignInUrl(locale);
   const adminRegistrationUrl = getAdminRegistrationUrl(locale);
+  const restaurantLandingUrl = getRestaurantLandingUrl(locale);
 
   return (
     <div className="public-site">
@@ -86,20 +87,33 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
               <p>{copy.paths.description}</p>
             </div>
             <ol className="path-list">
-              {copy.paths.items.map((path, index) => (
-                <li key={path.title}>
-                  <span className="path-list__number" aria-hidden="true">
-                    0{index + 1}
-                  </span>
-                  <div>
-                    <h3>{path.title}</h3>
-                    <p>{path.description}</p>
-                  </div>
-                  <span className={`path-list__status${index === 0 ? " is-current" : ""}`}>
-                    {path.status}
-                  </span>
-                </li>
-              ))}
+              {copy.paths.items.map((path, index) => {
+                const titleId = `path-${index + 1}-title`;
+
+                return (
+                  <li key={path.title}>
+                    <span className="path-list__number" aria-hidden="true">
+                      0{index + 1}
+                    </span>
+                    <div>
+                      <h3 id={titleId}>{path.title}</h3>
+                      <p>{path.description}</p>
+                    </div>
+                    {index === 0 ? (
+                      <a
+                        aria-labelledby={`${titleId} ${titleId}-status`}
+                        className="path-list__status is-current"
+                        href={restaurantLandingUrl}
+                        id={`${titleId}-status`}
+                      >
+                        {path.status}
+                      </a>
+                    ) : (
+                      <span className="path-list__status">{path.status}</span>
+                    )}
+                  </li>
+                );
+              })}
             </ol>
           </div>
         </section>
@@ -113,26 +127,41 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
               <p>{copy.products.description}</p>
             </div>
             <div className="product-grid">
-              {copy.products.items.map((product, index) => (
-                <article
-                  key={product.key}
-                  className={`product-card${product.current ? " product-card--current" : ""}`}
-                >
-                  <div className="product-card__topline">
-                    <span aria-hidden="true">0{index + 1}</span>
-                    <span>{product.current ? copy.products.available : copy.products.future}</span>
-                  </div>
-                  <div className="product-card__symbol" aria-hidden="true">
-                    {product.key === "restaurant" ? (
-                      <RestaurantIcon size={32} />
-                    ) : (
-                      <span>{product.key.slice(0, 1).toUpperCase()}</span>
-                    )}
-                  </div>
-                  <h3>{product.title}</h3>
-                  <p>{product.description}</p>
-                </article>
-              ))}
+              {copy.products.items.map((product, index) => {
+                const content = (
+                  <>
+                    <div className="product-card__topline">
+                      <span aria-hidden="true">0{index + 1}</span>
+                      <span>
+                        {product.current ? copy.products.available : copy.products.future}
+                      </span>
+                    </div>
+                    <div className="product-card__symbol" aria-hidden="true">
+                      {product.key === "restaurant" ? (
+                        <RestaurantIcon size={32} />
+                      ) : (
+                        <span>{product.key.slice(0, 1).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <h3>{product.title}</h3>
+                    <p>{product.description}</p>
+                  </>
+                );
+
+                return product.current ? (
+                  <a
+                    key={product.key}
+                    className="product-card product-card--current product-card--link"
+                    href={restaurantLandingUrl}
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  <article key={product.key} className="product-card">
+                    {content}
+                  </article>
+                );
+              })}
             </div>
             <p className="products-section__note">{copy.products.honestNote}</p>
           </div>
