@@ -19,7 +19,8 @@ These systems may share low-level accessibility knowledge and selected technical
 they must not be forced into one visual language or one unrestricted component API.
 
 Darb's **corporate brand** is a third, explicitly owned concern. Main uses the approved doorway
-symbol, forest/ivory/gold palette, and cinematic architectural artwork. Stable mark and semantic
+symbol, forest/ivory/gold palette, approved architectural artwork, and a progressively enhanced
+spatial threshold scene. Stable mark and semantic
 wordmark primitives live in `@darb/ui` so Darb-owned applications cannot drift into independent
 logos; composed marketing layouts remain application-owned. Corporate identity must not inherit
 tenant theme overrides or turn `@darb/ui` into a marketing component catalogue. The permanent asset

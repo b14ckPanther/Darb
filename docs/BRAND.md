@@ -16,7 +16,7 @@ Darb uses three deliberately separate identity levels:
    in customer-facing experiences. Tenant identity must not be replaced with Darb corporate
    styling.
 
-Main is the expressive, cinematic brand north star. Admin is the quieter operational expression of
+Main is the expressive, spatial brand north star. Admin is the quieter operational expression of
 the same identity. Platform Admin adds an unmistakable privileged context without adopting an
 unrelated brand. Public Restaurant pages remain tenant-first; only Darb-owned landing, failure, and
 browser identity use the corporate mark.
@@ -74,7 +74,7 @@ The Main application owns the current corporate CSS tokens:
 | Warm canvas | `#F2F0E9` |
 | Deep canvas | `#E8E4DA` |
 | Ink         | `#10241C` |
-| Muted       | `#66716B` |
+| Muted       | `#56615B` |
 
 Typography follows rendered script rather than page locale: Arabic glyphs use Cairo, Hebrew glyphs
 use Heebo, and Latin glyphs use Ubuntu. Main's base font stack resolves unsupported scripts in that
@@ -100,16 +100,32 @@ visual state is transferred.
 
 ## Public application
 
-`apps/main` is Darb's public company/product experience. Its cinematic first viewport uses the
-landscape and portrait masters through responsive art direction; localized messaging remains real
-HTML. An opaque desktop veil covers the English copy embedded in the landscape artwork before
-localized HTML is rendered above it.
+`apps/main` is Darb's public company/product experience. Its concept is "the route": the visitor
+walks one continuous path through the Darb identity, and every important statement is real,
+localized HTML.
 
-The homepage tells one continuous story: the opening, Darb's modular foundation, different business
-paths, the current Restaurant product, future product directions, shared platform capabilities,
-multilingual value, and the truthful Admin registration and sign-in actions. The current Restaurant
-product links to the Restaurant landing. No customer proof, statistics, pricing, or unimplemented
-availability is invented.
+- **Threshold (first viewport).** A procedural Three.js corridor of architectural doorways receding
+  toward light. The doorway profile follows the approved hero architecture; it is scene geometry,
+  not the mark. The scene is a progressive enhancement: pre-rendered poster frames
+  (`public/experience/threshold`, AVIF and WebP) are the complete design, and the live scene loads
+  only after idle on hover-capable, fine-pointer devices with hardware-accelerated WebGL, no
+  reduced-motion preference, and no data-saver hint. Touch devices keep the poster with a
+  compositor-only scroll dolly. The vanishing point sits toward the reading end (right of centre
+  for LTR, left for RTL); the doorway itself is never mirrored.
+- **Route and places.** Ivory "route" sections carry a gold route line that branches into the four
+  engine destinations. Forest "places" (Restaurant, the three languages, arrival) open like a
+  doorway as they enter the viewport. Motion uses CSS scroll-driven animation where supported and
+  collapses to static states under reduced motion.
+- **Truthful destinations.** Restaurant is the only available engine and links to the Restaurant
+  landing; its section explains the real engine layers (menus, items and modifiers, per-location
+  availability, hours, three languages, identity and address) and states that online ordering is
+  not part of it yet. Booking, Pages, and Commerce are labeled coming soon and are not links.
+- **Arrival.** The approved portrait hero master closes the page beside the Admin registration and
+  sign-in actions.
+
+Poster masters are lossless WebP files in `apps/main/art/threshold`, rendered from the live scene
+by `apps/main/scripts/render-threshold-posters.mjs`; they are not served. No customer proof,
+statistics, pricing, or unimplemented availability is invented.
 
 ## Browser and PWA identity
 
