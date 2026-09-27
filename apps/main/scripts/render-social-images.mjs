@@ -102,7 +102,7 @@ for (const locale of ["ar", "he", "en"]) {
     viewport: { width: 1200, height: 630 },
   });
   await tab.setContent(page({ locale, corridor, mark }), { waitUntil: "networkidle" });
-  await tab.evaluate(() => document.fonts.ready);
+  await tab.evaluate(() => globalThis.document.fonts.ready);
   const png = await tab.screenshot({ type: "png" });
   await sharp(png)
     .resize(1200, 630)
