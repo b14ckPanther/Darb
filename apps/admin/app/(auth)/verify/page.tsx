@@ -1,27 +1,36 @@
-import Link from "next/link";
+import { getTextDirection } from "@darb/i18n";
 import { MailIcon } from "@darb/icons";
+
 import { getAdminI18n } from "../../../lib/i18n-server";
 import { adminPaths } from "../../../lib/navigation";
+import { AuthShell } from "../auth-shell";
 
 export default async function VerifyPage() {
-  const { t } = await getAdminI18n();
+  const { locale, t } = await getAdminI18n();
   return (
-    <main id="main-content" className="onboarding-layout">
-      <section className="onboarding-card verification-card" aria-labelledby="verify-heading">
-        <span className="verification-card__icon">
-          <MailIcon size={28} />
+    <AuthShell
+      direction={getTextDirection(locale)}
+      panelLabelledBy="verify-heading"
+      storyBody={t(
+        "Create one secure account, then shape the Darb workspace around your business.",
+      )}
+      storyId="verify-story-title"
+      storyTitle={t("Your business, on a clear path")}
+    >
+      <div className="auth-card auth-card--verify">
+        <span className="auth-card__mark" aria-hidden="true">
+          <MailIcon size={24} />
         </span>
-        <p className="eyebrow">{t("Confirm your email")}</p>
         <h1 id="verify-heading">{t("One quick check, then you’re in")}</h1>
         <p className="auth-intro">
           {t(
             "Open the confirmation link we sent to your email. After confirmation, Darb will bring you back to create your first business.",
           )}
         </p>
-        <Link className="primary-button" href={adminPaths.login}>
+        <a className="primary-button" href={adminPaths.login}>
           {t("Return to sign in")}
-        </Link>
-      </section>
-    </main>
+        </a>
+      </div>
+    </AuthShell>
   );
 }

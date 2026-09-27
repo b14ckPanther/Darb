@@ -4,8 +4,8 @@ import { useActionState, useState } from "react";
 import type { ReactNode } from "react";
 
 import {
-  ArrowRightIcon,
   CheckmarkCircleIcon,
+  DirectionArrowIcon,
   LockIcon,
   MailIcon,
   PreviewIcon,
@@ -116,7 +116,7 @@ export function RegistrationForm() {
       ) : null}
       <button className="primary-button" type="submit" disabled={pending}>
         <span>{t(pending ? "Creating account…" : "Create account")}</span>
-        <ArrowRightIcon size={20} />
+        <DirectionArrowIcon className="direction-icon" size={19} />
       </button>
     </form>
   );

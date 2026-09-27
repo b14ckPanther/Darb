@@ -28,6 +28,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       lang={locale}
       dir={getTextDirection(locale)}
       className={`${cairo.variable} ${heebo.variable} ${ubuntu.variable}`}
+      // The authentication arrival script may set data-arrival before hydration.
+      suppressHydrationWarning
     >
       <body>
         <AdminLocaleProvider locale={locale} messages={messages}>

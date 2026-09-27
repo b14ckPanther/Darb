@@ -95,10 +95,17 @@ button {
 }
 
 .auth-layout {
+  --auth-ivory: #fffdf6;
+  --auth-night: #051711;
+  --auth-gold: #daa64d;
+  --auth-gold-bright: #e9bd69;
+  --auth-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  position: relative;
   min-height: 100vh;
   display: grid;
   grid-template-columns: minmax(21rem, 0.9fr) minmax(30rem, 1.1fr);
-  background: var(--panel);
+  background: var(--auth-ivory);
 }
 
 .auth-story {
@@ -111,20 +118,41 @@ button {
   overflow: hidden;
   padding: clamp(2rem, 4.5vw, 4.75rem);
   color: #f7f2e8;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(218, 166, 77, 0.18), transparent 28rem),
-    linear-gradient(145deg, var(--forest) 0%, var(--forest-deep) 78%);
+  background: var(--auth-night);
 }
 
-.auth-story::after {
+/* The corridor from Main, one step further in. */
+.auth-story__art,
+.auth-story__art img,
+.auth-story__veil {
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.auth-story__art {
+  z-index: -2;
+  view-transition-name: auth-threshold;
+}
+
+.auth-story__art img {
+  object-fit: cover;
+  object-position: 50% 42%;
+  transform: scale(1.12);
+  transform-origin: 50% 42%;
+}
+
+.auth-story__veil {
   z-index: -1;
-  inset: auto -5rem -11rem auto;
-  width: clamp(20rem, 34vw, 34rem);
-  height: clamp(28rem, 50vw, 48rem);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px 999px 0 0;
-  content: "";
+  background: linear-gradient(
+    180deg,
+    rgb(5 23 17 / 72%) 0%,
+    rgb(5 23 17 / 10%) 22%,
+    rgb(5 23 17 / 8%) 42%,
+    rgb(5 23 17 / 82%) 66%,
+    var(--auth-night) 100%
+  );
 }
 
 .auth-story__brandline {
@@ -227,27 +255,28 @@ button {
 }
 
 .auth-public-link {
+  flex: 0 0 auto;
+  white-space: nowrap;
   padding-inline: 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
-  color: rgba(255, 253, 246, 0.78);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 253, 246, 0.24);
+  border-radius: 2px;
+  color: rgba(255, 253, 246, 0.82);
+  background: rgba(5, 23, 17, 0.35);
 }
 
 .auth-public-link:hover {
   color: #fffdf6;
-  border-color: rgba(218, 166, 77, 0.48);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(218, 166, 77, 0.6);
+  background: rgba(5, 23, 17, 0.6);
 }
 
 .auth-story__copy {
   position: relative;
   z-index: 1;
-  max-width: 36rem;
-  margin-block: clamp(5rem, 15vh, 10rem) 3rem;
+  max-width: 34rem;
+  margin-block: auto 0;
 }
 
-.auth-story__kicker,
 .eyebrow {
   margin: 0 0 1rem;
   font-size: 0.75rem;
@@ -256,61 +285,71 @@ button {
   text-transform: uppercase;
 }
 
-.auth-story__kicker {
-  color: var(--gold-soft);
+.auth-story h2 {
+  max-width: 16ch;
+  margin: 0;
+  font-size: clamp(2.3rem, 3.6vw, 4rem);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
 }
 
-.auth-story h2 {
-  max-width: 12ch;
-  margin: 0;
-  font-size: clamp(2.65rem, 5vw, 5.7rem);
-  font-weight: 500;
-  line-height: 0.98;
-  letter-spacing: -0.05em;
+html[lang="ar"] .auth-story h2 {
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+html[lang="he"] .auth-story h2 {
+  line-height: 1.12;
+  letter-spacing: -0.015em;
 }
 
 .auth-story__copy > p:last-child {
   max-width: 31rem;
-  margin: 1.7rem 0 0;
-  color: rgba(247, 242, 232, 0.72);
+  margin: 1.4rem 0 0;
+  color: rgba(255, 253, 246, 0.76);
   font-size: 1.02rem;
   line-height: 1.7;
 }
 
-.auth-opening {
-  position: absolute;
-  z-index: 0;
-  inset: auto clamp(2rem, 7vw, 7rem) 0 auto;
-  width: clamp(9rem, 15vw, 14rem);
-  height: clamp(15rem, 25vw, 23rem);
-  overflow: hidden;
-  border: 1px solid rgba(242, 227, 189, 0.34);
-  border-block-end: 0;
-  border-radius: 999px 999px 0 0;
-}
-
-.auth-opening span {
-  position: absolute;
-  inset: 8% 9% 0;
-  border-radius: 999px 999px 0 0;
-  background: linear-gradient(180deg, rgba(218, 166, 77, 0.2), rgba(255, 253, 246, 0.035));
-  box-shadow: inset 0 0 3rem rgba(218, 166, 77, 0.08);
-}
-
 .auth-panel {
+  position: relative;
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: clamp(2rem, 7vw, 7rem);
-  background:
-    linear-gradient(rgba(16, 36, 28, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(16, 36, 28, 0.025) 1px, transparent 1px), var(--panel);
-  background-size: 2.5rem 2.5rem;
+  background: var(--auth-ivory);
+}
+
+/* The threshold line: the route rail runs along the seam, with a waypoint at the door. */
+.auth-panel::before,
+.auth-panel::after {
+  position: absolute;
+  inset-inline-start: 0;
+  content: "";
+}
+
+.auth-panel::before {
+  inset-block: 0;
+  width: 1px;
+  background: var(--auth-gold);
+}
+
+.auth-panel::after {
+  inset-block-start: 50%;
+  width: 9px;
+  height: 9px;
+  margin-inline-start: -4px;
+  background: var(--auth-gold);
+  transform: translateY(-50%) rotate(45deg);
 }
 
 .auth-card {
-  width: min(100%, 31rem);
+  width: min(100%, 30rem);
   padding: clamp(1.2rem, 2vw, 2rem) 0;
+  view-transition-name: auth-card;
 }
 
 .eyebrow {
@@ -510,6 +549,193 @@ button {
 
 [dir="rtl"] .auth-form .primary-button > svg {
   transform: scaleX(-1);
+}
+
+/* Route language inside the authentication surfaces only; other Admin screens keep their system. */
+.auth-layout h1 {
+  font-size: clamp(2.3rem, 4.2vw, 3.6rem);
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+html[lang="ar"] .auth-layout h1 {
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+html[lang="he"] .auth-layout h1 {
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+.auth-layout .field-control {
+  min-height: 3.25rem;
+  border-color: rgba(16, 36, 28, 0.2);
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.auth-layout .field-control:focus-within {
+  border-color: var(--forest);
+  box-shadow: inset 0 -2px 0 var(--auth-gold);
+}
+
+.auth-layout .password-visibility {
+  border-radius: 2px;
+}
+
+.auth-layout .form-alert {
+  border-radius: 2px;
+}
+
+.auth-layout .primary-button {
+  min-height: 3.25rem;
+  color: #061a14;
+  border: 1px solid var(--auth-gold);
+  border-radius: 2px;
+  background: var(--auth-gold);
+  text-decoration: none;
+}
+
+.auth-layout .primary-button:hover:not(:disabled) {
+  background: var(--auth-gold-bright);
+  border-color: var(--auth-gold-bright);
+  transform: none;
+}
+
+.auth-layout .primary-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.auth-layout .primary-button .direction-icon {
+  transition: transform 220ms var(--auth-ease);
+}
+
+.auth-layout .primary-button:hover:not(:disabled) .direction-icon {
+  transform: translateX(4px);
+}
+
+[dir="rtl"] .auth-layout .primary-button .direction-icon {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .auth-layout .primary-button:hover:not(:disabled) .direction-icon {
+  transform: scaleX(-1) translateX(4px);
+}
+
+.auth-layout :focus-visible {
+  outline: 2px solid var(--forest);
+  outline-offset: 3px;
+}
+
+.auth-story :focus-visible {
+  outline-color: var(--auth-gold);
+}
+
+.auth-footnote--quiet {
+  margin-block-start: 0.6rem;
+}
+
+.auth-card--verify {
+  display: grid;
+  justify-items: start;
+}
+
+.auth-card--verify .primary-button {
+  width: auto;
+  margin-block-start: 2rem;
+  padding-inline: 1.5rem;
+}
+
+.auth-card__mark {
+  display: inline-grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  margin-block-end: 1.5rem;
+  border: 1px solid var(--auth-gold);
+  color: #6d4c17;
+  transform: rotate(45deg);
+}
+
+.auth-card__mark svg {
+  transform: rotate(-45deg);
+}
+
+.auth-story__actions .admin-language-switcher select {
+  border-color: rgba(255, 253, 246, 0.24);
+  border-radius: 2px;
+  background: rgba(5, 23, 17, 0.35);
+}
+
+/* Arrival from darb.co.il: the corridor light clears as the threshold settles into place. */
+.auth-arrival-veil {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-arrival="darb"] .auth-arrival-veil {
+    position: fixed;
+    z-index: 60;
+    inset: 0;
+    display: block;
+    background: radial-gradient(ellipse 70% 60% at 30% 45%, #fff4dc 0%, #f3d59b 55%, #e2b766 100%);
+    pointer-events: none;
+    animation: auth-arrival-veil 760ms var(--auth-ease) 80ms both;
+  }
+
+  html[data-arrival="darb"] .auth-story__art img {
+    animation: auth-arrival-art 1100ms var(--auth-ease) both;
+  }
+
+  html[data-arrival="darb"] .auth-card {
+    animation: auth-arrival-card 700ms var(--auth-ease) 220ms both;
+  }
+}
+
+@keyframes auth-arrival-veil {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes auth-arrival-art {
+  from {
+    transform: scale(1.35);
+  }
+  to {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes auth-arrival-card {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+/* Same-origin navigation between the authentication pages crossfades; the threshold stays put. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 220ms;
+  }
+
+  ::view-transition-group(auth-card) {
+    animation-duration: 320ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 
 .onboarding-layout {
@@ -3076,29 +3302,78 @@ button {
     grid-template-columns: 1fr;
   }
 
+  /* A short cinematic band of the corridor, then the form. */
   .auth-story {
-    min-height: auto;
-    padding: 1.4rem clamp(1.25rem, 6vw, 3rem) 2.5rem;
+    min-height: max(34svh, 17rem);
+    padding: 1rem clamp(1.25rem, 6vw, 3rem) 1.75rem;
+  }
+
+  .auth-story__art img {
+    object-position: 67% 50%;
+    transform-origin: 67% 50%;
+  }
+
+  .auth-layout[data-direction="rtl"] .auth-story__art img {
+    object-position: 33% 50%;
+    transform-origin: 33% 50%;
+  }
+
+  .auth-story__veil {
+    background: linear-gradient(
+      180deg,
+      rgb(5 23 17 / 70%) 0%,
+      rgb(5 23 17 / 15%) 35%,
+      rgb(5 23 17 / 55%) 70%,
+      rgb(5 23 17 / 92%) 100%
+    );
   }
 
   .auth-story__copy {
-    margin-block: 4rem 0;
+    margin-block-start: 2.5rem;
   }
 
   .auth-story h2 {
-    max-width: 17ch;
-    font-size: clamp(2.25rem, 8vw, 4rem);
+    max-width: 20ch;
+    font-size: clamp(1.6rem, 6vw, 2.4rem);
   }
 
-  .auth-story__copy > p:last-child,
-  .auth-opening {
+  .auth-story__copy > p:last-child {
     display: none;
   }
 
   .auth-panel {
     min-height: auto;
     place-items: start center;
-    padding: 3rem clamp(1.25rem, 6vw, 3rem) 4.5rem;
+    padding: 2.5rem clamp(1.25rem, 6vw, 3rem) 4rem;
+  }
+
+  .auth-panel::before {
+    inset-block: 0 auto;
+    inset-inline: 0;
+    width: auto;
+    height: 1px;
+  }
+
+  .auth-panel::after {
+    inset-block-start: 0;
+    inset-inline-start: clamp(1.25rem, 6vw, 3rem);
+    margin-inline-start: 0;
+  }
+}
+
+@media (max-width: 36rem) {
+  .auth-story__brandline {
+    flex-wrap: wrap;
+    row-gap: 0.75rem;
+  }
+
+  .auth-story__actions {
+    width: 100%;
+  }
+
+  .auth-story__actions .admin-language-switcher {
+    flex: 1;
+    width: auto;
   }
 
   .onboarding-card {

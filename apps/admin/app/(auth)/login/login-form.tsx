@@ -2,7 +2,13 @@
 
 import { useActionState, useState } from "react";
 
-import { ArrowRightIcon, LockIcon, MailIcon, PreviewIcon, VisibilityOffIcon } from "@darb/icons";
+import {
+  DirectionArrowIcon,
+  LockIcon,
+  MailIcon,
+  PreviewIcon,
+  VisibilityOffIcon,
+} from "@darb/icons";
 
 import { signInAction } from "../../actions/auth";
 import { initialFormState } from "../../../lib/forms";
@@ -79,7 +85,7 @@ export function LoginForm({ nextPath }: Readonly<{ nextPath: string }>) {
 
       <button className="primary-button" type="submit" disabled={pending}>
         <span>{t(pending ? "Signing in…" : "Sign in")}</span>
-        <ArrowRightIcon size={20} />
+        <DirectionArrowIcon className="direction-icon" size={19} />
       </button>
     </form>
   );
