@@ -4,6 +4,7 @@ import {
   Audit02Icon,
   ArrowDown01Icon,
   ArrowRight01Icon,
+  ArrowRight02Icon,
   Building03Icon,
   Cancel01Icon,
   CheckmarkCircle02Icon,
@@ -56,6 +57,10 @@ function createDarbIcon(icon: IconSvgElement, props: DarbIconProps): ReactElemen
 
 export function ArrowRightIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(ArrowRight01Icon, props);
+}
+
+export function DirectionArrowIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(ArrowRight02Icon, props);
 }
 
 export function AlertCircleIcon(props: DarbIconProps): ReactElement {
