@@ -77,6 +77,12 @@ export interface MainSiteCopy {
     rights: string;
     creditLead: string;
     creditName: string;
+    darbInstagram: string;
+    founderLinks: string;
+    founderInstagram: string;
+    founderGithub: string;
+    founderLinkedin: string;
+    founderPortfolio: string;
   };
   metadata: {
     title: string;
@@ -257,6 +263,12 @@ export const mainSiteCopy: Readonly<Record<SupportedLocale, MainSiteCopy>> = {
       rights: "درب. جميع الحقوق محفوظة.",
       creditLead: "تصميم وتطوير",
       creditName: "نور",
+      darbInstagram: "درب على إنستغرام",
+      founderLinks: "روابط نور",
+      founderInstagram: "نور على إنستغرام",
+      founderGithub: "نور على GitHub",
+      founderLinkedin: "نور على LinkedIn",
+      founderPortfolio: "بورتفوليو نور",
     },
     metadata: {
       title: "درب — منصة بتناسب طبيعة شغلك",
@@ -440,6 +452,12 @@ export const mainSiteCopy: Readonly<Record<SupportedLocale, MainSiteCopy>> = {
       rights: "Darb. כל הזכויות שמורות.",
       creditLead: "עיצוב ופיתוח:",
       creditName: "Nour",
+      darbInstagram: "Darb באינסטגרם",
+      founderLinks: "הקישורים של נור",
+      founderInstagram: "נור באינסטגרם",
+      founderGithub: "נור ב-GitHub",
+      founderLinkedin: "נור ב-LinkedIn",
+      founderPortfolio: "תיק העבודות של נור",
     },
     metadata: {
       title: "Darb — פלטפורמה אחת לעולמות עסקיים שונים",
@@ -630,6 +648,12 @@ export const mainSiteCopy: Readonly<Record<SupportedLocale, MainSiteCopy>> = {
       rights: "Darb. All rights reserved.",
       creditLead: "Designed and built by",
       creditName: "Nour",
+      darbInstagram: "Darb on Instagram",
+      founderLinks: "Nour's links",
+      founderInstagram: "Nour on Instagram",
+      founderGithub: "Nour on GitHub",
+      founderLinkedin: "Nour on LinkedIn",
+      founderPortfolio: "Nour's portfolio",
     },
     metadata: {
       title: "Darb — One platform for different business worlds",

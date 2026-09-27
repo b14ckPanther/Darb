@@ -1,6 +1,13 @@
 import Image from "next/image";
 
-import { DirectionArrowIcon } from "@darb/icons";
+import {
+  DirectionArrowIcon,
+  DomainIcon,
+  GitHubIcon,
+  InstagramIcon,
+  LinkedInIcon,
+  MailIcon,
+} from "@darb/icons";
 import { supportedLocales, type SupportedLocale } from "@darb/i18n";
 
 import { mainSiteCopy } from "../lib/copy";
@@ -9,6 +16,8 @@ import {
   getAdminSignInUrl,
   getPublicLocaleDirection,
   getRestaurantLandingUrl,
+  darbChannels,
+  founderProfiles,
   portfolioUrl,
 } from "../lib/site";
 import { BrandLockup } from "./brand-lockup";
@@ -306,6 +315,29 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
           <div className="site-footer__brand">
             <BrandLockup />
             <p>{copy.footer.statement}</p>
+            <ul className="site-footer__channels">
+              <li>
+                <a
+                  href={darbChannels.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={copy.footer.darbInstagram}
+                >
+                  <InstagramIcon size={18} />
+                  <span lang="en" dir="ltr">
+                    @darbco
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a href={`mailto:${darbChannels.email}`}>
+                  <MailIcon size={18} />
+                  <span lang="en" dir="ltr">
+                    {darbChannels.email}
+                  </span>
+                </a>
+              </li>
+            </ul>
           </div>
           <nav className="site-footer__column" aria-labelledby="footer-paths">
             <p id="footer-paths">{copy.footer.paths}</p>
@@ -340,12 +372,36 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
           <p>
             © {new Date().getUTCFullYear()} {copy.footer.rights}
           </p>
-          <p className="site-footer__credit">
-            {copy.footer.creditLead}{" "}
-            <a href={portfolioUrl} rel="author">
-              <bdi lang={locale === "he" ? "en" : undefined}>{copy.footer.creditName}</bdi>
-            </a>
-          </p>
+          <div className="site-footer__founder">
+            <p className="site-footer__credit">
+              {copy.footer.creditLead}{" "}
+              <a href={portfolioUrl} rel="author">
+                <bdi lang={locale === "he" ? "en" : undefined}>{copy.footer.creditName}</bdi>
+              </a>
+            </p>
+            <ul className="site-footer__profiles" aria-label={copy.footer.founderLinks}>
+              {(
+                [
+                  [founderProfiles.instagram, copy.footer.founderInstagram, InstagramIcon],
+                  [founderProfiles.github, copy.footer.founderGithub, GitHubIcon],
+                  [founderProfiles.linkedin, copy.footer.founderLinkedin, LinkedInIcon],
+                  [founderProfiles.portfolio, copy.footer.founderPortfolio, DomainIcon],
+                ] as const
+              ).map(([href, label, Icon]) => (
+                <li key={href}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer me"
+                    aria-label={label}
+                    title={label}
+                  >
+                    <Icon size={18} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
           <LocaleLinks currentLocale={locale} label={copy.nav.language} />
         </div>
       </footer>

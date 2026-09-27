@@ -10,6 +10,21 @@ export const mainOrigin = `https://${darbApplications.main.productionHost}`;
 
 /** The founder's portfolio, credited in the public footer. */
 export const portfolioUrl = "https://portfolio.darb.co.il";
+
+/** Darb's own public channels. */
+export const darbChannels = {
+  instagram: "https://www.instagram.com/darbco/",
+  email: "founder@darb.co.il",
+} as const;
+
+/** The founder's public profiles, linked from the footer credit. */
+export const founderProfiles = {
+  instagram: "https://www.instagram.com/noormosa.97/",
+  github: "https://github.com/b14ckPanther",
+  linkedin: "https://www.linkedin.com/in/nmprofessor/",
+  portfolio: portfolioUrl,
+  email: "founder@darb.co.il",
+} as const;
 export const defaultPublicLocale = "ar" satisfies SupportedLocale;
 
 export const publicLocaleNames: Readonly<Record<SupportedLocale, string>> = {

@@ -1727,6 +1727,70 @@ html[lang="he"] :is(.route, .place, .arrival) h2 {
   font-size: 0.85rem;
 }
 
+/* Channels and founder profiles */
+
+.site-footer__channels {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer__channels a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--on-dark-muted);
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.site-footer__channels a:hover {
+  color: var(--on-dark);
+}
+
+.site-footer__channels svg,
+.site-footer__profiles svg {
+  color: var(--gold);
+}
+
+.site-footer__founder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.site-footer__profiles {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer__profiles a {
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid var(--line-dark);
+  border-radius: var(--radius);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms var(--ease-out);
+}
+
+.site-footer__profiles a:hover {
+  border-color: rgb(218 166 77 / 55%);
+  background: rgb(218 166 77 / 8%);
+  transform: translateY(-2px);
+}
+
 /* Credit */
 
 .site-footer__credit a {

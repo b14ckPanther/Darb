@@ -13,13 +13,16 @@ import {
   Copy01Icon,
   Edit02Icon,
   ExternalLinkIcon as ExternalLinkHugeicon,
+  GithubIcon,
   Globe02Icon,
   Grid2X2Icon,
   Home04Icon,
   Image01Icon,
+  InstagramIcon as InstagramHugeicon,
   ImageUpload01Icon,
   InformationCircleIcon as InformationCircleHugeicon,
   Layers01Icon,
+  Linkedin01Icon,
   LanguagesIcon,
   Location01Icon,
   LockPasswordIcon,
@@ -61,6 +64,18 @@ export function ArrowRightIcon(props: DarbIconProps): ReactElement {
 
 export function DirectionArrowIcon(props: DarbIconProps): ReactElement {
   return createDarbIcon(ArrowRight02Icon, props);
+}
+
+export function InstagramIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(InstagramHugeicon, props);
+}
+
+export function GitHubIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(GithubIcon, props);
+}
+
+export function LinkedInIcon(props: DarbIconProps): ReactElement {
+  return createDarbIcon(Linkedin01Icon, props);
 }
 
 export function AlertCircleIcon(props: DarbIconProps): ReactElement {

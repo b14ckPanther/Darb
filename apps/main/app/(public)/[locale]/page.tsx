@@ -7,6 +7,8 @@ import { Homepage } from "../../../components/homepage";
 import { mainSiteCopy } from "../../../lib/copy";
 import { serializeJsonLd } from "../../../lib/seo";
 import {
+  darbChannels,
+  founderProfiles,
   getPublicAlternates,
   getPublicLocaleUrl,
   mainOrigin,
@@ -89,6 +91,14 @@ export default async function PublicLocalePage({
     alternateName: "درب",
     url: mainOrigin,
     logo: `${mainOrigin}/brand/icons/icon-512.png`,
+    email: darbChannels.email,
+    sameAs: [darbChannels.instagram],
+    founder: {
+      "@type": "Person",
+      name: "Nour",
+      url: founderProfiles.portfolio,
+      sameAs: [founderProfiles.instagram, founderProfiles.github, founderProfiles.linkedin],
+    },
   };
 
   return (
