@@ -82,6 +82,10 @@ for (const localeCase of localeCases) {
       "content",
       copy.metadata.title,
     );
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      "content",
+      `https://darb.co.il/brand/social/darb-og-${localeCase.locale}.jpg`,
+    );
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
       "content",
       "summary_large_image",

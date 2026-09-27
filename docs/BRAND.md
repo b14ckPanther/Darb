@@ -50,7 +50,9 @@ claimed.
 
 Original PNGs must not be overwritten. Delivery-optimized WebP hero files live alongside their
 masters. `brand/logo` contains the transparent symbol crop, `brand/icons` contains fixed-size
-browser/PWA derivatives, and `brand/social` contains the approved-artwork share image.
+browser/PWA derivatives, and `brand/social` contains the localized share images (`darb-og-{ar,he,en}.jpg`),
+composed by `apps/main/scripts/render-social-images.mjs` from the threshold scene masters, the
+approved symbol raster, and the wordmark typography.
 
 The canonical reusable React boundary is `@darb/ui`: `DarbMark`, `DarbWordmark`, and
 `DarbBrandLockup` support mark-only, Arabic, Latin, bilingual, compact, light, dark, and accessible

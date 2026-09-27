@@ -36,7 +36,7 @@ export async function generateMetadata({
 
   const copy = mainSiteCopy[locale];
   const canonicalUrl = getPublicLocaleUrl(locale);
-  const socialImage = `${mainOrigin}/brand/social/darb-og.webp`;
+  const socialImage = `${mainOrigin}/brand/social/darb-og-${locale}.jpg`;
 
   return {
     applicationName: "Darb — درب",
@@ -57,7 +57,15 @@ export async function generateMetadata({
     metadataBase: new URL(mainOrigin),
     openGraph: {
       description: copy.metadata.description,
-      images: [{ alt: "Darb", height: 630, url: socialImage, width: 1200 }],
+      images: [
+        {
+          alt: copy.metadata.title,
+          height: 630,
+          type: "image/jpeg",
+          url: socialImage,
+          width: 1200,
+        },
+      ],
       locale: publicLocaleTags[locale].replace("-", "_"),
       siteName: "Darb — درب",
       title: copy.metadata.title,
