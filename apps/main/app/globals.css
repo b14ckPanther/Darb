@@ -1727,6 +1727,79 @@ html[lang="he"] :is(.route, .place, .arrival) h2 {
   font-size: 0.85rem;
 }
 
+/* Credit */
+
+.site-footer__credit a {
+  color: var(--on-dark);
+  text-decoration: underline;
+  text-decoration-color: rgb(218 166 77 / 50%);
+  text-underline-offset: 0.3rem;
+}
+
+.site-footer__credit a:hover {
+  text-decoration-color: var(--gold);
+}
+
+/* Continuity between Darb applications */
+
+/* A doorway of corridor light opens from the chosen link while the browser navigates. */
+.route-exit {
+  position: fixed;
+  z-index: 60;
+  top: calc(var(--exit-y, 50vh) - 48px);
+  left: 0;
+  width: 64px;
+  height: 96px;
+  background: radial-gradient(ellipse 60% 55% at 50% 45%, #fff6df, #f3d59b 70%);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 96'%3E%3Cpath d='M2 96V31Q2 26 7 23.5L51 6Q55 4.5 58.5 6Q62 7.5 62 12V96Z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(calc(var(--exit-x, 50vw) - 32px)) scale(0);
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-route-leaving] .route-exit {
+    visibility: visible;
+    animation: route-exit 760ms linear forwards;
+  }
+}
+
+@keyframes route-exit {
+  0% {
+    opacity: 0.5;
+    transform: translateX(calc(var(--exit-x, 50vw) - 32px)) scale(0.3);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  45% {
+    opacity: 1;
+    transform: translateX(calc(var(--exit-x, 50vw) - 32px)) scale(4.5);
+    animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(calc(var(--exit-x, 50vw) - 32px)) scale(48);
+  }
+}
+
+/* Same-origin navigations (such as switching language) cross-fade instead of flashing. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 260ms;
+    animation-timing-function: var(--ease-out);
+  }
+
+  .site-header {
+    view-transition-name: site-header;
+  }
+}
+
 /* System states */
 
 .site-state {

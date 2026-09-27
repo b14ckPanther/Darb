@@ -7,6 +7,9 @@ import {
 } from "@darb/i18n";
 
 export const mainOrigin = `https://${darbApplications.main.productionHost}`;
+
+/** The founder's portfolio, credited in the public footer. */
+export const portfolioUrl = "https://portfolio.darb.co.il";
 export const defaultPublicLocale = "ar" satisfies SupportedLocale;
 
 export const publicLocaleNames: Readonly<Record<SupportedLocale, string>> = {

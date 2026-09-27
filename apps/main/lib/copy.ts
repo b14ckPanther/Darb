@@ -75,6 +75,8 @@ export interface MainSiteCopy {
     paths: string;
     account: string;
     rights: string;
+    creditLead: string;
+    creditName: string;
   };
   metadata: {
     title: string;
@@ -253,6 +255,8 @@ export const mainSiteCopy: Readonly<Record<SupportedLocale, MainSiteCopy>> = {
       paths: "المسارات",
       account: "حسابك",
       rights: "درب. جميع الحقوق محفوظة.",
+      creditLead: "تصميم وتطوير",
+      creditName: "نور الدين موسى",
     },
     metadata: {
       title: "درب — منصة بتناسب طبيعة شغلك",
@@ -434,6 +438,8 @@ export const mainSiteCopy: Readonly<Record<SupportedLocale, MainSiteCopy>> = {
       paths: "המסלולים",
       account: "החשבון שלך",
       rights: "Darb. כל הזכויות שמורות.",
+      creditLead: "עיצוב ופיתוח:",
+      creditName: "Nour Alden Mousa",
     },
     metadata: {
       title: "Darb — פלטפורמה אחת לעולמות עסקיים שונים",
@@ -622,6 +628,8 @@ export const mainSiteCopy: Readonly<Record<SupportedLocale, MainSiteCopy>> = {
       paths: "Paths",
       account: "Your account",
       rights: "Darb. All rights reserved.",
+      creditLead: "Designed and built by",
+      creditName: "Nour Alden Mousa",
     },
     metadata: {
       title: "Darb — One platform for different business worlds",

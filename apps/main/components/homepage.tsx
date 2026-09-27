@@ -9,10 +9,12 @@ import {
   getAdminSignInUrl,
   getPublicLocaleDirection,
   getRestaurantLandingUrl,
+  portfolioUrl,
 } from "../lib/site";
 import { BrandLockup } from "./brand-lockup";
 import { LocaleLinks } from "./locale-links";
 import { RestaurantLayers } from "./restaurant-layers";
+import { RouteExit } from "./route-exit";
 import { SiteHeader } from "./site-header";
 import { ThresholdPoster } from "./threshold/threshold-poster";
 import { ThresholdScene } from "./threshold/threshold-scene";
@@ -36,6 +38,7 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
   return (
     <div className="site" data-direction={direction}>
       <SiteHeader copy={copy} locale={locale} />
+      <RouteExit />
 
       <main id="main-content">
         <section className="threshold" aria-labelledby="hero-title" data-threshold>
@@ -336,6 +339,12 @@ export function Homepage({ locale }: { locale: SupportedLocale }) {
         <div className="shell site-footer__bottom">
           <p>
             © {new Date().getUTCFullYear()} {copy.footer.rights}
+          </p>
+          <p className="site-footer__credit">
+            {copy.footer.creditLead}{" "}
+            <a href={portfolioUrl} rel="author">
+              <bdi lang={locale === "he" ? "en" : undefined}>{copy.footer.creditName}</bdi>
+            </a>
           </p>
           <LocaleLinks currentLocale={locale} label={copy.nav.language} />
         </div>

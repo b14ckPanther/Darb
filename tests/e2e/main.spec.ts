@@ -407,6 +407,29 @@ test("lets keyboard and pointer users explore the Restaurant layers", async ({ p
   await expect(page.locator(".layers__stage")).toHaveAttribute("aria-hidden", "true");
 });
 
+test("opens a doorway of light when leaving for another Darb application", async ({ page }) => {
+  await page.goto("/en");
+  await page.evaluate(() => window.addEventListener("click", (event) => event.preventDefault()));
+  await page.locator(".sign__link").click();
+  await expect(page.locator("html")).toHaveAttribute("data-route-leaving", "rest");
+  await expect(page.locator(".route-exit")).toHaveCSS("visibility", "visible");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/en");
+  await page.evaluate(() => window.addEventListener("click", (event) => event.preventDefault()));
+  await page.locator(".threshold__actions .button--gold").click();
+  await expect(page.locator("html")).not.toHaveAttribute("data-route-leaving", /.+/);
+});
+
+test("credits the founder's portfolio in every locale", async ({ page }) => {
+  for (const locale of ["ar", "he", "en"] as const) {
+    await page.goto(`/${locale}`);
+    const credit = page.locator(".site-footer__credit a");
+    await expect(credit).toHaveAttribute("href", "https://portfolio.darb.co.il");
+    await expect(credit).toHaveText(mainSiteCopy[locale].footer.creditName);
+  }
+});
+
 test("publishes index, sitemap, manifest, health, and hardened headers", async ({ request }) => {
   const [pageResponse, robots, sitemap, manifest, health] = await Promise.all([
     request.get("/en"),
