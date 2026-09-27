@@ -187,9 +187,10 @@ onboarding, tenant admin, platform console, plans and entitlements, custom domai
 Restaurant product end to end. Not yet implemented: ordering, reservations, payments and billing,
 and engines beyond Restaurant.
 
-## Author
+## Founder
 
-Designed and built by **Nour Alden Mousa** for [Darb](https://darb.co.il/en).
+[Darb](https://darb.co.il/en) was founded by **Nour Alden Mousa**, who leads its product,
+architecture, and engineering.
 
 ## License
 
