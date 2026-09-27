@@ -256,7 +256,7 @@ export const mainSiteCopy: Readonly<Record<SupportedLocale, MainSiteCopy>> = {
       account: "حسابك",
       rights: "درب. جميع الحقوق محفوظة.",
       creditLead: "تصميم وتطوير",
-      creditName: "نور الدين موسى",
+      creditName: "نور",
     },
     metadata: {
       title: "درب — منصة بتناسب طبيعة شغلك",
@@ -439,7 +439,7 @@ export const mainSiteCopy: Readonly<Record<SupportedLocale, MainSiteCopy>> = {
       account: "החשבון שלך",
       rights: "Darb. כל הזכויות שמורות.",
       creditLead: "עיצוב ופיתוח:",
-      creditName: "Nour Alden Mousa",
+      creditName: "Nour",
     },
     metadata: {
       title: "Darb — פלטפורמה אחת לעולמות עסקיים שונים",
@@ -629,7 +629,7 @@ export const mainSiteCopy: Readonly<Record<SupportedLocale, MainSiteCopy>> = {
       account: "Your account",
       rights: "Darb. All rights reserved.",
       creditLead: "Designed and built by",
-      creditName: "Nour Alden Mousa",
+      creditName: "Nour",
     },
     metadata: {
       title: "Darb — One platform for different business worlds",
