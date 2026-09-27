@@ -1,14 +1,16 @@
 # Core database
 
-Status: core tenancy, capability, appearance, media, custom-domain, business-locale, and Restaurant
-Engine domain foundations are implemented through deterministic Supabase migrations. Remote
-application is environment-specific and must be verified with `supabase migration list`.
+Status: core tenancy, capability, commercial entitlement, self-service onboarding, appearance,
+media, custom-domain, business-locale, Restaurant Engine domain, and Restaurant publication and
+routing foundations are implemented through deterministic Supabase migrations. Remote application
+is environment-specific and must be verified with `supabase migration list`.
 
 ## Schema boundaries
 
 - `core` is the RLS-protected Data API schema for platform and tenant data.
 - `restaurant` is the RLS-protected Restaurant Engine schema; it has no anonymous public-read policy.
-- `public` contains the narrowly granted anonymous Restaurant projection, not tenant tables.
+- `public` contains narrowly granted anonymous Restaurant publication, host-resolution, and
+  discovery functions, not tenant tables.
 - `private` is not exposed through the Data API. It owns authorization helpers and super-admin
   assignments.
 - `auth.users` remains the source of authentication identity. Darb does not duplicate auth-owned
@@ -50,16 +52,18 @@ use `timestamptz`; business defaults are ILS and `Asia/Jerusalem`, while no naiv
 floating-point money field exists. Composite foreign keys keep permission membership and location
 scope inside the declared business.
 
-The 15 Restaurant tenant tables cover configuration, multiple menus, categories, items, variants,
-reusable modifier groups/options, item assignments, location availability overrides, and six
-relational translation tables. Their exact responsibilities and ownership constraints are
-documented in [`RESTAURANT.md`](./RESTAURANT.md).
+The 17 Restaurant tenant tables cover configuration, multiple menus, categories, items, variants,
+reusable modifier groups/options, item assignments, location availability overrides, per-location
+public contact profiles and regular opening intervals, and six relational translation tables. Their
+exact responsibilities and ownership constraints are documented in
+[`RESTAURANT.md`](./RESTAURANT.md).
 
 ## Database utilities and authorization helpers
 
-`private.set_updated_at()` maintains mutable-row timestamps. `private.create_profile_for_auth_user()`
-creates only an identity row after an `auth.users` insert. `private.validate_membership_permission_scope()`
-rejects location assignments for business-only permissions.
+`private.set_updated_at()` maintains mutable-row timestamps.
+`private.create_profile_for_auth_user()` creates only an identity row after an `auth.users` insert.
+`private.validate_membership_permission_scope()` rejects location assignments for business-only
+permissions.
 
 RLS policies call four stable, security-definer helpers:
 
@@ -97,7 +101,15 @@ backfilled complete, retries return canonical completed state, and failures roll
 A private insert/slug-change trigger also rejects reserved Darb platform identities independently
 of application validation.
 
-Phase 4 adds one read helper and four narrow mutation boundaries:
+The commercial-entitlement migration adds three authenticated tenant functions:
+`core.get_business_module_access(business_id)` returns the caller-visible effective-access
+projection, `core.get_business_commercial_summary(business_id)` returns the current plan summary,
+and `core.request_business_initial_setup(business_id)` lets a `business.manage` holder request
+assisted setup with an audited `business.initial_setup_requested` event. A new business receives a
+platform plan assignment through a private trigger, and a private location-limit trigger enforces
+the plan's location ceiling. See [`COMMERCIAL.md`](./COMMERCIAL.md).
+
+The core administration migration adds one read helper and four narrow mutation boundaries:
 
 - `core.current_user_business_access(business_id)` returns a single caller-specific snapshot for
   business settings, business-wide location access, audit visibility, and super-admin awareness;
@@ -110,56 +122,63 @@ Phase 4 adds one read helper and four narrow mutation boundaries:
 - `core.archive_location(business_id, location_id)` uses the same location-aware permission check,
   performs an idempotent soft archive, and emits `location.archived`.
 
-Phase 5 extends the access snapshot with `can_manage_modules` and adds
+The module-capability migration extends the access snapshot with `can_manage_modules` and adds
 `core.set_business_module_enabled(business_id, module_key, enabled)`. The mutation requires
 business-wide `modules.manage`, accepts only a canonical registry key and requested boolean state,
 locks the business, and changes capability state plus its audit event atomically. Repeated requests
-return `changed = false` and emit no audit event. New enablement is blocked for unavailable modules;
+return `changed = false` and emit no audit event. New enablement is blocked for unavailable or
+unentitled modules;
 tenant admins cannot mutate suspended or archived businesses, explicit super admins may handle
 suspended businesses, and archived businesses must be reactivated first.
 
-Phase 6 extends the snapshot with `can_manage_media` and `can_manage_domains`. It adds narrow
+The media, domain, and locale migration extends the snapshot with `can_manage_media` and
+`can_manage_domains`. It adds narrow
 authenticated media RPCs for reservation, Storage completion, alt-text updates, and archive;
 domain RPCs for add, verification restart, primary selection, and disable; and one atomic
 `business.manage` locale-set mutation. Media/domain mutation functions require their dedicated
 business-wide permission and an active business. All retain state instead of hard-deleting.
 
-Phase 7 extends the snapshot with `can_manage_appearance` and adds
+The template/theme migration extends the snapshot with `can_manage_appearance` and adds
 `core.set_business_appearance(...)` plus `core.reset_business_theme_overrides(...)`. Both require
 business-wide `appearance.manage`, an active tenant, an effectively enabled module, and a template
 from that module. Postgres validates the closed JSON token shape and resolved critical contrast.
 Template/theme changes and resets are atomic, idempotent, and audited only when state actually
 changes. Suspended and archived tenants must be active before appearance mutation.
 
-Phase 9 adds an authenticated `restaurant.*` mutation API for configuration, menu structure,
-localized content, variants, reusable modifiers, assignments, and location availability. Direct
-authenticated writes are withheld. Every function requires business-wide `restaurant.manage`, an
-active business, and an enabled and available Restaurant module; it resolves parents within the
+The Restaurant mutation migration adds an authenticated `restaurant.*` mutation API for
+configuration, menu structure, localized content, variants, reusable modifiers, assignments, and
+location availability. Direct authenticated writes are withheld. Every function requires
+business-wide `restaurant.manage`, an active business, and an enabled, available, and entitled
+(effective) Restaurant module; it resolves parents within the
 target tenant and writes allowlisted audit metadata atomically. Unchanged requests are explicit
 no-ops. The API uses no dynamic SQL or generic JSON command.
 
-Phase 11 adds `public.get_restaurant_publication(requested_business_slug)`. This stable,
+The Restaurant public-experience migration adds
+`public.get_restaurant_publication(requested_business_slug)`. This stable,
 security-definer read boundary returns one curated JSON projection and `null` when tenant,
 capability, lifecycle, configuration, publication, or template gates fail. It is the only anonymous
 function exposing Restaurant content: direct table reads remain denied. The migration also
 registers the platform-owned `restaurant-signature` default template; it creates no tenant
-appearance or content.
+appearance or content. The premium-template migration registers two further platform-owned
+Restaurant templates, `restaurant-editorial` and `restaurant-counter`.
 
-Phase 12 separates domain ownership from deployment routing. `core.business_domains` stores a
-nullable canonical module target and a closed routing lifecycle; legacy claims remain unassigned.
-Normal authenticated RPCs set a verified claim's target, begin provisioning, disconnect routing,
-and select a primary only after live attestation. `core.record_business_domain_routing_attestation`
-is service-only and rechecks the initiating user's authorization and all tenant/capability gates.
-`public.resolve_public_domain(hostname)` exposes the minimal exact-host Restaurant route, while
-`public.resolve_public_restaurant_primary_domain(slug)` provides canonical-origin selection. Both
-fail closed without exposing tenant IDs, ownership proof, or provider state.
+The custom-domain routing migration separates domain ownership from deployment routing.
+`core.business_domains` stores a nullable canonical module target and a closed routing lifecycle;
+legacy claims remain unassigned. Normal authenticated RPCs set a verified claim's target, begin
+provisioning, disconnect routing, and select a primary only after live attestation.
+`core.record_business_domain_routing_attestation` is service-only and rechecks the initiating user's
+authorization and all tenant/capability gates. `public.resolve_public_domain(hostname)` exposes the
+minimal exact-host Restaurant route, while `public.resolve_public_restaurant_primary_domain(slug)`
+provides canonical-origin selection. Both fail closed without exposing tenant IDs, ownership proof,
+or provider state.
 
-Phase 13 adds `public.list_public_restaurant_sitemap()`. This separate anonymous-safe discovery
-projection returns only canonical business slug, default locale, enabled locale array, and optional
-trusted primary hostname for publicly effective Restaurants with published content. It uses an
-empty `search_path`, a narrow execute grant, and no anonymous raw-table grant.
+The public discovery migration adds `public.list_public_restaurant_sitemap()`. This separate
+anonymous-safe discovery projection returns only canonical business slug, default locale, enabled
+locale array, and optional trusted primary hostname for publicly effective Restaurants with
+published content. It uses an empty `search_path`, a narrow execute grant, and no anonymous
+raw-table grant.
 
-Phase 14 adds authenticated, super-admin-only control-plane projections:
+The platform control-plane migration adds authenticated, super-admin-only projections:
 
 - `core.get_platform_overview()`;
 - `core.list_platform_businesses(...)` and `core.get_platform_business_detail(...)`;
@@ -174,6 +193,12 @@ same migration adds `core.set_platform_business_status(...)`, an authenticated s
 row-locking lifecycle transition that derives its actor and writes one redacted audit event in the
 same transaction. All functions revoke `public`, `anon`, and service-role execution and grant only
 `authenticated`; each still checks `private.is_super_admin()` internally.
+
+The commercial-entitlement migration adds super-admin-only `core.list_platform_plans()` and
+`core.get_platform_business_commercial(...)` projections plus three audited mutations:
+`core.set_platform_business_plan(...)`, `core.set_platform_module_entitlement_override(...)`, and
+`core.set_platform_initial_setup_status(...)`. They follow the same grant pattern and internal
+`private.is_super_admin()` check.
 
 The Restaurant branding-media migration adds
 `core.set_business_media_assignment(business_id, module_key, role_key, media_asset_id)`. The
@@ -190,6 +215,13 @@ then create a missing business-default-locale translation in the same transactio
 insert-only helper cannot overwrite an explicit public translation and has no client execute
 grant. A one-time forward data repair covers existing active records already marked for public
 delivery; draft, hidden, and archived records remain untouched.
+
+The Restaurant launch-readiness migration adds `restaurant.location_public_profiles` and
+`restaurant.location_opening_intervals`, written only through
+`restaurant.save_location_public_details(...)`. The function requires `restaurant.manage` and
+effective Restaurant access, validates the canonical location, E.164 numbers, normalized email,
+credential-free HTTPS links, and non-overlapping weekly intervals, and writes a redacted audit event
+atomically. The public projection exposes these values only under active locations.
 
 Domain ownership and routing attestation are the only service-only application RPCs. They accept
 minimal evidence from trusted DNS or deployment-provider runtime, recheck that the initiating user
@@ -222,7 +254,8 @@ bypass for trusted server operations, but its
 grant cannot update, delete, or truncate audit events. It is not equivalent to a row in
 `private.super_admins`.
 
-Direct authenticated writes to Phase 6 core tables are also withheld. Active members may read only
+Direct authenticated writes to `core.media_assets`, `core.business_domains`, and
+`core.business_locales` are also withheld. Active members may read only
 their tenant rows through RLS. Media, domain, and locale transitions go through reviewed RPCs;
 anonymous access is denied.
 
@@ -242,7 +275,7 @@ Direct authenticated Restaurant writes are withheld across all 17 tables. RLS re
 existing helper. Anonymous access is absent. Disabled/unavailable module state and non-active
 business lifecycle retain data for authorized historical reads but block every mutation.
 The anonymous role still has no Restaurant schema/table access; it can execute only the curated
-public projection, whose output omits internal names, audit fields, actors, and administration
+public functions, whose output omits internal names, audit fields, actors, and administration
 metadata.
 
 Storage uses the shared public-read buckets `tenant-media-images` and `tenant-media-videos`. Their
@@ -259,11 +292,16 @@ Migrations deterministically register the module identifiers `restaurant`, `book
 permissions needed by the core model. These rows define platform vocabulary only. They do not
 enable a module for any business or seed tenant content. An absent `core.business_modules` row means
 disabled. First-business bootstrap creates a `core-only` plan assignment and zero module rows;
-database-owned onboarding may select `restaurant-starter` and enable Restaurant atomically.
+database-owned onboarding may select `restaurant-starter` and enable Restaurant atomically. The
+plan registry contains `core-only` and `restaurant-starter`, with `restaurant-starter` entitled to
+the `restaurant` module. Governed Restaurant branding roles are registered in
+`core.module_media_roles`.
 
-The migration also registers two generic, platform-owned `pages` composition foundations to prove
-template resolution. They seed no tenant row or business content and create no pages engine. An
-absent `core.business_visual_settings` row resolves to the available module default.
+The template/theme migration also registers two generic, platform-owned `pages` composition
+foundations, `foundation-canvas` and `foundation-editorial`, to prove template resolution. They seed
+no tenant row or business content and create no pages engine. An absent
+`core.business_visual_settings` row resolves to the available module default. Restaurant templates
+are described under the public-experience and premium-template migrations above.
 
 ## Types and client boundaries
 
@@ -275,7 +313,8 @@ pnpm db:types
 ```
 
 The `private` schema is intentionally excluded. `@darb/database` exposes separate browser, SSR
-server, privileged server-only, and types entry points. Client factories take validated
+server, anonymous server-only (public read), privileged server-only, public-config, and types entry
+points. Client factories take validated
 configuration rather than reading environment variables implicitly, keeping deployment wiring in
 the owning application.
 
@@ -289,52 +328,55 @@ pnpm db:test
 pnpm db:types
 ```
 
-Database tests use pgTAP against Postgres roles and JWT subjects, not application mocks. Fixtures are
-created inside transactions and rolled back. They cover schema/RLS presence, authorized tenant
+Database tests use pgTAP against Postgres roles and JWT subjects, not application mocks. Fixtures
+are created inside transactions and rolled back. They cover schema/RLS presence, authorized tenant
 access, cross-tenant denial, location scope, mutation denial, anonymous denial, module and audit
 isolation, permission escalation denial, and super-admin boundaries. Bootstrap coverage additionally
 proves authentication, caller ownership, the exact permission bundle, signature safety, atomic slug
 conflict handling, audit emission, exact retry behavior, suspended-membership semantics, and
 post-bootstrap tenant isolation. Core administration coverage proves permission-gated business
 updates, cross-tenant denial, lifecycle restrictions, super-admin suspension, business-wide create,
-location-scoped read/update/archive behavior, anonymous denial, and exact audit events.
-Module coverage proves audited enable/disable, no-op idempotency, unique state, direct-write denial,
+location-scoped read/update/archive behavior, anonymous denial, and exact audit events. Module
+coverage proves audited enable/disable, no-op idempotency, unique state, direct-write denial,
 cross-tenant and location-scope isolation, unavailable-key rejection, lifecycle restrictions,
-anonymous denial, and explicit super-admin behavior.
-Phase 6 coverage adds kind-specific Storage configuration and ownership, immutable paths, MIME/size
-validation, permission and cross-tenant denial, archive retention, domain normalization and global
-uniqueness, DNS attestation/retry/lifecycle, primary-domain invariants, locale default/enablement
-invariants, owner-bundle evolution, anonymous denial, and redacted audit events.
-Phase 7 coverage adds platform-registry immutability, cross-tenant visual-state isolation, exact
-`appearance.manage` enforcement, enabled-module/template-context checks, JSON/CSS injection
-rejection, critical contrast enforcement, lifecycle denial, idempotent save/reset behavior,
-redacted audits, and narrow owner-bundle evolution.
-Phase 9 adds 124 assertions for Restaurant schema/grants/RLS, safe money and selection bounds,
-multiple-menu structure, tenant-aware media/location/parent relationships, localization,
-permission backfill isolation, lifecycle and module gates, mutation idempotency, audit redaction,
-transactional failure, anonymous denial, and retained-data semantics.
-Phase 11 adds curated-publication coverage. Phase 12 adds exact-host routing, conservative legacy
-state, target/module/lifecycle gates, cross-tenant and anonymous denial, service-only attestation,
-primary-host invariants, immediate disconnect revocation, and redacted domain audit assertions.
-Phase 13 adds discovery grant, definer/search-path, lifecycle/module/publication eligibility,
-locale, canonical-host, and raw-table-denial coverage. Restaurant branding media adds 37 assertions
-for governed-role grants, direct-write denial, assignment idempotency, lifecycle/module/permission
-gates, tenant-safe media relationships, redacted audits, and public fallback behavior. The full
-suite also covers governed Restaurant location contact/hours, credential-free HTTPS validation,
-split/overnight overlap rejection, redacted audit emission, cross-tenant denial, and the narrowed
-public projection. Exact current counts are reported by `pnpm db:test` rather than maintained as a
-static documentation contract.
+anonymous denial, and explicit super-admin behavior. Media, domain, and locale coverage adds
+kind-specific Storage configuration and ownership, immutable paths, MIME/size validation, permission
+and cross-tenant denial, archive retention, domain normalization and global uniqueness, DNS
+attestation/retry/lifecycle, primary-domain invariants, locale default/enablement invariants,
+owner-bundle evolution, anonymous denial, and redacted audit events. Template/theme coverage adds
+platform-registry immutability, cross-tenant visual-state isolation, exact `appearance.manage`
+enforcement, enabled-module/template-context checks, JSON/CSS injection rejection, critical contrast
+enforcement, lifecycle denial, idempotent save/reset behavior, redacted audits, and narrow
+owner-bundle evolution. Restaurant domain coverage adds 124 assertions for Restaurant
+schema/grants/RLS, safe money and selection bounds, multiple-menu structure, tenant-aware
+media/location/parent relationships, localization, permission backfill isolation, lifecycle and
+module gates, mutation idempotency, audit redaction, transactional failure, anonymous denial, and
+retained-data semantics. Public-experience coverage proves the curated publication. Custom-domain
+routing coverage adds exact-host routing, conservative legacy state, target/module/lifecycle gates,
+cross-tenant and anonymous denial, service-only attestation, primary-host invariants, immediate
+disconnect revocation, and redacted domain audit assertions. Public discovery coverage adds grant,
+definer/search-path, lifecycle/module/publication eligibility, locale, canonical-host, and
+raw-table-denial coverage. Restaurant branding media adds 37 assertions for governed-role grants,
+direct-write denial, assignment idempotency, lifecycle/module/permission gates, tenant-safe media
+relationships, redacted audits, and public fallback behavior. The full suite also covers governed
+Restaurant location contact/hours, credential-free HTTPS validation, split/overnight overlap
+rejection, redacted audit emission, cross-tenant denial, and the narrowed public projection.
+Commercial coverage proves plan assignment, entitlement resolution and overrides, location limits,
+and super-admin-only platform mutations; onboarding coverage proves creator-only atomic completion
+and reserved-slug rejection; default-locale publication coverage proves the localized save wrappers.
+Exact current counts are reported by `pnpm db:test` rather than maintained as a static documentation
+contract.
 
 ## Intentionally deferred
 
 - general additional-business workflows and membership invitations;
 - role templates and additional engine-specific permission catalogues;
 - member, permission, platform-module-registry, and super-admin administration;
-- module dependencies, engine-specific configuration beyond Restaurant, and billing entitlements;
+- module dependencies and engine-specific configuration beyond Restaurant;
 - location restoration and hard-deletion workflows;
 - public rendering for engines beyond Restaurant;
 - comprehensive audit retention and export policy;
 - physical media deletion and transformations;
 - wildcard domains, provider webhooks, background reconciliation, and DNS automation;
 - translation management and other engine-localized content tables;
-- billing and remote deployment.
+- billing-provider integration.

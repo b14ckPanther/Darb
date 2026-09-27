@@ -54,9 +54,9 @@ browser/PWA derivatives, and `brand/social` contains the approved-artwork share 
 
 The canonical reusable React boundary is `@darb/ui`: `DarbMark`, `DarbWordmark`, and
 `DarbBrandLockup` support mark-only, Arabic, Latin, bilingual, compact, light, dark, and accessible
-forms. Its bundled mark is a byte-identical copy of the approved Phase 15 `icon-128.png` delivery
-derivative (`b205db0d…` SHA-256 prefix), not a redraw. Main retains the preserved high-resolution
-source and complete derivative set. Active Darb-owned applications must consume these components or
+forms. Its bundled mark (`packages/ui/src/assets/darb-mark.png`) is a 128px transparent-background
+derivative of the approved symbol, not a redraw. Main retains the preserved high-resolution source
+and complete derivative set. Active Darb-owned applications must consume these components or
 approved deterministic derivatives; CSS imitations and independent logo reinterpretations are
 prohibited.
 
@@ -87,10 +87,11 @@ trust and product boundaries.
 ## Cross-application use
 
 Production navigation uses the trusted platform origins in `@darb/config/platform`; it never accepts
-an arbitrary return origin. Main links to Admin as a real cross-origin browser navigation. Admin
-login, chooser, tenant shell, and platform shell provide a subordinate route back to Main. Darb-owned
-Restaurant system states may link to Main; a tenant Restaurant page keeps its own identity and only
-the existing understated “Powered by Darb” path.
+an arbitrary return origin. Main links to Admin sign-in and registration as real cross-origin
+browser navigations, and links its Restaurant product entry to the Restaurant landing on
+`rest.darb.co.il`. Admin login, chooser, tenant shell, and platform shell provide a subordinate
+route back to Main. Darb-owned Restaurant system states may link to Main; a tenant Restaurant page
+keeps its own identity and only the existing understated “Powered by Darb” path.
 
 Motion creates continuity without faking cross-origin transitions. Fast operational interactions
 stay in the 160–180ms range; a deliberate presentation transition may use the existing 320ms theme
@@ -106,12 +107,13 @@ localized HTML is rendered above it.
 
 The homepage tells one continuous story: the opening, Darb's modular foundation, different business
 paths, the current Restaurant product, future product directions, shared platform capabilities,
-multilingual value, and the truthful Admin sign-in action. No customer proof, statistics, pricing,
-or unimplemented availability is invented.
+multilingual value, and the truthful Admin registration and sign-in actions. The current Restaurant
+product links to the Restaurant landing. No customer proof, statistics, pricing, or unimplemented
+availability is invented.
 
 ## Browser and PWA identity
 
 The manifest name is `Darb — درب`, its short name is `Darb`, and it starts at `/ar`. The deep-forest
-background, theme color, Apple touch icon, 192/512 icons, and maskable icon all use the same approved
-doorway mark. The manifest establishes installable identity only; no service worker or offline cache
-is implemented.
+background, theme color, Apple touch icon, 192/512 icons, and maskable icon all use the same
+approved doorway mark. The manifest establishes installable identity only; no service worker or
+offline cache is implemented.

@@ -5,9 +5,10 @@ database tests. The hosted project reference is `xtuhwpyqxgmsthgumktk`; the refe
 identifier, not a credential.
 
 The migrations establish the `core` tenant schema, isolated `restaurant` engine schema, and
-non-exposed `private` authorization schema. They also install deterministic platform module and
-permission registries. They do not seed tenant, menu, booking, commerce, page, user, or branding
-data.
+non-exposed `private` authorization schema, plus narrowly granted anonymous `public` functions for
+Restaurant publication, host resolution, and discovery. They also install deterministic platform
+registries: modules, permissions, plans and plan entitlements, templates, and module media roles.
+They do not seed tenant, menu, booking, commerce, page, user, or branding data.
 
 Use these root commands for local development:
 
@@ -26,5 +27,6 @@ generation targets only the exposed `core`, `public`, and `restaurant` schemas; 
 deliberately absent from browser-shareable database types.
 
 Linking to, migrating, resetting, or changing a remote project is a separate deliberate operation.
-Before a future remote deployment, the project's Data API exposed schemas must include `core` and
-`restaurant` to match `config.toml`; `private` must remain unexposed.
+Every remote project's Data API exposed schemas must include `core` and `restaurant` to match
+`config.toml`; `private` must remain unexposed. Verify applied migrations with
+`supabase migration list` before and after each remote deployment.

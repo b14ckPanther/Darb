@@ -44,9 +44,10 @@ Engine-to-engine imports and circular workspace dependencies are prohibited.
 The accepted starting point is one Supabase project. This keeps authentication, Postgres, storage,
 and policy management coherent while the platform model is established. The implemented `core`
 schema owns canonical businesses, reusable locations, memberships, permission assignments, module
-enablement, platform templates, tenant appearance state, shared media metadata, custom-domain
-claims, business locale state, minimal profiles, and audit events. Non-exposed authorization
-helpers and platform super-admin assignments live in `private`.
+enablement, provider-neutral plans, entitlements and overrides, assisted-setup state, platform
+templates, tenant appearance state, shared media metadata, governed branding-media roles and
+assignments, custom-domain claims, business locale state, minimal profiles, and audit events.
+Non-exposed authorization helpers and platform super-admin assignments live in `private`.
 
 The first engine boundary is `restaurant.*`. It owns configuration, menus, categories, items,
 variants, modifier structures, localized content, and location availability overrides while
@@ -79,11 +80,11 @@ their deployable surfaces. Restaurant analytics uses a typed engine contract plu
 provider adapter; its baseline adapter is intentionally no-op and creates no persistence service.
 
 The Main application is a platform-level public experience with no selected tenant and no Supabase
-dependency. Static `/ar`, `/he`, and `/en` routes own their document language/direction and metadata;
-the root permanently redirects to Arabic. Main preserves Darb's source brand assets and complete
-deterministic raster derivative set. The stable corporate mark/wordmark rendering contract is shared
-through `@darb/ui` across Darb-owned surfaces, but it is not tenant theme data and is not injected
-into the Restaurant template system.
+dependency. Static `/ar`, `/he`, and `/en` routes own their document language/direction and
+metadata; the root permanently redirects to Arabic. Main preserves Darb's source brand assets and
+complete deterministic raster derivative set. The stable corporate mark/wordmark rendering contract
+is shared through `@darb/ui` across Darb-owned surfaces, but it is not tenant theme data and is not
+injected into the Restaurant template system.
 
 Tenant boundaries are enforced in Postgres through explicit grants, Row Level Security, and
 scope-aware authorization helpers. Applications must repeat authorization server-side for defense
@@ -111,7 +112,8 @@ RLS-visible platform reads and derives honest setup guidance without persisting 
 
 Platform administration is a separate `/platform/*` context within `apps/admin`, not a mode hidden
 inside a tenant route. Its Server Components use bounded super-admin-only projections for factual
-cross-tenant operations. The only Phase 14 platform mutation is an audited business lifecycle RPC.
+cross-tenant operations. Platform mutations are limited to audited RPCs for business lifecycle,
+plan assignment, entitlement overrides, and assisted-setup status.
 Super admins may enter a normal business workspace through the existing explicit database
 authority without membership fabrication or identity impersonation; the tenant shell marks that
 context. See [`PLATFORM_ADMIN.md`](./PLATFORM_ADMIN.md).
@@ -133,7 +135,7 @@ server-side effective-access gate. Platform plan entitlement and optional explic
 separate from tenant enablement and contain no billing-provider logic. Capability enablement never
 replaces engine-specific authorization or creates engine data. Restaurant contributes its
 authenticated admin route statically when both effective capability state and Restaurant permission
-are present; other enabled engines remain honestly unavailable until their implementation phase.
+are present; other enabled engines remain honestly unavailable until they are implemented.
 
 See [`COMMERCIAL.md`](./COMMERCIAL.md) for the provider-neutral plan, entitlement, effective-access,
 location-limit, and assisted-setup boundaries.
@@ -141,9 +143,9 @@ location-limit, and assisted-setup boundaries.
 The template/theme foundation remains separate from both module enablement and the admin design
 system. Platform-owned templates are scoped to a module rendering context; tenant rows store only a
 selection and validated semantic overrides. `@darb/theme` is a pure shared contract used by the
-admin preview and future server renderers. It maps a closed token set to controlled CSS variables,
-script-aware typography, locale direction, contrast decisions, and reduced-motion behavior. No arbitrary
-CSS or customer-facing runtime route exists.
+admin preview and the `apps/rest` renderer. It maps a closed token set to controlled CSS variables,
+script-aware typography, locale direction, contrast decisions, and reduced-motion behavior. No
+arbitrary CSS is accepted.
 
 Splitting data services or introducing microservices requires demonstrated scale, security,
 ownership, or operational needs; it is not a foundation goal.

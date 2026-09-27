@@ -12,7 +12,7 @@ The admin app follows the Supabase SSR cookie model for Next.js App Router:
   cookie adapter;
 - Server Components use a read-only cookie adapter and resolve authenticated identity with
   `auth.getClaims()`;
-- Server Actions use a read/write cookie adapter for sign-in and sign-out;
+- Server Actions use a read/write cookie adapter for sign-in, registration, and sign-out;
 - root `proxy.ts` refreshes auth cookies through `getClaims()` and forwards response cache headers;
 - Proxy performs no tenant authorization, and protected routes repeat authorization close to the
   data they render.
@@ -58,26 +58,27 @@ validation.
 The action calls `core.bootstrap_first_business` with the normal request-scoped user client. The RPC
 derives its caller from `auth.uid()` and atomically creates:
 
-1. the canonical business using the platform ILS and `Asia/Jerusalem` defaults;
+1. the canonical business using the platform ILS and `Asia/Jerusalem` defaults, starting on the
+   `core-only` plan;
 2. an active caller membership;
 3. business-wide assignments for `business.manage`, `locations.read`, `locations.manage`,
    `memberships.manage`, `permissions.manage`, `modules.manage`, `media.manage`, `domains.manage`,
-   and `audit.view`;
+   `appearance.manage`, `restaurant.read`, `restaurant.manage`, and `audit.view`;
 4. a `business.created` audit event.
 
-No modules are enabled during bootstrap. The function accepts neither another user ID nor permission keys. Its exact
-retry behavior, duplicate-slug rollback, unauthenticated execution, ownership, permission bundle,
-audit event, and tenant isolation are verified with pgTAP.
+No modules are enabled during bootstrap. The function accepts neither another user ID nor permission
+keys. Its exact retry behavior, duplicate-slug rollback, unauthenticated execution, ownership,
+permission bundle, audit event, and tenant isolation are verified with pgTAP.
 
 The creator then completes `/b/[businessSlug]/setup`. Business type is recommendation-only and is
 not persisted. Public locales, the optional first location, and an available starting module are
 committed atomically by `core.complete_first_business_onboarding`; Restaurant requires a location.
-The RPC re-resolves the creator and fixed owner permission, locks the business, composes the existing
-governed locale/location/module functions, emits `business.onboarding_completed`, and safely returns
-the completed state on retries. `core.businesses.onboarding_completed_at` is the canonical resume
-marker; existing businesses were backfilled complete so members and established tenants are never
-forced into the new-owner flow. Completion leads to Restaurant Admin when Restaurant was selected,
-or the core business Overview otherwise.
+The RPC re-resolves the creator and fixed owner permission, locks the business, composes the
+existing governed locale/location/module functions, emits `business.onboarding_completed`, and
+safely returns the completed state on retries. `core.businesses.onboarding_completed_at` is the
+canonical resume marker; existing businesses were backfilled complete so members and established
+tenants are never forced into the new-owner flow. Completion leads to Restaurant Admin when
+Restaurant was selected, or the core business Overview otherwise.
 
 ## Application authorization helpers
 
@@ -87,25 +88,29 @@ authorized list, and ask database RPCs for permission, business-wide access, or 
 decisions. Helpers fail closed and do not reproduce database policy logic in TypeScript.
 
 `/b/[businessSlug]` is the server-resolved current-business identity. The switcher lists only the
-authorized businesses and routes between them. It preserves settings, modules, and the location
-list where safe, but never carries a tenant-owned location ID into another business. No security decision
-depends on local storage or an unvalidated browser value.
+authorized businesses and routes between them. It preserves any registered top-level section, core
+or engine, where safe, but never carries a tenant-owned resource ID into another business. No
+security decision depends on local storage or an unvalidated browser value.
 
 ## Environment boundaries
 
 - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are browser-visible and rely
   on RLS;
-- `SUPABASE_SECRET_KEY` is server-only. Runtime code reads it only for the narrow DNS-result
-  attestation RPC; local Playwright also uses the ephemeral local value to create and clean fixtures;
+- `SUPABASE_SECRET_KEY` is server-only. Runtime code reads it only for the narrow DNS-verification
+  and deployment-routing attestation RPCs; local Playwright also uses the ephemeral local value to
+  create and clean fixtures;
 - cleanup refuses non-local database hosts, removes generated Storage objects through the local
   service boundary first, and then removes only the generated user/business fixtures without
-  weakening production audit grants.
+  weakening production audit grants;
+- `DARB_VERCEL_API_TOKEN`, `DARB_VERCEL_RESTAURANT_PROJECT_ID`, and optional `DARB_VERCEL_TEAM_ID`
+  are server-only and needed only for custom-domain deployment management.
 
 ## Deferred auth work
 
 - password reset and account recovery;
 - invitations and acceptance;
 - OAuth, magic links, and MFA;
-- super-admin UI and operational provisioning;
+- super-admin assignment management and operational provisioning (the `/platform` control plane
+  itself is implemented; see [`PLATFORM_ADMIN.md`](./PLATFORM_ADMIN.md));
 - detailed session-duration/device management;
 - member/invitation administration and the full dashboard analytics experience.

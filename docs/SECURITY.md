@@ -1,20 +1,23 @@
 # Security principles
 
 Status: RLS-first database authorization, server-resolved Supabase sessions, protected admin
-routing, a narrow first-business trust boundary, and a controlled Restaurant domain mutation
-boundary are implemented. Controls tied to future business workflows remain deferred.
+routing, self-service registration with a narrow first-business trust boundary, a super-admin
+platform control plane, provider-neutral commercial entitlements, a controlled Restaurant domain
+mutation boundary, and curated anonymous Restaurant delivery are implemented. Controls tied to
+future business workflows remain deferred.
 
 ## Data access
 
 Supabase security is RLS-first. Every `core` and `restaurant` tenant table plus
-`private.super_admins` has Row Level Security enabled with explicit policies. Database policy is the final data boundary; future API handlers and
-server actions must also authorize requests server-side to provide clear failures and defense in
-depth.
+`private.super_admins` has Row Level Security enabled with explicit policies. Database policy is the
+final data boundary; future API handlers and server actions must also authorize requests server-side
+to provide clear failures and defense in depth.
 
 Table grants are opt-in and column-limited for authenticated mutations. Anonymous users receive no
-Restaurant administration access and no access to `core` or `private`. The `private` schema is not exposed through the Data API. Its small
-security-definer helper set uses schema-qualified objects, an empty `search_path`, no dynamic SQL,
-and narrowly granted execution to avoid recursive RLS policies and search-path substitution.
+Restaurant administration access and no access to `core` or `private`. The `private` schema is not
+exposed through the Data API. Its small security-definer helper set uses schema-qualified objects,
+an empty `search_path`, no dynamic SQL, and narrowly granted execution to avoid recursive RLS
+policies and search-path substitution.
 
 Use least privilege for users, services, CI, deployments, and operators. Hiding a control in the UI
 does not authorize or protect its underlying action. Elevated access must be narrow, intentional,
@@ -44,7 +47,8 @@ membership. Normal clients cannot read or mutate it. A Supabase secret or legacy
 bypasses RLS as a technical capability; it does not create a super-admin product identity and must
 be limited to audited, trusted server paths.
 
-`@darb/database/browser` and `@darb/database/server` accept publishable keys. The privileged factory
+`@darb/database/browser`, `@darb/database/server`, and the server-only, sessionless
+`@darb/database/anonymous` accept publishable keys. The privileged factory
 is a separate `server-only` export, disables session persistence and refresh behavior, and requires
 its secret explicitly. The admin app uses it only after server-side DNS or deployment-provider
 checks to call the service-only domain attestation RPCs. Ordinary tenant reads, writes, media
@@ -121,9 +125,9 @@ the bootstrap source marker.
 
 Core administration now emits `business.updated`, `location.created`, `location.updated`, and
 `location.archived`. Each event is written in the same database transaction as its mutation. The
-database derives the actor from `auth.uid()` and accepts no actor ID from the client. Update metadata
-contains an allowlisted array of changed field names; create/archive metadata contains only a fixed
-source marker or the prior lifecycle status, never raw form payloads or address values.
+database derives the actor from `auth.uid()` and accepts no actor ID from the client. Update
+metadata contains an allowlisted array of changed field names; create/archive metadata contains only
+a fixed source marker or the prior lifecycle status, never raw form payloads or address values.
 
 Capability transitions emit `business.module_enabled` or `business.module_disabled` only for an
 actual state change. Metadata is limited to the canonical module key and previous/new booleans.
@@ -148,6 +152,14 @@ Platform business lifecycle changes emit `platform.business_suspended`,
 status update. The authenticated actor is derived from `auth.uid()`, metadata contains only previous
 and new lifecycle state, and a no-op produces no event.
 
+Onboarding emits `business.onboarding_completed`, and an assisted-setup request emits
+`business.initial_setup_requested`. Restaurant branding assignments emit
+`business.branding_media_assigned` or `business.branding_media_removed`, and per-location public
+details emit `restaurant.location_public_details_updated`. Platform commercial changes emit
+`platform.business_plan_changed`, `platform.entitlement_override_set`,
+`platform.entitlement_override_removed`, or `platform.initial_setup_status_changed`. Each is written
+in the mutation transaction with a derived actor and allowlisted metadata.
+
 ## Core mutation boundaries
 
 Business and location Server Actions use the normal request-scoped authenticated client and never
@@ -161,12 +173,12 @@ Only platform super admins may set or clear `suspended`. Location creation requi
 location. Archived locations cannot be changed by the update function. Anonymous execution and
 service-role execution of these public RPCs are explicitly revoked.
 
-Normal capability management uses the same request-scoped authenticated client. Direct tenant
-writes to `core.business_modules` are revoked, and `core.set_business_module_enabled` repeats the
+Normal capability management uses the same request-scoped authenticated client. Direct tenant writes
+to `core.business_modules` are revoked, and `core.set_business_module_enabled` repeats the
 `modules.manage`, registry availability, platform entitlement, and business lifecycle checks in
-Postgres. The caller cannot provide an actor, create a registry definition, attach metadata, or cross
-tenants. Module
-enablement is a business capability decision and is never treated as user authorization.
+Postgres. The caller cannot provide an actor, create a registry definition, attach metadata, or
+cross tenants. Module enablement is a business capability decision and is never treated as user
+authorization.
 
 Appearance management also uses the request-scoped authenticated client. Direct writes to the
 platform template registry and tenant visual settings are revoked. The RPC derives `auth.uid()`,
@@ -233,25 +245,25 @@ The public host resolver is an exact-match, anonymous-safe projection. It return
 ownership token, provider state, or admin metadata and only resolves verified, live Restaurant
 targets for active businesses with an effective capability. Next.js Proxy rejects malformed,
 multi-valued, conflicting-forwarded, IP/local production, internal, and reserved Darb hosts before
-the internal rewrite. Restaurant publication gates are independently rechecked by the Phase 11
-projection; raw `core` and `restaurant` tables remain unavailable anonymously.
+the internal rewrite. Restaurant publication gates are independently rechecked by
+`public.get_restaurant_publication`; raw `core` and `restaurant` tables remain unavailable
+anonymously.
 
 ## Bootstrap security
 
 `core.bootstrap_first_business` is a narrowly granted `security definer` function. It uses an empty
-`search_path`, schema-qualified objects, no dynamic SQL, and `auth.uid()` rather than caller-supplied
-identity. It validates display name, slug, and locale in Postgres; accepts no permission list or
-target user; assigns a fixed twelve-permission bundle; and executes only for `authenticated`.
-Unauthenticated, cross-user, arbitrary-permission, duplicate-slug, concurrency, and tenant-isolation
-behavior is covered at the database layer.
+`search_path`, schema-qualified objects, no dynamic SQL, and `auth.uid()` rather than
+caller-supplied identity. It validates display name, slug, and locale in Postgres; accepts no
+permission list or target user; assigns a fixed twelve-permission bundle; and executes only for
+`authenticated`. Unauthenticated, cross-user, arbitrary-permission, duplicate-slug, concurrency, and
+tenant-isolation behavior is covered at the database layer.
 
 ## Controls added with future workflows
 
-Sensitive public flows will be rate-limited and abuse-aware when those endpoints exist. Sensitive
-administrative operations will use the audit-event foundation when their server workflows are
-implemented. Password reset, sign-up, invitations, OAuth, magic links, MFA, session-duration policy,
-content-security policy, audit retention, recovery, monitoring, and incident
-response remain deferred until their concrete surfaces exist.
+Sensitive public flows, including sign-up and sign-in, will be rate-limited and abuse-aware when
+those controls are introduced. Password reset, invitations, OAuth, magic links, MFA,
+session-duration policy, audit retention, recovery, monitoring, and incident response remain
+deferred until their concrete surfaces exist.
 
 ## Verification
 
@@ -259,31 +271,34 @@ Security-relevant changes must include tests for denied access, not only success
 pgTAP coverage changes session roles and JWT subjects to exercise RLS for tenant users, a super
 admin, and anonymous access. It verifies cross-business denial, location scope, mutation denial,
 permission self-escalation denial, super-admin self-promotion denial, audit and module isolation,
-plus unauthenticated and adversarial first-business bootstrap cases. Phase 4 coverage additionally
-proves business lifecycle restrictions, cross-tenant mutation denial, business-wide versus exact
-location scope, append-only audit emission, anonymous denial, and explicit super-admin behavior.
-Phase 5 adds module permission/scope denial, unavailable and unknown key rejection, audited
-idempotency, direct-write denial, suspended/archived business rules, and cross-tenant state tests.
-Phase 6 adds Storage reservation/path/bucket denial, media lifecycle, global hostname uniqueness,
-reserved-host denial, DNS attestation/retry/lifecycle, domain primary invariants, locale invariants,
-owner-bundle backfill isolation, and Phase 6 audit redaction.
-Phase 7 adds registry/direct-write denial, exact appearance permission and tenant isolation,
-enabled-module/template constraints, arbitrary token/CSS rejection, contrast enforcement,
-suspended/archived denial, audited idempotency, and narrow owner-bundle backfill isolation.
-Phase 9 adds Restaurant RLS/grant checks, tenant-aware foreign-key attacks, money and selection
-constraints, localization ownership, read/manage separation, partial-membership backfill isolation,
-module/lifecycle denial, audited idempotency, transactional failure, and anonymous denial.
-Phase 11 proves the curated public Restaurant projection exposes only published render-safe state.
-Phase 12 adds exact-host resolution, verified/live/capability/lifecycle fail-closed gates,
-permission and cross-tenant denial, service-only routing attestation, idempotent disconnect,
-primary-domain invariants, and credential-free audit coverage.
-Restaurant branding-media coverage adds governed-role grants, direct-write denial, exact
-`appearance.manage` enforcement, incompatible and inactive-asset denial, cross-tenant rejection,
-idempotent assignment/removal, redacted audits, lifecycle/module gates, and customer-safe projection
-fallbacks.
-Database fixtures are transaction-scoped and rolled back; browser fixtures are local-only and
-removed after the suite.
+plus unauthenticated and adversarial first-business bootstrap cases. Core administration coverage
+additionally proves business lifecycle restrictions, cross-tenant mutation denial, business-wide
+versus exact location scope, append-only audit emission, anonymous denial, and explicit super-admin
+behavior. Module coverage adds permission/scope denial, unavailable and unknown key rejection,
+audited idempotency, direct-write denial, suspended/archived business rules, and cross-tenant state
+tests. Media, domain, and locale coverage adds Storage reservation/path/bucket denial, media
+lifecycle, global hostname uniqueness, reserved-host denial, DNS attestation/retry/lifecycle, domain
+primary invariants, locale invariants, owner-bundle backfill isolation, and media/domain/locale
+audit redaction. Template/theme coverage adds registry/direct-write denial, exact appearance
+permission and tenant isolation, enabled-module/template constraints, arbitrary token/CSS rejection,
+contrast enforcement, suspended/archived denial, audited idempotency, and narrow owner-bundle
+backfill isolation. Restaurant domain coverage adds RLS/grant checks, tenant-aware foreign-key
+attacks, money and selection constraints, localization ownership, read/manage separation,
+partial-membership backfill isolation, module/lifecycle denial, audited idempotency, transactional
+failure, and anonymous denial. Public-experience coverage proves the curated Restaurant projection
+exposes only published render-safe state, and public discovery coverage proves its narrow grant and
+eligibility gates. Custom-domain routing coverage adds exact-host resolution,
+verified/live/capability/lifecycle fail-closed gates, permission and cross-tenant denial,
+service-only routing attestation, idempotent disconnect, primary-domain invariants, and
+credential-free audit coverage. Restaurant branding-media coverage adds governed-role grants,
+direct-write denial, exact `appearance.manage` enforcement, incompatible and inactive-asset denial,
+cross-tenant rejection, idempotent assignment/removal, redacted audits, lifecycle/module gates, and
+customer-safe projection fallbacks. Commercial coverage proves entitlement enforcement, cross-tenant
+denial, and that tenant permissions cannot substitute for platform plan authority. Onboarding
+coverage proves anonymous and cross-user denial and atomic completion. Default-locale publication
+and launch-readiness coverage prove the localized save wrappers and governed per-location
+contact/hours validation, redaction, and cross-tenant denial. Database fixtures are
+transaction-scoped and rolled back; browser fixtures are local-only and removed after the suite.
 
 Schema changes must review RLS, grants, indexes used by policies, migration behavior, and recovery
-expectations as one unit. Rate limiting, billing controls, and workflow-specific audit emission do
-not exist yet.
+expectations as one unit. Rate limiting and billing-provider integration do not exist yet.

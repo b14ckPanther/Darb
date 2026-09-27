@@ -35,7 +35,8 @@ draft-only states fail closed.
 `darb.co.il` publishes the localized platform-level routes `/ar`, `/he`, and `/en`. Each route is
 self-canonical and declares all three regional language alternates; `/` permanently redirects to
 Arabic and is the `x-default` alternate. Main's sitemap lists only those real localized pages, and
-its health endpoint is excluded from crawling. `admin.darb.co.il` is protected by page metadata,
+its health endpoint is excluded from crawling. Main links its Restaurant product entry to the
+Restaurant landing on `rest.darb.co.il`. `admin.darb.co.il` is protected by page metadata,
 `robots.txt`, and `X-Robots-Tag`. The Restaurant application landing is non-indexable, while valid
 published tenant routes can be indexed.
 
@@ -116,31 +117,37 @@ Supabase secret. `VERCEL_URL` remains a legitimate Vercel-provided preview-host 
 legacy custom names `VERCEL_API_TOKEN`, `VERCEL_RESTAURANT_PROJECT_ID`, and `VERCEL_TEAM_ID` are not
 accepted.
 
+Local and E2E runs may additionally use Admin's deterministic `DARB_DOMAIN_PROVIDER=fake` with
+`DARB_FAKE_DOMAIN_PROVIDER_STATE`, and Restaurant's `DARB_LOCAL_DOMAIN_ROUTING=enabled` for custom
+Host-header routing. Production rejects the fake provider and must not set either local mode.
+
 ## Health, performance, and accessibility
 
 Each application exposes `GET /health`, returning only a service identifier and `status: ok` with
 `Cache-Control: no-store`. This is process/application liveness, not database/provider readiness; it
 does no privileged or tenant-specific work.
 
-Main is a static, database-independent public surface with no runtime environment variables. Its hero
-uses media-aware source selection so clients fetch one optimized WebP composition: the approved
+Main is a static, database-independent public surface with no runtime environment variables. Its
+hero uses media-aware source selection so clients fetch one optimized WebP composition: the approved
 portrait artwork below the desktop breakpoint and the approved landscape artwork above it. The
 original raster masters remain preserved. Browser and installable-app identity uses deterministic
 derivatives of the approved Darb symbol through a manifest and favicon metadata; no offline service
 worker or deployment cache was introduced.
 
-Admin and the Darb-owned Restaurant platform surface use byte-identical lightweight icon derivatives
-from that same approved symbol. Their HTML lockups consume the shared `@darb/ui` identity boundary;
-obsolete CSS-drawn and Restaurant-bowl Darb corporate icons are not active. Public tenant Restaurant
-metadata and page identity remain business-first. Darb does not override tenant names, imagery, or
-theme state; the platform icon covers only browser identity where no tenant favicon contract exists.
+Admin and the Darb-owned Restaurant platform surface share one byte-identical lightweight
+transparent-background icon derived from that same approved symbol. Their HTML lockups consume the
+shared `@darb/ui` identity boundary; obsolete CSS-drawn and Restaurant-bowl Darb corporate icons
+are not active. Public tenant Restaurant metadata and page identity remain business-first. Darb does
+not override tenant names, imagery, or theme state; the platform icon covers only browser identity
+where no tenant favicon contract exists.
 
 The public Restaurant path remains RSC-first. A request loads one curated publication graph, and
 React request memoization prevents metadata/layout/page duplication from becoming repeated database
-queries. Host resolution is exact and request-scoped. The only public interactive client boundary
-coordinates item dialogs and typed analytics. There is no third-party script. Responsive Next Image
-delivery uses an allowlisted public media path, explicit `sizes`, hero priority, and lazy loading for
-non-critical images.
+queries. Host resolution is exact and request-scoped. Client boundaries are limited to item-dialog
+and typed-analytics coordination, the optional hero-video playback control, and the locale context
+used by system, loading, and error states. There is no third-party script. Responsive Next Image
+delivery uses an allowlisted public media path, explicit `sizes`, hero priority, and lazy loading
+for non-critical images.
 
 Performance regression rules are: no N+1 publication reads, no provider script without measured
 budget review, no global tenant cache, no unbounded public payload, and no client conversion of the

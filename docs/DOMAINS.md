@@ -2,14 +2,14 @@
 
 Status: DNS ownership, explicit public-engine targeting, provider-attested deployment routing, one
 primary hostname per business/target, and Restaurant host routing are implemented. Production
-activation still requires deployment secrets, the Phase 12 migration, and an attached Vercel
-Restaurant project.
+activation requires the server-only deployment variables below, current migrations applied to
+hosted Supabase, and an attached Vercel Restaurant project.
 
 ## Ownership and routing are separate
 
-`core.business_domains` retains the Phase 6 ownership lifecycle (`pending`, `verified`, `failed`,
-`disabled`) and DNS TXT proof. Phase 12 adds a nullable `target_module_key` and a separate routing
-lifecycle:
+`core.business_domains` keeps its ownership lifecycle (`pending`, `verified`, `failed`, `disabled`)
+and DNS TXT proof. A nullable `target_module_key` and a separate routing lifecycle sit alongside
+it:
 
 - `unconfigured` — ownership may be verified, but no deployment connection is active;
 - `provisioning` — provider attachment exists while DNS, verification, or TLS is incomplete;
@@ -19,8 +19,8 @@ lifecycle:
 
 Legacy claims remain unassigned and unconfigured. No existing verified hostname is silently
 converted to Restaurant. Changing target, restarting ownership verification, disabling ownership,
-or disconnecting deployment clears live/primary state. Disabling a capability or making it
-platform-unavailable retains domain history but the anonymous resolver fails closed.
+or disconnecting deployment clears live/primary state. Losing entitlement, disabling a capability,
+or making it platform-unavailable retains domain history but the anonymous resolver fails closed.
 
 Only an active, verified, live domain may be primary. The invariant is one primary hostname per
 business and target module. Non-primary live hostnames remain accessible but canonicalize to the
@@ -58,14 +58,15 @@ platform/preview hosts and normalizes one authoritative Host value. Multi-value,
 forwarded, credential/path, malformed, IP/local production, and reserved `darb.co.il` hosts fail
 closed. A valid custom host is internally rewritten; the internal route cannot be invoked directly.
 
-`public.resolve_public_domain(text)` returns only hostname, business slug, implemented target, and
-canonical hostname. It requires verified ownership, live routing, an active business, and an
-enabled/available Restaurant capability. It never returns business UUIDs, ownership tokens, or
-provider/admin detail. `public.get_restaurant_publication(text)` independently enforces Restaurant
-publication gates.
+`public.resolve_public_domain(text)` returns only hostname, business slug, implemented target,
+primary flag, and primary hostname. It requires verified ownership, live routing, an active
+business, and entitled, enabled, and available Restaurant access. It never returns business
+UUIDs, ownership tokens, or provider/admin detail. `public.get_restaurant_publication(text)`
+independently enforces Restaurant publication gates.
 
-Custom `/`, `/{locale}`, and `?location=<uuid>` routes reuse the Phase 11 renderer, projection,
-theme, metadata, JSON-LD, and interactions. There is no second Restaurant implementation.
+Custom `/`, `/{locale}`, and `?location=<uuid>` routes reuse the platform-slug Restaurant renderer,
+projection, theme, metadata, JSON-LD, and interactions. There is no second Restaurant
+implementation.
 
 Host and primary-origin lookups use React request memoization keyed by the normalized hostname or
 business slug. They do not use a process-global tenant cache, so one request cannot reuse another

@@ -1,7 +1,8 @@
 # Design system direction
 
 Status: accepted admin principles, the first controlled customer-facing theme contract, and the
-Restaurant customer-facing renderer are implemented. The complete design system is not.
+Restaurant customer-facing renderer with multiple database-registered templates are implemented.
+The complete design system is not.
 
 ## Two distinct systems
 
@@ -24,8 +25,8 @@ logos; composed marketing layouts remain application-owned. Corporate identity m
 tenant theme overrides or turn `@darb/ui` into a marketing component catalogue. The permanent asset
 and derivative rules live in [`BRAND.md`](./BRAND.md).
 
-`@darb/theme` establishes the second system's closed semantic token contract, resolver,
-contrast validation, script-aware typography, motion intent, and CSS-variable mapping. Platform template
+`@darb/theme` establishes the second system's closed semantic token contract, resolver, contrast
+validation, script-aware typography, motion intent, and CSS-variable mapping. Platform template
 definitions and tenant overrides are database-driven. These primitives do not move tenant styling
 into `@darb/ui` and do not constitute a page builder.
 
@@ -68,10 +69,12 @@ progress.
 
 The admin application now provides the shared current Darb mark, script-aware font loading, an
 accessible skip link, a responsive matte-surface business shell, a route-backed business switcher,
-trusted public-site escape paths, grouped selected-state navigation,
+an interface language switcher with RTL/LTR shell direction, a privileged platform shell with
+bounded server-side pagination, trusted public-site escape paths, grouped selected-state navigation,
 compact page headers, semantic statuses, lifecycle notices, page-shaped loading, empty/error/
 read-only states, and a focus-managed confirmation dialog. Admin orchestration remains inside
-`apps/admin`; only the proven corporate identity primitive is shared through `@darb/ui`.
+`apps/admin`; `@darb/ui` provides only the corporate identity primitives (`DarbMark`,
+`DarbWordmark`, `DarbBrandLockup`) and the shared `SkipLink`.
 
 The Overview presents real RLS-visible platform state and actionable readiness categories; it does
 not manufacture engine metrics, charts, or completion percentages. This is a scoped operational

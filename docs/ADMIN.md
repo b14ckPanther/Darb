@@ -13,10 +13,11 @@ business-wide access snapshot, and loads RLS-visible locations and capability st
 slugs fail closed.
 
 The business chooser appears at `/` when more than one business is accessible; one business
-redirects directly to its workspace. The switcher lists only authorized businesses and preserves a
-registered core top-level section when safe. Resource-specific paths fall back to that section's
-list. Engine and unregistered paths fall back to the target business Overview until the target
-business's capability/access state can be resolved. Tenant identity is never sourced solely from
+redirects directly to its workspace. The switcher lists only authorized businesses and preserves
+any registered top-level section, core or engine (for example `restaurant`), when safe.
+Resource-specific paths fall back to that section's list, so no resource ID is carried across
+tenants, and the target route re-resolves module and permission state server-side. Unregistered
+paths fall back to the target business Overview. Tenant identity is never sourced solely from
 local storage.
 
 Self-service registration lives at `/register`, with `/verify` and `/auth/confirm` handling the
@@ -30,8 +31,9 @@ for Restaurant), and hands the owner directly to the useful core or Restaurant w
 
 - `/b/[businessSlug]` shows the real platform-state Overview and setup guidance;
 - `/b/[businessSlug]/settings` reads core identity, locale, currency, timezone, and lifecycle;
-- `/b/[businessSlug]/modules` presents the current plan, effective module access, location allowance,
-  optional initial-setup request, and tenant capability switches;
+- `/b/[businessSlug]/modules` (navigation label "Plan & access") presents the current plan,
+  effective module access, location allowance, optional initial-setup request, and tenant
+  capability switches;
 - `/b/[businessSlug]/appearance` resolves enabled template contexts and controlled theme state;
 - `/b/[businessSlug]/media` uploads, describes, lists, and archives shared business assets;
 - `/b/[businessSlug]/domains` manages ownership verification, Restaurant targeting, provider
@@ -41,9 +43,11 @@ for Restaurant), and hands the owner directly to the useful core or Restaurant w
 - `/b/[businessSlug]/locations/new` creates a reusable core location;
 - `/b/[businessSlug]/locations/[locationId]` edits or archives one accessible location.
 - `/b/[businessSlug]/setup` resumes creator-only essential setup until its atomic completion;
-- `/b/[businessSlug]/restaurant` is the capability- and permission-gated Restaurant workspace;
+- `/b/[businessSlug]/restaurant` is the capability- and permission-gated Restaurant workspace,
+  including an operational launch-readiness checklist that links to each missing item;
 - `/b/[businessSlug]/restaurant/menus` manages menus, categories, localized content, and a
   responsive searchable/filterable item inventory;
+- `/b/[businessSlug]/restaurant/menus/[menuId]` edits one menu and its categories;
 - `/b/[businessSlug]/restaurant/items/[itemId]` manages variants, modifiers, and location state;
 - `/b/[businessSlug]/restaurant/modifiers` manages the reusable modifier library.
 - `/b/[businessSlug]/restaurant/locations` manages per-location public contact details and regular
@@ -52,23 +56,24 @@ for Restaurant), and hands the owner directly to the useful core or Restaurant w
 One typed, ordered navigation registry owns the implemented Workspace, Business, Experience,
 Products, and future Governance groups. The protected layout resolves and filters it from the
 server-authoritative access snapshot and effective module state. Route and mutation authorization
-remain independent of navigation visibility. Modules are a read surface for authorized business
-members; controls require `modules.manage` and an active business. Locations appear only when the caller has
-business-wide location access or at least one exact location is visible. Creating requires
-business-wide `locations.manage`; updating or archiving accepts business-wide or matching
-location-scoped `locations.manage`. Business edits require `business.manage`.
+remain independent of navigation visibility. Plan & access (`/modules`) is a read surface for
+authorized business members; controls require `modules.manage` and an active business. Locations
+appear only when the caller has business-wide location access or at least one exact location is
+visible. Creating requires business-wide `locations.manage`; updating or archiving accepts
+business-wide or matching location-scoped `locations.manage`. Business edits require
+`business.manage`.
 
 Media and Domains navigation appears only with `media.manage` or `domains.manage`; the underlying
 pages remain RLS-readable if an authorized member follows a direct link, but controls are absent.
 Languages is broadly visible and becomes editable only with `business.manage`. All three sections
 are mutation-disabled unless the business is active.
 
-Appearance is broadly visible to authorized members. It lists only effectively enabled modules
-that have platform templates; edit controls require `appearance.manage` and an active business. A
-zero-context state links back to Modules without pretending an engine exists. Restaurant appears
-as an engine navigation contribution only when its capability is effectively enabled and the user
-has `restaurant.read` or `restaurant.manage`; all other enabled engine capabilities continue to be
-labelled honestly as pending.
+Appearance is broadly visible to authorized members. It lists only effectively enabled modules that
+have platform templates; edit controls require `appearance.manage` and an active business. A
+zero-context state links back to Plan & access (`/modules`) without pretending an engine exists.
+Restaurant appears as an engine navigation contribution only when its capability is effectively
+enabled and the user has `restaurant.read` or `restaurant.manage`; all other enabled engine
+capabilities continue to be labelled honestly as pending.
 
 ## Mutation and audit boundary
 
@@ -80,8 +85,9 @@ metadata.
 
 Module state uses its own narrow Server Action and `core.set_business_module_enabled` RPC. New
 enablement requires plan/override entitlement. It emits
-`business.module_enabled` or `business.module_disabled` only for actual transitions. The page is
-explicit that capability state does not launch an engine, create engine data, or represent billing.
+`business.module_enabled` or `business.module_disabled` only for actual transitions. The page
+explains that access (plan/entitlement) and activation are separate and that disabling a capability
+retains existing data. It offers no engine launch links.
 
 Media registration reserves a database-derived path before the browser uploads directly through
 Storage RLS. Completion, alt-text updates, and archive use normal authenticated RPCs. Domain claims
@@ -115,9 +121,10 @@ with Escape dismissal and focus restoration. The business selector is keyboard-o
 long names, and is usable inside either shell.
 
 The Overview derives identity, visible location count, enabled languages and modules, active media,
-verified/primary domains, and appearance state from RLS-visible platform data. Readiness is expressed
-as actionable required, recommended, and optional checks rather than a fabricated score. Enabled
-capabilities whose engines do not exist are explicitly identified as enabled but not yet available.
+verified/primary domains, and appearance state from RLS-visible platform data. Readiness is
+expressed as actionable required, recommended, and optional checks rather than a fabricated score.
+Enabled capabilities whose engines do not exist are explicitly identified as enabled but not yet
+available.
 
 Reusable admin-local primitives provide compact page headers and breadcrumbs, semantic status
 labels, lifecycle notices, page-shaped skeletons, empty/error/read-only states, and an accessible
@@ -154,11 +161,12 @@ super-admin check. It has its own shell and Overview, Businesses, Users, Modules
 Domains, and Audit sections. Tenant administrators never receive its navigation or data. Large
 directories are database-filtered and paginated rather than loaded into client memory.
 
-The business directory supports safe inspection and audited suspend/archive/reactivate actions.
-The user directory is an allow-listed Auth projection; super-admin assignment management is
-read-only. Module and template registries are also read-only in this phase. Global domain and audit
-views exclude verification proof, provider payloads, and audit metadata. Full contracts and
-deferrals are in [`PLATFORM_ADMIN.md`](./PLATFORM_ADMIN.md).
+The business directory supports safe inspection and audited suspend/archive/reactivate actions, plan
+assignment, reasoned entitlement overrides, and initial-setup-service transitions (see
+[`COMMERCIAL.md`](./COMMERCIAL.md)). The user directory is an allow-listed Auth projection;
+super-admin assignment management is read-only. Module and template registries are also read-only.
+Global domain and audit views exclude verification proof, provider payloads, and audit metadata.
+Full contracts and deferrals are in [`PLATFORM_ADMIN.md`](./PLATFORM_ADMIN.md).
 
 A super admin may open a tenant workspace without a fabricated membership because existing RLS
 helpers intentionally recognize platform authority. The business shell identifies this access and

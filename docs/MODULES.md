@@ -18,9 +18,9 @@ controlled display names, concise descriptions, availability, and sort order sup
 Tenant users cannot create or edit registry rows. Registry changes remain migration-managed until a
 separate platform-super-admin workflow is designed.
 
-The current keys are `restaurant`, `booking`, `pages`, and `commerce`. Restaurant now has an
-isolated domain schema, but enablement still creates no data or route. The other keys remain
-capability vocabulary only.
+The current keys are `restaurant`, `booking`, `pages`, and `commerce`. Restaurant has an isolated
+domain schema plus Admin and public runtimes that appear only when it is effective; enablement
+itself creates no engine data. The other keys remain capability vocabulary only.
 
 ## Business state
 
@@ -61,9 +61,9 @@ platform-controlled entitlement, and enabled tenant state. Engine routes additio
 the user and require their action permission: neither enablement nor entitlement grants user
 authorization. See [`COMMERCIAL.md`](./COMMERCIAL.md).
 
-The `/b/[businessSlug]/modules` surface is readable by authorized business members. Mutation controls
-appear only with `modules.manage` on an active business. It deliberately offers no engine launch
-links.
+The `/b/[businessSlug]/modules` surface (navigation label "Plan & access") is readable by authorized
+business members. Mutation controls appear only with `modules.manage` on an active business. It
+deliberately offers no engine launch links.
 
 Module enablement provides the context in which templates may be selected, but it does not select a
 template, grant `appearance.manage`, or create engine data. Disabling a module retains its visual
@@ -76,9 +76,11 @@ See [`RESTAURANT.md`](./RESTAURANT.md).
 
 ## Deferred
 
-- Restaurant admin/public routes and other engine-specific schemas, permissions, and configuration;
+- schemas, permissions, and runtimes for engines other than Restaurant;
 - module dependencies or a dependency graph;
-- billing providers, prices, subscriptions, trials, invoices, and entitlement expiry;
+- billing providers, prices, subscriptions, trials, invoices, and entitlement expiry (plan
+  entitlement itself is implemented; see [`COMMERCIAL.md`](./COMMERCIAL.md));
 - template dependencies across modules, advanced template composition, and vertical classification;
 - platform-super-admin registry UI and module marketplace behavior;
-- localization of platform module labels and descriptions.
+- database-driven localization of registry labels and descriptions (Admin currently translates
+  known module keys through its message catalogue).

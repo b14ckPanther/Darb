@@ -1,7 +1,8 @@
 # Tenancy
 
-Status: core tenancy, first-business bootstrap, explicit business route context, and permission-aware
-business/location administration are implemented through version-controlled changes.
+Status: core tenancy, self-service registration and first-business onboarding, explicit business
+route context, permission-aware business/location administration, platform administration, and
+commercial entitlements are implemented through version-controlled changes.
 
 ## Core model
 
@@ -23,8 +24,10 @@ application constants.
 
 `core.businesses` is the tenant root. `core.locations`, `core.memberships`,
 `core.business_modules`, `core.business_visual_settings`, `core.media_assets`,
-`core.business_domains`, `core.business_locales`, and business-scoped `core.audit_events` point
-directly to it. `core.templates` is platform-owned reference data, not tenant content.
+`core.business_domains`, `core.business_locales`, `core.business_media_assignments`,
+`core.business_plan_assignments`, `core.business_module_entitlement_overrides`,
+`core.business_initial_setup_services`, and business-scoped `core.audit_events` point directly to
+it. `core.templates` is platform-owned reference data, not tenant content.
 `core.membership_permissions` carries `business_id` and uses composite foreign keys to guarantee
 that its membership and optional location belong to the same business.
 
@@ -102,18 +105,18 @@ that auth user, and atomically creates the business, active membership, reviewed
 and `business.created` audit event. It applies ILS and `Asia/Jerusalem` through the core business
 defaults and enables no modules.
 
-The Phase 6 forward migration extends the bootstrap bundle with `media.manage` and
+The media, domain, and locale migration extends the bootstrap bundle with `media.manage` and
 `domains.manage`. Its idempotent migration-time backfill grants those keys only to active
 memberships that already held the complete original seven-key owner bundle; arbitrary memberships
 are not broadened.
 
-The Phase 7 forward migration adds `appearance.manage`. Its idempotent backfill applies only to
-active memberships holding the complete approved nine-key Phase 6 owner bundle; partial or
+The template/theme migration adds `appearance.manage`. Its idempotent backfill applies only to
+active memberships holding the complete approved nine-key owner bundle that preceded it; partial or
 arbitrary memberships are not broadened.
 
-The Phase 9 forward migration adds `restaurant.read` and `restaurant.manage`. Its idempotent
-backfill applies only to active memberships holding the complete approved ten-key Phase 8 owner
-bundle; custom and partial memberships are not broadened.
+The Restaurant domain migration adds `restaurant.read` and `restaurant.manage`. Its idempotent
+backfill applies only to active memberships holding the complete approved ten-key owner bundle
+that preceded it; custom and partial memberships are not broadened.
 
 An exact retry returns the existing business. A different request is rejected while the caller has
 an active membership. A suspended membership is not active access, so the user may establish a new
@@ -142,7 +145,8 @@ The `/platform/*` control plane reads bounded projections guarded by that active
 permissions cannot substitute for it. Super admins can inspect every tenant and enter the existing
 business workspace through explicit RLS authority without creating a membership or impersonating a
 user. The business shell marks platform access, while platform and tenant navigation stay visibly
-separate. Phase 14 exposes only audited business lifecycle transitions; platform registries and the
+separate. Platform mutations are limited to audited business lifecycle, plan assignment,
+entitlement-override, and assisted-setup status transitions; platform registries and the
 super-admin roster remain read-only.
 
 ## Lifecycle semantics
@@ -169,17 +173,20 @@ verification. Business locale changes keep the new default enabled in the same t
 
 Domain ownership does not imply public routing. A verified claim must also name a canonical module
 target and receive trusted deployment-provider attestation before its routing state becomes live.
-Only live claims can be primary, with one primary hostname per business and target. Public exact-host
-resolution independently requires an active business and an enabled, available implemented module;
-disconnect or ownership disable revokes resolution while retaining tenant history.
+Only live claims can be primary, with one primary hostname per business and target. Public
+exact-host resolution independently requires an active business and an enabled, available
+implemented module; disconnect or ownership disable revokes resolution while retaining tenant
+history.
 
 Appearance state is readable through active membership and mutable only with business-wide
-`appearance.manage`. It applies only to effectively enabled module contexts. Suspended and archived
-businesses must be returned to active before any template/theme change, including by a super admin.
+`appearance.manage`. It applies only to effectively enabled and entitled module contexts. Suspended
+and archived businesses must be returned to active before any template/theme change, including by a
+super admin.
 
 Restaurant content is readable with `restaurant.read` or `restaurant.manage`, including retained
 data when the capability is disabled or unavailable. Mutation additionally requires
-`restaurant.manage`, an active business, and an enabled and platform-available Restaurant module.
+`restaurant.manage`, an active business, and an enabled, platform-available, and entitled
+Restaurant module.
 Suspended and archived businesses cannot mutate Restaurant data, including through super-admin
 authorization, until their lifecycle is restored.
 
@@ -206,5 +213,5 @@ Strict tenant isolation is mandatory and currently enforced as follows:
 
 See [`MODULES.md`](./MODULES.md) for capability semantics and the future engine-gating boundary.
 
-See [`AUTH.md`](./AUTH.md) for session and protected-routing behavior and [`DATABASE.md`](./DATABASE.md)
-for exact table and policy responsibilities.
+See [`AUTH.md`](./AUTH.md) for session and protected-routing behavior and
+[`DATABASE.md`](./DATABASE.md) for exact table and policy responsibilities.

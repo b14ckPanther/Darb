@@ -6,13 +6,13 @@ not a promise of ordering, billing, or holiday-scheduling features.
 
 ## Launch decision
 
-The launch audit classified missing canonical location hours and public contact details as P0.
-Those are now stored per canonical `core.locations` row, edited through one authorized Restaurant
-RPC, and exposed only inside the curated public publication. The Admin readiness surface, trusted
+Regular location hours and public contact details are stored per canonical `core.locations` row,
+edited through one authorized Restaurant RPC (`restaurant.save_location_public_details`), and
+exposed only inside the curated public publication. The Admin readiness surface, trusted
 public-menu link, full-week public hours, current open/closed state, and factual SEO projection are
-P1 work completed with that boundary.
+built on that same boundary.
 
-The following are safe post-launch P2 work: exceptional/holiday hours, password reset and broader
+The following are not yet implemented: exceptional/holiday hours, password reset and broader
 account recovery, automated menu import or bulk editing, physical media deletion/transformation,
 advanced analytics, background reconciliation, and automated monitoring integrations. Operators
 must account for these limitations during onboarding.
@@ -46,8 +46,10 @@ entitled and enabled Restaurant module, public activation, and the existing publ
 5. Create the menu, categories, items, translations, prices, optional variants/modifiers, and
    location availability. Keep unfinished menus in draft.
 6. Select Signature, Editorial, or Counter and inspect the public menu in every enabled language.
-7. Resolve all required readiness items and review recommended ones. Then intentionally activate
-   the Restaurant experience; do not create a second or fake Publish state.
+7. Resolve every other required readiness item and review recommended ones, then intentionally
+   activate the Restaurant experience. The Publication readiness item completes only once
+   activation and a published menu with visible content are both in place; do not create a second
+   or fake Publish state.
 8. Use **View public menu**. It resolves a verified live primary custom hostname when one exists,
    otherwise the trusted `rest.darb.co.il` platform URL. Never paste an arbitrary host into Admin.
 9. If a custom domain is required, complete the governed ownership and provider-routing workflow,

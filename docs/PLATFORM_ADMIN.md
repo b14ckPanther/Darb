@@ -20,7 +20,8 @@ the session and audit record; Darb creates no synthetic membership and performs 
 
 Authenticated `SECURITY DEFINER` functions project only the fields needed by the operator UI. They
 use empty `search_path` values, qualified object names, fixed SQL, bounded page sizes, and an active
-`private.super_admins` check. `private` and `auth` remain absent from generated browser-facing types.
+`private.super_admins` check. `private` and `auth` remain absent from generated browser-facing
+types.
 
 - overview returns factual operational totals;
 - business list/detail returns tenant identity, lifecycle, counts, locales, capability state,
@@ -28,6 +29,8 @@ use empty `search_path` values, qualified object names, fixed SQL, bounded page 
 - users returns only Auth UUID, email, creation time, super-admin decision, and membership summary;
 - the super-admin roster is read-only and exposes only UUID, email, grant/revocation timestamps,
   and state;
+- plans and per-business commercial state return plan key and label, location limit, reasoned
+  entitlement overrides, and initial-setup-service status;
 - modules/templates return safe registry metadata and adoption counts, never theme documents;
 - domains exclude ownership proof and provider payloads;
 - audit excludes the metadata document and paginates the allow-listed event envelope.
@@ -39,10 +42,10 @@ used by the control plane.
 
 ## Lifecycle operations
 
-Phase 14 exposes one write: an explicit business lifecycle transition. A platform super admin may
-suspend or archive an active business, and may reactivate a suspended or archived business. The
-RPC locks the tenant row, validates the transition, derives the actor from `auth.uid()`, retains all
-tenant data, and atomically emits one of:
+The control plane exposes two kinds of write: business lifecycle transitions, and commercial
+operations. For lifecycle, a platform super admin may suspend or archive an active business, and may
+reactivate a suspended or archived business. The RPC locks the tenant row, validates the transition,
+derives the actor from `auth.uid()`, retains all tenant data, and atomically emits one of:
 
 - `platform.business_suspended`;
 - `platform.business_archived`;
@@ -52,13 +55,21 @@ An unchanged request is a no-op and emits no audit event. The UI uses the shared
 confirmation dialog and returns to the canonical detail URL with an announced outcome. There is no
 hard-delete control.
 
+Commercial operations on the business detail page assign a plan (`core.set_platform_business_plan`),
+set or remove a reasoned entitlement override (`core.set_platform_module_entitlement_override`), and
+advance valid initial-setup-service transitions (`core.set_platform_initial_setup_status`). Each
+actual change emits `platform.business_plan_changed`, `platform.entitlement_override_set`,
+`platform.entitlement_override_removed`, or `platform.initial_setup_status_changed`. The model is
+described in [`COMMERCIAL.md`](./COMMERCIAL.md).
+
 ## Deliberate read-only areas
 
 Super-admin assignments, module availability, template availability/defaults, Auth account state,
 and domain routing remain inspection-only. Their consequences require dedicated recovery and
-last-operator safety designs before mutation UI is appropriate. Template authoring, raw Auth
-metadata, domain verification tokens, provider responses, raw SQL, and arbitrary impersonation are
-not exposed.
+last-operator safety designs before mutation UI is appropriate. The plan registry itself remains
+migration-managed; only per-business plan assignment and overrides are editable. Template authoring,
+raw Auth metadata, domain verification tokens, provider responses, raw SQL, and arbitrary
+impersonation are not exposed.
 
 ## Interface behavior
 

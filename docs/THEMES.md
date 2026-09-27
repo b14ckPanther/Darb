@@ -70,9 +70,10 @@ review warnings.
 ## Authorization, lifecycle, and audit
 
 Authorized members may read RLS-visible appearance state. Mutations require business-wide
-`appearance.manage`, an active business, an effectively enabled/available module, and an available
-template belonging to that module. Suspended and archived businesses cannot change appearance,
-including through explicit super-admin authorization; they must be returned to active state first.
+`appearance.manage`, an active business, an entitled, enabled, and available module, and an
+available template belonging to that module. Suspended and archived businesses cannot change
+appearance, including through explicit super-admin authorization; they must be returned to active
+state first.
 
 `core.set_business_appearance(...)` and `core.reset_business_theme_overrides(...)` derive the actor
 from `auth.uid()`, use an empty `search_path`, validate again in Postgres, update state atomically,
@@ -86,15 +87,15 @@ No-op saves/resets emit no duplicate event. Full override documents and arbitrar
 are not copied into audit metadata. Ordinary application flows use the request-scoped RLS client,
 never the privileged client.
 
-## Admin and future rendering
+## Admin and rendering
 
 `/b/[businessSlug]/appearance` is readable for an authorized business member and becomes editable
 only with `appearance.manage`. It lists only rendering contexts backed by effectively enabled
 modules and registered templates. Accessible visual composition cards communicate the structural
-difference between available templates before selection. Hex/swatch controls validate canonical colors;
-individual values, control groups, or all overrides can return to template defaults. The live
-Arabic/Hebrew/English preview resolves the same template default + tenant override pipeline future
-server-rendered customer experiences will consume.
+difference between available templates before selection. Hex/swatch controls validate canonical
+colors; individual values, control groups, or all overrides can return to template defaults. The
+live Arabic/Hebrew/English preview resolves the same template default + tenant override pipeline
+that the server-rendered Restaurant experience consumes.
 
 When Restaurant is effectively enabled, the same page also shows its current logo and hero, plus a
 visual picker filtered to eligible active assets from that tenant's Media Library. Removing an

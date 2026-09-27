@@ -122,15 +122,17 @@ mutation, including for a platform super admin.
 
 The minimal business-scoped permission pair is `restaurant.read` and `restaurant.manage`.
 `restaurant.manage` does not imply module enablement, and location-scoped platform permissions do
-not imply Restaurant access. First-business bootstrap now grants both keys in its fixed twelve-key
-owner bundle. The migration backfill extends only active memberships holding the complete approved
-ten-key Phase 8 owner bundle; custom and partial memberships are not broadened.
+not imply Restaurant access. First-business bootstrap grants both keys in its fixed twelve-key
+owner bundle. The migration backfill extends only active memberships holding the complete earlier
+ten-key owner bundle (before the Restaurant keys were added); custom and partial memberships are
+not broadened.
 
 All 17 tenant tables have RLS and an authenticated SELECT policy for either Restaurant permission.
 Authenticated direct writes are withheld and no anonymous table policy exists. Authorized reads
 remain available after module or business lifecycle changes for retained administration/history.
-Anonymous public delivery crosses only the curated `public.get_restaurant_publication(text)`
-projection described below.
+Anonymous Restaurant delivery crosses only curated security-definer projections: the
+`public.get_restaurant_publication(text)` projection described below, the published-Restaurant
+sitemap projection, and the public domain resolvers described in [`DOMAINS.md`](./DOMAINS.md).
 
 The authenticated mutation API is intentionally explicit:
 
@@ -139,25 +141,28 @@ The authenticated mutation API is intentionally explicit:
 - six `save_localized_*` Admin wrappers that atomically supply a missing default-locale public
   name without replacing explicit localized content;
 - `set_item_modifier_group` and `remove_item_modifier_group`;
-- `set_item_location_availability`, where `null` removes the override.
+- `set_item_location_availability`, where `null` removes the override;
+- `save_location_public_details` for a location's allow-listed public contact profile and full
+  weekly opening-interval set.
 
 Each security-definer function derives `auth.uid()`, uses an empty `search_path`, schema-qualifies
 objects, requires `restaurant.manage`, locks and requires an active business, and requires an
-enabled and platform-available Restaurant module. Parent resources are re-resolved inside the
-target business. Create-or-update functions generate IDs server-side for creates, return explicit
-`created`/`changed` results, and make unchanged requests no-ops. There is no dynamic SQL, arbitrary
-actor input, generic JSON command, privileged browser client, or service-role tenant RPC grant.
+entitled, enabled, and platform-available Restaurant module. Parent resources are re-resolved
+inside the target business. Create-or-update functions generate IDs server-side for creates, return
+explicit `created`/`changed` results, and make unchanged requests no-ops. There is no dynamic SQL,
+arbitrary actor input, generic JSON command, privileged browser client, or service-role tenant RPC
+grant.
 
 ## Audit and performance
 
 Actual mutations append allowlisted events to `core.audit_events` in the same transaction. Stable
 families cover configuration, menu/category/item/variant/modifier-group/modifier creation, update,
-availability and archive transitions, translation saves, modifier assignments, and location
-availability changes. Metadata contains identifiers, locale, selection bounds, and lifecycle or
-availability states only—never names, descriptions, prices, media paths, or full payloads. No-op
-requests emit no event.
+availability and archive transitions, translation saves, modifier assignments, location
+availability changes, and location public-detail (contact and hours) updates. Metadata contains
+identifiers, locale, selection bounds, and lifecycle or availability states only—never names,
+descriptions, prices, media paths, or full payloads. No-op requests emit no event.
 
-Read indexes follow the future menu shape: business and ordered menu state, ordered categories,
+Read indexes follow the menu shape: business and ordered menu state, ordered categories,
 ordered items, variants, modifiers, item/group assignments, translation locale lookups, and
 location overrides. Composite keys support set-based menu loading without speculative
 denormalization or N+1-only access patterns.
@@ -215,9 +220,9 @@ direction.
 
 The Overview uses stored Restaurant state only. It reports real menus, categories, items,
 publication state, languages, images, modifiers, sold-out items, and location overrides. Readiness
-is a deterministic list of required or recommended actions, not a fabricated percentage or engine
-KPI. Public activation remains an operational intent flag and is clearly distinguished from menu
-publication, capability enablement, and public-route eligibility.
+is a deterministic list of required, recommended, or optional actions, not a fabricated percentage
+or engine KPI. Public activation remains an operational intent flag and is clearly distinguished
+from menu publication, capability enablement, and public-route eligibility.
 
 ## Public Restaurant experience
 
@@ -231,9 +236,10 @@ primary live Restaurant hostname and otherwise remains on `rest.darb.co.il`.
 
 The server makes one anonymous request to `public.get_restaurant_publication`. The security-definer
 function has an empty `search_path`, a narrow `anon`/`authenticated` execute grant, and returns
-`null` unless the business is active, the Restaurant module is enabled and available, Restaurant is
-publicly active, and an available Restaurant template resolves. It exposes only render-safe
-identity, enabled locales, active locations, resolved appearance, published visible content,
+`null` unless the business is active, the Restaurant module is entitled, enabled, and available,
+Restaurant is publicly active, and an available Restaurant template resolves. It exposes only
+render-safe identity, enabled locales, active locations with public contact details and regular
+opening hours, resolved appearance, published visible content,
 active media fields, governed Restaurant branding, variants/modifiers, and location overrides.
 Internal names, original filenames, actors, audit data, and administration timestamps are not in
 the contract. Raw Restaurant and media-assignment tables remain protected by their existing RLS and
@@ -248,10 +254,10 @@ Signature.
 
 The server validates the selected template theme, applies closed tenant overrides through
 `@darb/theme`, and emits controlled CSS variables with Cairo, Heebo, or Ubuntu according to locale.
-The renderer is Server Component-first; small client controllers own only native item-dialog and
-hero-video interaction, including Escape, backdrop close, focus restoration, and reduced-motion
-behavior. A full menu arrives as one set-based projection, so the UI does not issue
-per-category/item queries.
+The renderer is Server Component-first. Small client boundaries own only the native item dialog
+(Escape, backdrop close, focus restoration), the hero video (reduced-motion behavior), the analytics
+adapter, and the localized loading/error system states. A full menu arrives as one set-based
+projection, so the UI does not issue per-category/item queries.
 
 Darb-owned public controls and system states use the three-language Restaurant catalogue, including
 the engine landing, loading, error, not-found, locale and location controls, sold-out and
@@ -275,16 +281,18 @@ query state never creates a canonical duplicate. A narrow public sitemap project
 effective, published Restaurants without opening raw tenant tables.
 
 The interactive controller emits a small typed event taxonomy through an application-owned
-provider adapter. The current adapter is deliberately no-op, sends no network request, and stores
-no analytics. Event payloads contain only public context plus fixed booleans or entity UUIDs—not
-names, descriptions, URLs, queries, identity, or credentials. See
+provider adapter (`apps/rest/lib/analytics.ts`). The current adapter returns the shared
+`noOpRestaurantAnalyticsAdapter` from `@darb/restaurant`; it is deliberately no-op, sends no
+network request, and stores no analytics. Event payloads contain only public context plus fixed
+booleans or entity UUIDs—not names, descriptions, URLs, queries, identity, or credentials. See
 [`PRODUCTION.md`](./PRODUCTION.md).
 
 ### Adding a Restaurant template
 
-A future first-party template adds a deterministic platform registry row by forward migration,
-extends the closed server-side template-key resolver, and contributes one composition component to
-the static renderer selection. It must consume `LocalizedRestaurantPublication`, reuse shared
+A new first-party template adds a deterministic platform registry row by forward migration,
+extends the closed template-key resolver in `apps/rest/lib/templates.ts`, contributes one
+composition component to the static renderer selection, and adds its preview treatment to the
+Admin appearance editor. It must consume `LocalizedRestaurantPublication`, reuse shared
 customer behavior, ship all Darb-owned copy in Arabic/Hebrew/English, and pass the same publication,
 domain, SEO, accessibility, reduced-motion, and responsive test matrix. Templates cannot introduce
 a second query path, tenant-authored code, arbitrary CSS persistence, or runtime plugin loading.
@@ -292,16 +300,14 @@ a second query path, tenant-authored code, arbitrary CSS persistence, or runtime
 ## Application boundary and deferred work
 
 `@darb/restaurant` exposes generated row/enum aliases plus pure helpers for capability
-effectiveness, projection parsing/localization, exact minor-unit formatting, location availability
-inheritance, and modifier selection semantics. It has no React or Supabase client abstraction.
-`@darb/database/anonymous` creates a stateless publishable-key client for the owning server runtime;
-it does not expose a privileged key.
-
-`@darb/restaurant` additionally exposes exact major-to-minor money parsing and pure readiness
-derivation. It still has no React or Supabase client abstraction. Admin-specific queries, actions,
-validation, and presentation stay inside `apps/admin`; `@darb/database` remains the generated
-schema/client boundary.
+effectiveness, projection parsing/localization, exact minor-unit formatting and major-to-minor
+parsing, location availability inheritance, modifier selection semantics, opening-hours status and
+formatting, branding-role eligibility, the typed analytics taxonomy, and readiness derivation. It
+has no React or Supabase client abstraction. `@darb/database/anonymous` creates a stateless
+publishable-key client for the owning server runtime; it does not expose a privileged key.
+Admin-specific queries, actions, validation, and presentation stay inside `apps/admin`;
+`@darb/database` remains the generated schema/client boundary.
 
 The current product does not include carts, checkout, orders, payments, delivery, tables,
-kitchen/POS, inventory, taxes, coupons, loyalty, tips, schedules, custom-domain routing for engines
-beyond Restaurant, or a public template marketplace.
+kitchen/POS, inventory, taxes, coupons, loyalty, tips, item/menu schedules, special/holiday hours,
+custom-domain routing for engines beyond Restaurant, or a public template marketplace.

@@ -57,6 +57,10 @@ assign plans, manage reasoned overrides, and advance valid setup-service transit
 change is audited. Business managers may only request initial setup; they cannot accept, complete,
 or self-assign the service.
 
+Tenants see their plan, location allowance, and setup-request control at
+`/b/[businessSlug]/modules`; operators manage commercial state at
+`/platform/businesses/[businessId]`.
+
 `max_locations` is a nullable plan limit. `null` means unlimited. When a future arrangement sets a
 positive limit, Postgres serializes location creation against the business and also guards
 reactivation, preventing concurrent or archived-row bypasses. Changing to a lower limit never
