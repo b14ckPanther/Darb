@@ -1,150 +1,198 @@
-# Darb / درب
+<p align="center">
+  <a href="https://darb.co.il/en">
+    <img src="apps/main/public/brand/icons/icon-128.png" width="88" height="88" alt="Darb" />
+  </a>
+</p>
 
-Darb is the foundation of a multi-tenant, multi-product business platform for the Israeli market.
-The repository provides the engineering baseline, RLS-first core tenancy model, secure admin
-authentication plus self-service registration and resumable first-business onboarding, a unified
-tenant-admin environment, the Restaurant domain/admin, a
-curated multilingual public Restaurant menu experience, verified custom-domain routing, and
-production foundations for search, security headers, observability, accessibility, performance,
-and provider-neutral analytics. The root domain now serves Darb's cinematic, fully localized public
-brand website and browser/PWA identity. Ordering and other customer workflows are not implemented.
+<h1 align="center">Darb · درب</h1>
 
-The platform is organized as a pnpm/Turborepo monorepo with separate Next.js applications for the
-public root domain and platform administration, shared packages for true platform concerns, and a
-local Supabase workspace whose approved core model is rebuilt entirely from versioned migrations.
+<p align="center">
+  Multi-tenant business platform for the Israeli market, built for Arabic, Hebrew, and English.
+  <br />
+  <a href="https://darb.co.il/en"><strong>darb.co.il</strong></a>
+</p>
 
-## Repository structure
+---
+
+Darb lets a business register, set up its workspace, and publish a customer-facing product on a
+Darb subdomain or its own verified domain. The first product is **Darb Restaurant**: a
+multilingual digital menu with locations, opening hours, variants, modifiers, branding media, and
+selectable premium templates, managed from a shared tenant admin.
+
+The codebase is a TypeScript monorepo with three Next.js applications on a single Supabase
+project. Tenant isolation is enforced in Postgres with Row Level Security and narrow RPCs rather
+than in application code, and every engine sits behind its own schema and package boundary so new
+products can be added without reshaping the platform.
+
+## What is in the repository
+
+| Surface                    | App          | Description                                                                                                                                               |
+| -------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `darb.co.il`               | `apps/main`  | Public company site. Static `/ar`, `/he`, `/en` routes, per-locale metadata and hreflang, PWA manifest. No database dependency.                           |
+| `admin.darb.co.il`         | `apps/admin` | Registration, email verification, resumable onboarding, tenant workspaces, Restaurant management, and a separate `/platform` console for super admins.    |
+| `rest.darb.co.il` + custom | `apps/rest`  | Server-rendered public menus. Resolves platform slugs and verified custom hostnames to one renderer with three templates (Signature, Editorial, Counter). |
+
+### Tenant admin
+
+- Self-service sign-up and a resumable first-business onboarding flow backed by an atomic
+  database bootstrap.
+- Business settings, locations, languages, media library, custom domains, appearance (template +
+  validated theme overrides), and module management under `/b/[businessSlug]`.
+- Permission- and module-aware navigation generated from one typed registry and filtered on the
+  server per business.
+- Restaurant workspace: menus, categories, items, variants, modifier groups, per-location
+  availability, hours and contacts, branding media, publication, and launch-readiness checks.
+- Fully localized interface in Arabic, Hebrew, and English with correct RTL/LTR layout.
+
+### Platform console
+
+- Cross-tenant views of businesses, users, domains, modules, templates, and the audit log.
+- Audited lifecycle changes, plan assignment, and reasoned entitlement overrides. Super-admin
+  access to a tenant workspace goes through explicit database authority, not impersonation.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Apps
+    main["apps/main<br/>darb.co.il"]
+    admin["apps/admin<br/>admin.darb.co.il"]
+    rest["apps/rest<br/>rest.darb.co.il · custom domains"]
+  end
+  subgraph Packages
+    ui["@darb/ui"] --- icons["@darb/icons"]
+    i18n["@darb/i18n"] --- theme["@darb/theme"]
+    db["@darb/database"] --- restaurant["@darb/restaurant"]
+    config["@darb/config"] --- types["@darb/types"]
+  end
+  subgraph Supabase
+    core[("core schema")]
+    rs[("restaurant schema")]
+    priv[("private helpers")]
+    storage[["Storage: images / videos"]]
+  end
+  admin -->|"SSR client, RLS + RPCs"| core
+  admin --> rs
+  rest -->|"anonymous curated projection"| core
+  Apps --> Packages
+```
+
+Key decisions:
+
+- **Database-enforced tenancy.** All tenant data is protected by RLS and explicit grants.
+  Authorization helpers live in a non-exposed `private` schema. Writes go through narrow RPCs that
+  commit the change and its redacted audit event in one transaction. No privileged key is used in
+  normal admin flows.
+- **Engine boundaries.** Canonical businesses, locations, media, locales, domains, and audit live
+  in `core`. Restaurant data lives in its own `restaurant` schema and `@darb/restaurant` package.
+  Engine-to-engine imports are not allowed.
+- **Fail-closed public reads.** `apps/rest` never reads admin tables. It calls one curated
+  anonymous projection that returns the full publication graph (tenant, locales, locations,
+  theme, branding, menus, modifiers, hours) in a single round trip, or `null`.
+- **Capabilities vs. entitlements.** A module is usable only when it is available, entitled by
+  the business plan or an override, enabled by the tenant, and the business is active. The model
+  is provider-neutral and carries no billing logic yet.
+- **Custom domains.** Ownership is proven with DNS TXT verification; going live additionally
+  requires provider attestation from the hosting platform. Verified hosts are rewritten internally
+  to the same Restaurant renderer, and canonical URLs prefer the primary live hostname.
+- **Theming as a closed contract.** `@darb/theme` maps a fixed token set to CSS variables with
+  contrast checks, script-aware typography, direction, and reduced-motion handling. Tenants cannot
+  inject arbitrary CSS.
+- **Server-first rendering.** React Server Components by default, client components only where
+  interaction needs them, shared security headers, and sanitized structured error logging.
+
+## Tech stack
+
+Next.js 16 (App Router, RSC, Server Actions) · React 19 · TypeScript 6 (strict) · Supabase
+(Postgres, Auth, Storage, RLS) · pgTAP · Vitest · Playwright · Turborepo · pnpm · ESLint ·
+Prettier · Hugeicons / Lucide.
+
+Typography uses Cairo (Arabic), Heebo (Hebrew), and Ubuntu (English). Dates, numbers, and ILS
+currency are formatted per locale in the `Asia/Jerusalem` timezone.
+
+## Repository layout
 
 ```text
 apps/
-  main/       Localized public Darb company/product website for darb.co.il
-  admin/      Supabase-authenticated admin shell for admin.darb.co.il
-  rest/       Server-rendered public Restaurant experience for rest.darb.co.il
+  main/         Public company website
+  admin/        Tenant admin and platform console
+  rest/         Public Restaurant renderer
 packages/
-  config/     Shared tooling, HTTP-security, logging, and platform configuration
-  i18n/       Supported-locale and text-direction primitives
-  icons/      Governed icon and custom-SVG boundary
-  types/      Platform-level TypeScript types
-  ui/         Shared Darb identity and minimal platform/admin UI primitives
-  database/   Generated database types and explicit Supabase client boundaries
-  restaurant/ Restaurant Engine database type aliases and pure domain helpers
-  theme/      Closed semantic theme contract and deterministic resolver
-supabase/     Local configuration, versioned core/engine migrations, and database tests
-docs/         Accepted architecture and engineering direction
-tests/e2e/    Playwright public-shell and authenticated admin workflows
+  config/       ESLint/TS presets, HTTP security headers, observability
+  database/     Generated Supabase types and scoped client factories
+  i18n/         Locales and text direction
+  icons/        Curated icon exports
+  restaurant/   Restaurant types and pure domain helpers
+  theme/        Theme token contract and resolver
+  types/        Platform-wide types
+  ui/           Darb identity and admin UI primitives
+supabase/
+  migrations/   Versioned schema, RLS, and RPC migrations
+  tests/        pgTAP database tests, including tenant-isolation tests
+tests/e2e/      Playwright suites for main, admin, and rest
+docs/           Architecture and design references
 ```
 
-There is intentionally no `@darb/utils` package yet. It should be created only when a real,
-cross-workspace utility exists. Future engine applications will be introduced deliberately rather
-than scaffolded speculatively.
+## Getting started
 
-## Prerequisites
-
-- Node.js 22 or newer
-- pnpm 11.24.0 (pinned in `package.json`)
-- Docker-compatible container runtime only when running the local Supabase stack
-- PostgreSQL `psql` client only when running the local auth E2E fixture cleanup
-
-## Installation
+Requirements: Node.js 22+, pnpm 11 (pinned via `packageManager`), and Docker for the local
+Supabase stack.
 
 ```bash
 pnpm install
+cp .env.example .env.local           # fill in Supabase values; apps have their own .env.example
+
+pnpm supabase:start                  # local Postgres, Auth, Storage
+pnpm db:reset                        # rebuild the database from migrations
+pnpm dev                             # main :3000, admin :3001, rest :3002
 ```
 
-Environment templates are committed at the repository root and in each application. Copy the
-relevant `.env.example` to an ignored local environment file when credentials are available. Never
-commit real secrets. The checked-in Supabase project reference is a non-secret identifier; all key
-values remain empty.
+No tenant data is seeded. Create an account at `http://localhost:3001/register` to go through
+onboarding.
 
-## Development
+## Quality checks
 
 ```bash
-# Run all persistent development tasks
-pnpm dev
-
-# Run one application
-pnpm --filter @darb/main dev
-pnpm --filter @darb/admin dev
-pnpm --filter @darb/rest dev
-
-# Start the optional local Supabase stack
-pnpm supabase:start
-
-# Rebuild the local database from migrations and run its tests
-pnpm db:reset
-pnpm db:test
-pnpm db:types
-```
-
-The local applications use ports `3000` (main), `3001` (admin), and `3002` (Restaurant).
-
-## Quality commands
-
-```bash
-pnpm format:check
 pnpm lint
 pnpm typecheck
-pnpm test
-pnpm build
+pnpm test          # Vitest unit tests
+pnpm db:test       # pgTAP: RLS, RPC, and tenant-isolation tests
 pnpm db:lint
+pnpm build
+pnpm test:e2e      # Playwright; starts local Supabase if needed
 ```
 
-Vitest covers locale primitives, validators, routing, permission decisions, DNS-result mapping, and
-media/domain state helpers. Playwright exercises the public shells and local admin flows including
-auth, tenant switching, core settings, modules, media upload, DNS claims, language settings, and
-fixture cleanup. The E2E command starts local Supabase when needed and provides only its ephemeral
-configuration to the test processes:
+Run `pnpm exec playwright install chromium` once before the first E2E run.
 
-```bash
-pnpm exec playwright install chromium
-pnpm test:e2e
-```
+## Documentation
 
-Each app also exposes a non-privileged `/health` liveness response. Exact deployment variables,
-canonical URL rules, robots/sitemap policy, security headers, logging redaction, and the current
-no-op analytics boundary are documented in [`docs/PRODUCTION.md`](./docs/PRODUCTION.md).
+| Topic                                                                                            | Covers                                               |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| [Architecture](./docs/ARCHITECTURE.md)                                                           | App and engine boundaries, data platform, deployment |
+| [Database](./docs/DATABASE.md) · [Tenancy](./docs/TENANCY.md)                                    | Schemas, RLS model, memberships, permissions         |
+| [Security](./docs/SECURITY.md) · [Auth](./docs/AUTH.md)                                          | Threat boundaries, sessions, bootstrap, audit        |
+| [Admin](./docs/ADMIN.md) · [Platform admin](./docs/PLATFORM_ADMIN.md)                            | Tenant workspace and super-admin console             |
+| [Modules](./docs/MODULES.md) · [Commercial](./docs/COMMERCIAL.md)                                | Capabilities, plans, entitlements                    |
+| [Restaurant](./docs/RESTAURANT.md) · [Launch runbook](./docs/RESTAURANT_LAUNCH.md)               | Restaurant engine, admin, public experience          |
+| [Domains](./docs/DOMAINS.md) · [Media](./docs/MEDIA.md)                                          | Custom-domain lifecycle, shared Storage              |
+| [Themes](./docs/THEMES.md) · [Design system](./docs/DESIGN_SYSTEM.md) · [Brand](./docs/BRAND.md) | Templates, tokens, visual identity                   |
+| [I18n](./docs/I18N.md) · [Production](./docs/PRODUCTION.md)                                      | Localization, deployment, SEO, headers, logging      |
 
-## Current status
+Repository-wide engineering rules are in [`AGENTS.md`](./AGENTS.md).
 
-This repository has completed the monorepo, core database, authentication, platform-resource,
-theme/appearance, unified tenant-admin, platform super-admin control plane, Restaurant Engine
-domain, Restaurant Admin foundations, provider-neutral plans/entitlements (without billing), and
-the Darb public brand website.
-It includes migration-driven tenancy, RLS authorization, atomic first-business bootstrap, protected
-multi-business routes, audited core mutations, shared image/video Storage coordination,
-DNS-verified domain claims with explicit provider-attested Restaurant routing, business locale
-state, generated database types, database isolation
-tests, typed permission/module-aware navigation, real-state setup guidance, responsive accessible
-admin interaction patterns, an isolated multilingual Restaurant menu administration workflow, and
-a server-rendered public menu with locale, location, media, variants, modifiers, availability,
-theme, trusted canonical metadata, hreflang, curated structured data, canonical-only sitemaps,
-security headers, typed analytics events, sanitized request-error logging, and fail-closed
-publication behavior.
+## Status
 
-No tenant records are seeded. Ordering, booking, commerce, billing, page-builder, or other engine
-customer runtimes have been implemented. The checked-in module, permission, and template rows are
-deterministic platform registries, not tenant content.
+Live at [darb.co.il](https://darb.co.il/en). Implemented: platform core, authentication and
+onboarding, tenant admin, platform console, plans and entitlements, custom domains, and the
+Restaurant product end to end. Not yet implemented: ordering, reservations, payments and billing,
+and engines beyond Restaurant.
 
-## Engineering direction
+## Author
 
-Darb prioritizes polished multilingual UX, accessibility, performance, strict tenant isolation,
-clear engine boundaries, and professional change history. Shared code must represent proven
-platform concerns rather than hypothetical reuse.
+Designed and built by **Nour Alden Mousa** for [Darb](https://darb.co.il/en).
 
-The permanent engineering rules live in [`AGENTS.md`](./AGENTS.md). Accepted foundation decisions
-are documented in:
+## License
 
-- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
-- [`docs/BRAND.md`](./docs/BRAND.md)
-- [`docs/AUTH.md`](./docs/AUTH.md)
-- [`docs/DATABASE.md`](./docs/DATABASE.md)
-- [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md)
-- [`docs/DOMAINS.md`](./docs/DOMAINS.md)
-- [`docs/MEDIA.md`](./docs/MEDIA.md)
-- [`docs/PLATFORM_ADMIN.md`](./docs/PLATFORM_ADMIN.md)
-- [`docs/PRODUCTION.md`](./docs/PRODUCTION.md)
-- [`docs/RESTAURANT.md`](./docs/RESTAURANT.md)
-- [`docs/RESTAURANT_LAUNCH.md`](./docs/RESTAURANT_LAUNCH.md)
-- [`docs/TENANCY.md`](./docs/TENANCY.md)
-- [`docs/I18N.md`](./docs/I18N.md)
-- [`docs/SECURITY.md`](./docs/SECURITY.md)
+Proprietary. © 2026 Darb (darb.co.il). All rights reserved. The source is published for review
+and reference; it may not be copied, redistributed, or used commercially without written
+permission.

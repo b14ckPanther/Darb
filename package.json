@@ -3,6 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "description": "Multi-tenant, multi-product business platform for the Israeli market.",
+  "homepage": "https://darb.co.il/en",
+  "author": "Nour Alden Mousa",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/b14ckPanther/Darb.git"
+  },
   "license": "UNLICENSED",
   "engines": {
     "node": ">=22.0.0",
