@@ -93,7 +93,14 @@ browser navigations, and links its Restaurant product entry to the Restaurant la
 route back to Main. Darb-owned Restaurant system states may link to Main; a tenant Restaurant page
 keeps its own identity and only the existing understated “Powered by Darb” path.
 
-Motion creates continuity without faking cross-origin transitions. Fast operational interactions
+Motion creates continuity without faking cross-origin transitions. When a visitor follows a Main
+link to Admin or Restaurant, a doorway of corridor light (`#F3D59B`) opens from the chosen link
+while the browser performs an ordinary navigation; nothing is intercepted or delayed. Darb-owned
+destination surfaces recognize a Darb referrer and fade the same light out as they appear.
+Admin's sign-in, registration, and verification pages continue the route: their story panel shows
+byte-identical copies of Main's threshold poster frames (`apps/admin/public/experience/threshold`),
+one step further into the corridor. Same-origin navigations use cross-document view transitions. All of it is skipped under reduced
+motion, and no state crosses the origin boundary. Fast operational interactions
 stay in the 160–180ms range; a deliberate presentation transition may use the existing 320ms theme
 contract. Reduced-motion preferences collapse nonessential animation, and no cross-domain session or
 visual state is transferred.
