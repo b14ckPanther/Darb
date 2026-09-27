@@ -79,18 +79,33 @@ describe("public copy", () => {
     for (const locale of supportedLocales) {
       const copy = mainSiteCopy[locale];
       expect(copy.hero.titleLead.length).toBeGreaterThan(3);
-      expect(copy.paths.items).toHaveLength(4);
-      expect(copy.products.items).toHaveLength(4);
+      expect(copy.junction.destinations).toHaveLength(4);
+      expect(copy.restaurant.layers).toHaveLength(6);
       expect(copy.foundation.items).toHaveLength(6);
-      expect(copy.languages.scripts).toHaveLength(3);
+      expect(Object.keys(copy.languages.directions)).toEqual(["rtl", "ltr"]);
       expect(copy.metadata.description.length).toBeGreaterThan(60);
     }
   });
 
-  it("represents only Restaurant as currently available", () => {
+  it("represents only Restaurant as currently available, first on the route", () => {
     for (const locale of supportedLocales) {
-      const current = mainSiteCopy[locale].products.items.filter((product) => product.current);
-      expect(current.map((product) => product.key)).toEqual(["restaurant"]);
+      const destinations = mainSiteCopy[locale].junction.destinations;
+      expect(destinations.map((destination) => destination.key)).toEqual([
+        "restaurant",
+        "booking",
+        "pages",
+        "commerce",
+      ]);
+      expect(destinations.filter((destination) => destination.current).map((d) => d.key)).toEqual([
+        "restaurant",
+      ]);
+    }
+  });
+
+  it("states the Restaurant boundary honestly instead of implying ordering", () => {
+    expect(mainSiteCopy.en.restaurant.boundary).toContain("not part of the Restaurant path yet");
+    for (const locale of supportedLocales) {
+      expect(mainSiteCopy[locale].restaurant.boundary.length).toBeGreaterThan(10);
     }
   });
 
@@ -110,10 +125,18 @@ describe("public copy", () => {
     expect(copy.hero.titleAccent).toBe("درب واحد.");
     expect(copy.hero.description).toContain("درب ببني لشغلك عالمه الرقمي الخاص");
     expect(copy.story.principle).toBe("كل مجال إله منطقه. ودرب مبني على هالفكرة.");
-    expect(copy.products.honestNote).toContain("درب عنده أكثر بكثير ليقدّمه");
+    expect(copy.junction.note).toContain("درب عنده أكثر بكثير ليقدّمه");
 
     for (const formalPhrase of ["تعذّر", "يمكنك", "انتقل إلى", "صُمم", "تمنح الأعمال"]) {
       expect(allArabicCopy).not.toContain(formalPhrase);
+    }
+  });
+
+  it("keeps visible copy free of em dashes outside the SEO titles", () => {
+    for (const locale of supportedLocales) {
+      const { metadata, ...visible } = mainSiteCopy[locale];
+      expect(metadata.title.length).toBeGreaterThan(10);
+      expect(JSON.stringify(visible)).not.toMatch(/[\u2013\u2014]/);
     }
   });
 });
